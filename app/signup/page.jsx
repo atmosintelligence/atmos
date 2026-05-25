@@ -8,23 +8,28 @@ import NavbarBorderOverride from '@/components/NavbarBorderOverride';
 import { createClient } from '@/utils/supabase/client';
 
 const firstNames = [
-  'aryan', 'priya', 'rohan', 'ananya', 'vikram',
-  'neha', 'aditya', 'kavya', 'rahul', 'sneha',
-  'karan', 'pooja', 'amit', 'divya', 'nikhil',
-  'riya', 'siddharth', 'meera', 'arjun', 'tanya',
+  'Aryan', 'Priya', 'Rohan', 'Ananya', 'Vikram',
+  'Neha', 'Aditya', 'Kavya', 'Rahul', 'Sneha',
+  'Karan', 'Pooja', 'Amit', 'Divya', 'Nikhil',
+  'Riya', 'Siddharth', 'Meera', 'Arjun', 'Tanya',
 ];
 
 const lastNames = [
-  'sharma', 'verma', 'patel', 'mehta', 'gupta',
-  'singh', 'joshi', 'kumar', 'mishra', 'nair',
-  'rao', 'iyer', 'bose', 'das', 'pillai',
-  'reddy', 'malhotra', 'chopra', 'saxena', 'trivedi',
+  'Sharma', 'Verma', 'Patel', 'Mehta', 'Gupta',
+  'Singh', 'Joshi', 'Kumar', 'Mishra', 'Nair',
+  'Rao', 'Iyer', 'Bose', 'Das', 'Pillai',
+  'Reddy', 'Malhotra', 'Chopra', 'Saxena', 'Trivedi',
 ];
 
+const f = firstNames[Math.floor(Math.random() * firstNames.length)];
+const l = lastNames[Math.floor(Math.random() * lastNames.length)];
+
 function randomUsername() {
-  const f = firstNames[Math.floor(Math.random() * firstNames.length)];
-  const l = lastNames[Math.floor(Math.random() * lastNames.length)];
-  return `${f}_${l}`;
+  return `${f.toLowerCase()}_${l.toLowerCase()}`;
+}
+
+function randomDisplayName() {
+  return `${f} ${l}`;
 }
 
 function validateUsername(value) {
@@ -37,12 +42,13 @@ function validateUsername(value) {
 
 export default function SignupPage() {
   const router = useRouter();
-  const [error, setError]               = useState('');
+  const [error, setError]                 = useState('');
   const [usernameError, setUsernameError] = useState('');
-  const [loading, setLoading]           = useState(false);
-  const [verified, setVerified]         = useState(false);
-  const [placeholder]                   = useState(randomUsername);
-  const [location, setLocation]         = useState({ lat: null, lon: null });
+  const [loading, setLoading]             = useState(false);
+  const [verified, setVerified]           = useState(false);
+  const [placeholder]                     = useState(randomUsername);
+  const [placeholder2]                    = useState(randomDisplayName);
+  const [location, setLocation]           = useState({ lat: null, lon: null });
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -105,7 +111,7 @@ export default function SignupPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <div>
                 <label className="text-xs text-neutral-500 block mb-1.5">Display name</label>
-                <input name="display_name" type="text" placeholder="Aryan Sharma" required className="field-input" />
+                <input name="display_name" type="text" placeholder={placeholder2} required className="field-input" />
               </div>
               <div>
                 <label className="text-xs text-neutral-500 block mb-1.5">Username</label>
@@ -126,7 +132,7 @@ export default function SignupPage() {
               </div>
               <div>
                 <label className="text-xs text-neutral-500 block mb-1.5">Password</label>
-                <input name="password" type="password" placeholder="••••••••" required className="field-input" />
+                <input name="password" type="password" placeholder="••••••••••" required className="field-input" />
                 <p className="text-xs text-neutral-400 mt-1.5">
                   Your approximate location will be saved to enable outdoor weather comparisons in your dashboard.{' '}
                   {location.lat

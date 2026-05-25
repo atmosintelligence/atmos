@@ -52,6 +52,12 @@ export async function POST(request) {
     location:   { lat: profile.latitude, lon: profile.longitude },
     roomAreaM2: body.roomAreaM2 ?? 20,
     tariff:     profile.tariff_rate ?? 10,
+    thresholdOverrides: {
+      consecutiveEmpty:  prefs?.min_consecutive_empty ?? 3,
+      phantomLoadHours:  prefs?.phantom_load_hours    ?? 4,
+      spikeZScore:       prefs?.spike_zscore          ?? 2.5,
+      weekOverWeekPct:   prefs?.week_over_week_pct    ?? 8,
+    },
   });
 
   const now  = new Date();

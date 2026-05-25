@@ -59,8 +59,10 @@ function EndpointCard({ method, path, description, children }) {
 
 export default function ApiPage() {
   const { selectedId } = useDevice();
-  const [apiKey, setApiKey]     = useState(null);
+  const [hasKey, setHasKey] = useState(false);
+  const [apiKey, setApiKey] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [revoking, setRevoking] = useState(false);
   const [copied, setCopied]     = useState(false);
   const [userId, setUserId]     = useState(null);
 
@@ -68,8 +70,15 @@ export default function ApiPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id);
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      setUserId(user.id);
+      const { data } = await supabase
+        .from('profiles')
+        .select('api_key')
+        .eq('id', user.id)
+        .single();
+      if (data?.api_key) setHasKey(true);
     });
   }, []);
 
@@ -82,8 +91,24 @@ export default function ApiPage() {
     if (user) {
       await supabase.from('profiles').update({ api_key: key }).eq('id', user.id);
       setApiKey(key);
+      setHasKey(true);
     }
     setGenerating(false);
+  }
+
+  async function revokeApiKey() {
+    setRevoking(true);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ api_key: null })
+        .eq('id', user.id);
+      setApiKey(null);
+      setHasKey(false);
+    }
+    setRevoking(false);
   }
 
   function copyKey() {
@@ -108,33 +133,65 @@ export default function ApiPage() {
         </p>
 
         {apiKey ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <code style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(128,128,128,0.08)', border: '1px solid rgba(128,128,128,0.15)', color: '#4ADE80', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-              {apiKey}
-            </code>
-            <button
-              onClick={copyKey}
-              style={{ fontSize: '0.78rem', fontWeight: 600, padding: '0.5rem 0.875rem', borderRadius: '0.5rem', background: copied ? 'rgba(74,222,128,0.1)' : 'rgba(128,128,128,0.08)', color: copied ? 'var(--color-primary-dark)' : '#737373', border: '1px solid rgba(128,128,128,0.15)', cursor: 'pointer' }}
-              className={copied ? 'dark:text-[var(--color-primary)]' : ''}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <code style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(128,128,128,0.08)', border: '1px solid rgba(128,128,128,0.15)', color: '#4ADE80', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                {apiKey}
+              </code>
+              <button
+                onClick={copyKey}
+                style={{ fontSize: '0.78rem', fontWeight: 600, padding: '0.5rem 0.875rem', borderRadius: '0.5rem', background: copied ? 'rgba(74,222,128,0.1)' : 'rgba(128,128,128,0.08)', color: copied ? 'var(--color-primary-dark)' : '#737373', border: '1px solid rgba(128,128,128,0.15)', cursor: 'pointer' }}
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+            <p style={{ fontSize: '0.72rem', color: '#ef4444' }}>
+              Store this key securely. It will not be shown again after you leave this page.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: '100%' }}>
+              <button
+                onClick={generateApiKey}
+                disabled={generating}
+                className="btn bg-brand text-brand-on-bg"
+                style={{ width: '33%', fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}
+              >
+                {generating ? 'Generating...' : hasKey ? 'Regenerate API key' : 'Generate API key'}
+              </button>
+
+              {hasKey && (
+                <button
+                  onClick={revokeApiKey}
+                  disabled={revoking}
+                  className="btn"
+                  style={{ width: '33%', fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.18)' }}
+                >
+                  {revoking ? 'Revoking...' : 'Revoke key'}
+                </button>
+              )}
+            </div>
           </div>
         ) : (
-          <button
-            onClick={generateApiKey}
-            disabled={generating}
-            className="btn bg-brand text-brand-on-bg"
-            style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}
-          >
-            {generating ? 'Generating...' : 'Generate API key'}
-          </button>
-        )}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: '100%' }}>
+            <button
+              onClick={generateApiKey}
+              disabled={generating}
+              className="btn bg-brand text-brand-on-bg"
+              style={{ width: '33%', fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}
+            >
+              {generating ? 'Generating...' : hasKey ? 'Regenerate API key' : 'Generate API key'}
+            </button>
 
-        {apiKey && (
-          <p style={{ fontSize: '0.72rem', color: '#ef4444', marginTop: '0.75rem' }}>
-            Store this key securely. It will not be shown again after you leave this page.
-          </p>
+            {hasKey && (
+              <button
+                onClick={revokeApiKey}
+                disabled={revoking}
+                className="btn"
+                style={{ width: '33%', fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.18)' }}
+              >
+                {revoking ? 'Revoking...' : 'Revoke key'}
+              </button>
+            )}
+          </div>
         )}
       </div>
 

@@ -7,10 +7,32 @@ import Footer from '@/components/Footer';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
 import { createClient } from '@/utils/supabase/client';
 
+const firstNames = [
+  'Aryan', 'Priya', 'Rohan', 'Ananya', 'Vikram',
+  'Neha', 'Aditya', 'Kavya', 'Rahul', 'Sneha',
+  'Karan', 'Pooja', 'Amit', 'Divya', 'Nikhil',
+  'Riya', 'Siddharth', 'Meera', 'Arjun', 'Tanya',
+];
+
+const lastNames = [
+  'Sharma', 'Verma', 'Patel', 'Mehta', 'Gupta',
+  'Singh', 'Joshi', 'Kumar', 'Mishra', 'Nair',
+  'Rao', 'Iyer', 'Bose', 'Das', 'Pillai',
+  'Reddy', 'Malhotra', 'Chopra', 'Saxena', 'Trivedi',
+];
+
+const f = firstNames[Math.floor(Math.random() * firstNames.length)];
+const l = lastNames[Math.floor(Math.random() * lastNames.length)];
+
+function randomUsername() {
+  return `${f.toLowerCase()}_${l.toLowerCase()}`;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [placeholder] = useState(randomUsername);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -75,7 +97,7 @@ export default function LoginPage() {
               <input
                 name="username"
                 type="text"
-                placeholder="aryan_sharma"
+                placeholder={placeholder}
                 required
                 className="field-input"
                 onChange={(e) => { e.target.value = e.target.value.toLowerCase().replace(/\s/g, ''); }}
@@ -84,7 +106,7 @@ export default function LoginPage() {
             </div>
             <div>
               <label className="text-xs text-neutral-500 block mb-1.5">Password</label>
-              <input name="password" type="password" placeholder="••••••••" required className="field-input" />
+              <input name="password" type="password" placeholder="••••••••••" required className="field-input" />
             </div>
             {error && <p className="text-xs text-red-500">{error}</p>}
             <button type="submit" disabled={loading} className="btn-primary mt-2 w-full bg-brand text-brand-on-bg py-2.5 rounded-xl text-sm font-medium disabled:opacity-50">

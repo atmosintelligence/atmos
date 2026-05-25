@@ -6,12 +6,6 @@ import { useDevice } from '../DeviceContext';
 import Icon from '@/components/Icon';
 import OptCard from '@/components/dashboard/OptCard';
 
-function formatTime(str) {
-  return new Date(str).toLocaleTimeString('en-IN', {
-    hour: '2-digit', minute: '2-digit', hour12: true,
-  }).replace('am', 'AM').replace('pm', 'PM');
-}
-
 function fmtLastContacted(str) {
   if (!str) return null;
   return new Date(str).toLocaleString('en-IN', {
@@ -28,18 +22,6 @@ export default function OverviewPage() {
   const [environmental, setEnvironmental] = useState(null);
   const [latest, setLatest]               = useState(null);
   const [status, setStatus]               = useState('loading');
-  const [localTime, setLocalTime]         = useState('');
-
-  useEffect(() => {
-    function tick() {
-      setLocalTime(new Date().toLocaleTimeString('en-IN', {
-        hour: '2-digit', minute: '2-digit', hour12: true,
-      }).replace('am', 'AM').replace('pm', 'PM'));
-    }
-    tick();
-    const t = setInterval(tick, 1000);
-    return () => clearInterval(t);
-  }, []);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -146,20 +128,18 @@ export default function OverviewPage() {
       <div className="dash-greeting">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
-            <div className="dash-greeting-name">Hey, {profile?.display_name ?? '...'}</div>
+            <div className="dash-greeting-name">
+              Hey, {profile?.display_name ?? '...'}
+            </div>
+
             <div className="dash-greeting-sub">
               Welcome to your dashboard. Here, you'll find useful insights of the environment you've set your devices up in.
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
-            <div className="dash-stat" style={{ minWidth: '110px', textAlign: 'center', alignItems: 'center' }}>
-              <div className="dash-stat-value">{devices.length}</div>
-              <div className="dash-stat-label">Devices linked</div>
-            </div>
-            <div className="dash-stat" style={{ minWidth: '110px', textAlign: 'center', alignItems: 'center' }}>
-              <div className="dash-stat-value">{localTime}</div>
-              <div className="dash-stat-label">Your local time</div>
-            </div>
+
+          <div className="dash-stat" style={{ flexShrink: 0, minWidth: '110px', textAlign: 'center', alignItems: 'center', marginLeft: 'auto' }}>
+            <div className="dash-stat-value">{devices.length}</div>
+            <div className="dash-stat-label">Devices linked</div>
           </div>
         </div>
       </div>

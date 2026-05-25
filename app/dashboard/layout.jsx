@@ -10,14 +10,14 @@ import { createClient } from '@/utils/supabase/client';
 import { DeviceProvider, useDevice } from './DeviceContext';
 
 const pages = [
-  { name: 'Overview',     href: '/dashboard/overview',  icon: 'overview' },
-  { name: 'History',      href: '/dashboard/history',   icon: 'history'  },
-  { name: 'Devices',      href: '/dashboard/devices',   icon: 'devices'  },
-  { name: 'Alerts',       href: '/dashboard/alerts',    icon: 'alerts'   },
-  { name: 'Analysis',     href: '/dashboard/analysis', icon: 'analysis'  },
+  { name: 'Overview',     href: '/dashboard/overview',     icon: 'overview' },
+  { name: 'History',      href: '/dashboard/history',      icon: 'history'  },
+  { name: 'Devices',      href: '/dashboard/devices',      icon: 'devices'  },
+  { name: 'Alerts',       href: '/dashboard/alerts',       icon: 'alerts'   },
+  { name: 'Analysis',     href: '/dashboard/analysis',     icon: 'analysis'  },
   { name: 'Subscription', href: '/dashboard/subscription', icon: 'subscription' },
-  { name: 'API',          href: '/dashboard/api' },
-  { name: 'Settings',     href: '/dashboard/settings',  icon: 'settings' }
+  { name: 'API',          href: '/dashboard/api',          icon: 'api' },
+  { name: 'Settings',     href: '/dashboard/settings',     icon: 'settings' }
 ];
 
 function formatDate(str) {
@@ -178,17 +178,18 @@ function Sidebar() {
                 </Link>
                 <div style={{ paddingLeft: '0.75rem', marginTop: '0.125rem', display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
                   {[
-                    { name: 'Lighting',              href: '/dashboard/analysis/lighting'      },
-                    { name: 'Temperature',           href: '/dashboard/analysis/temperature'   },
-                    { name: 'Power Usage',           href: '/dashboard/analysis/power'         },
-                    { name: 'Trends & Predictions',  href: '/dashboard/analysis/trends'        },
-                    { name: 'Environmental Savings', href: '/dashboard/analysis/environmental' },
+                    { name: 'Lighting',              href: '/dashboard/analysis/lighting',      icon: 'lightingAnalysis'       },
+                    { name: 'Temperature',           href: '/dashboard/analysis/temperature',   icon: 'temperatureAnalysis'    },
+                    { name: 'Power Usage',           href: '/dashboard/analysis/power',         icon: 'powerAnalysis'          },
+                    { name: 'Trends & Predictions',  href: '/dashboard/analysis/trends',        icon: 'trendsAnalysis'         },
+                    { name: 'Environmental Savings', href: '/dashboard/analysis/environmental', icon: 'environmentalAnalysis'  },
                   ].map(c => (
-                    <Link key={c.name} href={c.href} className={`flex items-center px-3 py-1.5 rounded-lg transition-colors text-xs select-none ${
+                    <Link key={c.name} href={c.href} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-xs select-none ${
                       pathname === c.href
                         ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-black/4 dark:hover:bg-white/4'
                     }`}>
+                      <Icon name={c.icon} />
                       {c.name}
                     </Link>
                   ))}
@@ -211,7 +212,7 @@ function Sidebar() {
       </nav>
 
       <div className="border-t border-black/8 dark:border-white/8 bg-transparent p-4 flex flex-col gap-3">
-        {!isOverview && localTime && (
+        {localTime && (
           <div style={{ paddingLeft: '0.75rem', paddingBottom: '0.25rem' }}>
             <div style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '-0.02em', fontFamily: 'var(--font-syne)' }}>
               {localTime}

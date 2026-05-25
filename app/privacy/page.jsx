@@ -147,7 +147,7 @@ export default function PrivacyPage() {
             Atmos Intelligence is committed to handling your data with transparency and care. This policy explains what we collect, why we collect it, and how we protect it.
           </p>
           <p style={{ fontSize: '0.72rem', color: '#737373', marginTop: '1rem' }}>
-            Last updated: 20 May, 2026
+            Last updated: 25 May, 2026
           </p>
         </div>
 

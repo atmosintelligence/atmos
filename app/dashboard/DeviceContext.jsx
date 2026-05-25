@@ -154,6 +154,25 @@ export function DeviceProvider({ children }) {
     return () => clearTimeout(timer);
   }, [loadingDevices, selectedId]);
 
+  useEffect(() => {
+    if (!selectedId || loadingDevices) return;
+
+    const others = devices.filter(d => d.device_id !== selectedId);
+    const timer = setTimeout(async () => {
+      for (const device of others) {
+        const alreadyCached =
+          getCached(`overview-${device.device_id}`) &&
+          getCached(`lighting-${device.device_id}`);
+        if (!alreadyCached) {
+          await preloadDevice(device.device_id);
+          await preloadAlerts(device.device_id);
+        }
+      }
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [selectedId]);
+
   const selectedDevice = devices.find(d => d.device_id === selectedId) ?? null;
 
   return (
