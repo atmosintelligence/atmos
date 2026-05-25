@@ -1,6 +1,6 @@
 # Atmos Intelligence
 
-This repository houses the code for Atmos Intelligence's software, which is essentially a web server backed by Next.js. You can visit the website at: https://atmosintel.vercel.app
+This repository houses the code for Atmos Intelligence's software, which is essentially a web server backed by Next.js. You can visit the website at: https://atmosintelligence.vercel.app
 
 Atmos Intelligence is a smart environmental optimization system designed to make indoor spaces more energy-efficient and sustainable. Using real-time sensor data, it analyzes room conditions and generates intelligent recommendations that help users reduce unnecessary energy consumption. By combining hardware sensing with cloud-based analytics, Atmos Intelligence transforms raw environmental data into actionable insights.
 
