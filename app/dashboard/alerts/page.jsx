@@ -72,7 +72,7 @@ function BarChart({ alerts }) {
 }
 
 export default function AlertsPage() {
-  const { selectedId, refreshKey } = useDevice();
+  const { selectedId, refreshKey, getCached, setCached } = useDevice();
 
   const [alerts, setAlerts]         = useState([]);
   const [prefs, setPrefs]           = useState(null);
@@ -89,8 +89,10 @@ export default function AlertsPage() {
 
   useEffect(() => {
     if (!selectedId) return;
+    const cacheKey = `alerts-${selectedId}`;
+    const cached = getCached(cacheKey);
+    if (cached) { setAlerts(cached.alerts); setStatus('ready'); return; }
     load();
-    loadPrefs();
   }, [selectedId, refreshKey]);
 
   async function load() {
@@ -99,6 +101,7 @@ export default function AlertsPage() {
     if (!res.ok) { setStatus('error'); return; }
     const { alerts: data } = await res.json();
     setAlerts(data ?? []);
+    setCached(`alerts-${selectedId}`, { alerts: data ?? [] });
     setStatus('ready');
   }
 

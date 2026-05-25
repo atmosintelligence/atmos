@@ -17,6 +17,32 @@ export function DeviceProvider({ children }) {
   function getSubCache() { return subCache; }
   function setSubCacheData(data) { setSubCache(data); }
 
+  async function preloadSubscription() {
+    if (subCache) return;
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      if (data) setSubCache(data);
+    } catch (_) {}
+  }
+
+  async function preloadAlerts(deviceId) {
+    if (getCached(`alerts-${deviceId}`)) return;
+    try {
+      const res = await fetch(`/api/alerts?deviceId=${deviceId}`);
+      if (!res.ok) return;
+      const { alerts } = await res.json();
+      setCached(`alerts-${deviceId}`, { alerts: alerts ?? [] });
+    } catch (_) {}
+  }
+
   function triggerRefresh() {
     setCache({});
     setRefreshKey(k => k + 1);
@@ -79,13 +105,18 @@ export function DeviceProvider({ children }) {
   }
 
   useEffect(() => {
-    if (!devices.length || !selectedId) return;
-    const others = devices.filter(d => d.device_id !== selectedId);
-    const timer = setTimeout(() => {
-      others.forEach(d => preloadDevice(d.device_id));
-    }, 2000);
+    if (loadingDevices || !selectedId) return;
+
+    const timer = setTimeout(async () => {
+      await preloadSubscription();
+      for (const device of devices) {
+        await preloadDevice(device.device_id);
+        await preloadAlerts(device.device_id);
+      }
+    }, 3000);
+
     return () => clearTimeout(timer);
-  }, [devices, selectedId]);
+  }, [loadingDevices, selectedId]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -130,8 +161,9 @@ export function DeviceProvider({ children }) {
       devices, selectedId, setSelectedId,
       selectedDevice, loadingDevices,
       refreshKey, triggerRefresh,
-      getCached, setCached, preloadDevice,
-      setDevices
+      getCached, setCached,
+      getSubCache, setSubCacheData,
+      preloadDevice,
     }}>
       {children}
     </DeviceContext.Provider>

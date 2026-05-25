@@ -10,19 +10,14 @@ import { createClient } from '@/utils/supabase/client';
 import { DeviceProvider, useDevice } from './DeviceContext';
 
 const pages = [
-  { name: 'Overview',  href: '/dashboard/overview',  icon: 'overview' },
-  { name: 'History',   href: '/dashboard/history',   icon: 'history'  },
-  { name: 'Devices',   href: '/dashboard/devices',   icon: 'devices'  },
-  { name: 'Alerts',    href: '/dashboard/alerts',    icon: 'alerts'   },
-  { name: 'Analysis',  href: null,                   icon: 'analysis', children: [
-    { name: 'Lighting',               href: '/dashboard/analysis/lighting'       },
-    { name: 'Temperature',            href: '/dashboard/analysis/temperature'    },
-    { name: 'Power Usage',            href: '/dashboard/analysis/power'          },
-    { name: 'Trends & Predictions',   href: '/dashboard/analysis/trends'         },
-    { name: 'Environmental Savings',  href: '/dashboard/analysis/environmental'  },
-  ]},
+  { name: 'Overview',     href: '/dashboard/overview',  icon: 'overview' },
+  { name: 'History',      href: '/dashboard/history',   icon: 'history'  },
+  { name: 'Devices',      href: '/dashboard/devices',   icon: 'devices'  },
+  { name: 'Alerts',       href: '/dashboard/alerts',    icon: 'alerts'   },
+  { name: 'Analysis',     href: '/dashboard/analysis', icon: 'analysis'  },
   { name: 'Subscription', href: '/dashboard/subscription', icon: 'subscription' },
-  { name: 'Settings',  href: '/dashboard/settings',  icon: 'settings' }
+  { name: 'API',          href: '/dashboard/api' },
+  { name: 'Settings',     href: '/dashboard/settings',  icon: 'settings' }
 ];
 
 function formatDate(str) {
@@ -170,7 +165,37 @@ function Sidebar() {
 
       <nav className="flex-1 p-4 pt-2 flex flex-col gap-0.5 text-sm overflow-y-auto">
         {pages.map((p) => {
-          if (p.children) return <AnalysisNavItem key={p.name} page={p} pathname={pathname} />;
+          if (p.name === 'Analysis') {
+            return (
+              <div key="analysis-group">
+                <Link href="/dashboard/analysis" className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors select-none ${
+                  pathname === '/dashboard/analysis'
+                    ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-black/4 dark:hover:bg-white/4'
+                }`}>
+                  <Icon name="analysis" />
+                  Analysis
+                </Link>
+                <div style={{ paddingLeft: '0.75rem', marginTop: '0.125rem', display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
+                  {[
+                    { name: 'Lighting',              href: '/dashboard/analysis/lighting'      },
+                    { name: 'Temperature',           href: '/dashboard/analysis/temperature'   },
+                    { name: 'Power Usage',           href: '/dashboard/analysis/power'         },
+                    { name: 'Trends & Predictions',  href: '/dashboard/analysis/trends'        },
+                    { name: 'Environmental Savings', href: '/dashboard/analysis/environmental' },
+                  ].map(c => (
+                    <Link key={c.name} href={c.href} className={`flex items-center px-3 py-1.5 rounded-lg transition-colors text-xs select-none ${
+                      pathname === c.href
+                        ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-black/4 dark:hover:bg-white/4'
+                    }`}>
+                      {c.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          }
           const active = pathname === p.href || (pathname === '/dashboard' && p.href === '/dashboard/overview');
           return (
             <Link key={p.name} href={p.href} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors select-none ${

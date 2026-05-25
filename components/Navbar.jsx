@@ -23,7 +23,10 @@ export default function Navbar() {
     window.addEventListener('atmos:themeChanged', onThemeChange);
 
     const onProfileChange = (e) => {
-      setProfile(prev => prev ? { ...prev, display_name: e.detail.display_name } : prev);
+      setProfile(prev => prev
+        ? { ...prev, ...e.detail }
+        : e.detail
+      );
     };
     window.addEventListener('atmos:profileChanged', onProfileChange);
 

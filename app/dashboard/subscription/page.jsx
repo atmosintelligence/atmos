@@ -59,10 +59,7 @@ export default function SubscriptionPage() {
   const [confirmPlan, setConfirmPlan] = useState(null);
   const [msg, setMsg]           = useState('');
 
-  const {
-    getSubCache = () => null,
-    setSubCacheData = () => {},
-  } = useDevice() || {};
+  const { getSubCache, setSubCacheData } = useDevice();
 
   useEffect(() => {
     const cached = getSubCache();
@@ -80,6 +77,7 @@ export default function SubscriptionPage() {
       setSubCacheData(data);
       setStatus('ready');
     });
+    setSubCacheData(data);
   }, []);
 
   async function handleUpgrade(plan) {

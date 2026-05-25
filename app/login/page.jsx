@@ -46,6 +46,17 @@ export default function LoginPage() {
       }
       setLoading(false);
     } else {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('display_name, username')
+          .eq('id', user.id)
+          .single();
+        if (prof) {
+          window.dispatchEvent(new CustomEvent('atmos:profileChanged', { detail: prof }));
+        }
+      }
       router.refresh();
       router.push('/dashboard');
     }
