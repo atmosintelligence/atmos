@@ -2,6 +2,7 @@ import './globals.css';
 import localFont from 'next/font/local';
 import Navbar from '@/components/Navbar';
 import { NavbarProvider } from '@/components/NavbarContext';
+import { Analytics } from '@vercel/analytics/next';
 
 const syne = localFont({
   src: './fonts/Syne.ttf',
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           {children}
         </NavbarProvider>
+        <Analytics />
       </body>
     </html>
   );
