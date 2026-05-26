@@ -11,6 +11,7 @@ export default function Navbar() {
   const [theme, setTheme] = useState('dark');
   const [scrolled, setScrolled] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const { forceBorder } = useNavbar();
   const pathname = usePathname();
 
@@ -45,6 +46,8 @@ export default function Navbar() {
       if (!session) setProfile(null);
     });
 
+    setIsDemoMode(localStorage.getItem('atmos:demoMode') === 'true');
+
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('atmos:themeChanged', onThemeChange);
@@ -68,9 +71,31 @@ export default function Navbar() {
         ? 'bg-white/80 dark:bg-[#0f0f0f]/80 border-black/10 dark:border-white/10'
         : 'bg-transparent border-transparent'
     }`}>
-      <Link href="/" style={{ fontWeight: 950 }} className="font-heading text-xl tracking-tight">
-        ATMOS<span className="text-brand">.</span>
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/"
+          style={{ fontWeight: 950 }}
+          className="font-heading text-xl tracking-tight"
+        >
+          ATMOS<span className="text-brand">.</span>
+        </Link>
+
+        {pathname.startsWith('/dashboard') && isDemoMode && (
+          <div
+            style={{
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              padding: '0.2rem 0.6rem',
+              borderRadius: '9999px',
+              background: 'rgba(74,222,128,0.1)',
+              color: '#4ADE80',
+              border: '1px solid rgba(74,222,128,0.2)',
+            }}
+          >
+            DEMO MODE
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center gap-6 text-base">
         <Link href="/pricing" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Pricing</Link>

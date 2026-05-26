@@ -10,7 +10,7 @@ import { BEE_BENCHMARK_KWH_M2 } from '@/lib/engine/constants.js';
 const ROOM_AREA = 20;
 
 export default function EnvironmentalPage() {
-  const { selectedId, refreshKey, getCached, setCached } = useDevice();
+  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
   const [data, setData]     = useState(null);
   const [status, setStatus] = useState('loading');
 
@@ -23,10 +23,10 @@ export default function EnvironmentalPage() {
 
     async function load() {
       setStatus('loading');
-      const res = await fetch('/api/engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: { lat: 28.6, lon: 77.2 }, roomAreaM2: ROOM_AREA, deviceId: selectedId }),
+      const { fetchEngine } = await import('@/lib/engineFetch');
+      const res = await fetchEngine({
+        isDemo, demoReadings, deviceId: selectedId,
+        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
       });
       if (cancelled) return;
       if (!res.ok) { setStatus('error'); return; }

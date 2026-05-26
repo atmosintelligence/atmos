@@ -14,7 +14,7 @@ function formatDate(str) {
 
 export default function DevicesPage() {
   const router = useRouter();
-  const { devices, selectedId, setSelectedId, loadingDevices, triggerRefresh, setDevices } = useDevice();
+  const { devices, selectedId, setSelectedId, loadingDevices, triggerRefresh, setDevices, isDemo } = useDevice();
   const [confirming, setConfirming] = useState(null);
   const [unlinking, setUnlinking]   = useState(null);
 
@@ -88,13 +88,15 @@ export default function DevicesPage() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    className="dash-device-badge select-none"
-                    onClick={() => setConfirming(d.device_id)}
-                    style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}
-                  >
-                    Unlink
-                  </button>
+                  !isDemo && (
+                    <button
+                      className="dash-device-badge select-none"
+                      onClick={() => setConfirming(d.device_id)}
+                      style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}
+                    >
+                      Unlink
+                    </button>
+                  )
                 )}
               </div>
             </div>

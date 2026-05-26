@@ -72,7 +72,7 @@ function BarChart({ alerts }) {
 }
 
 export default function AlertsPage() {
-  const { selectedId, refreshKey, getCached, setCached } = useDevice();
+  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
 
   const [alerts, setAlerts]         = useState([]);
   const [prefs, setPrefs]           = useState(null);
@@ -89,11 +89,39 @@ export default function AlertsPage() {
 
   useEffect(() => {
     if (!selectedId) return;
+    if (isDemo && !demoReadings?.length) return;
+
     const cacheKey = `alerts-${selectedId}`;
     const cached = getCached(cacheKey);
-    if (cached) { setAlerts(cached.alerts); setStatus('ready'); return; }
+    if (cached) {
+      setAlerts(cached.alerts);
+      setStatus('ready');
+      return;
+    }
+
+    if (isDemo) {
+      fetch('/api/engine/demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }),
+      }).then(r => r.json()).then(json => {
+        const demoAlerts = (json.optimizations ?? []).map((opt, i) => ({
+          id: `demo-${i}`, device_id: 'ATM-DEMO',
+          group_name: opt.group, severity: opt.severity,
+          title: opt.title, message: opt.message,
+          saving_inr: opt.saving?.inr ? parseFloat(opt.saving.inr) : null,
+          acknowledged: false,
+          created_at: opt.timestamp ?? new Date().toISOString(),
+        }));
+        setAlerts(demoAlerts);
+        setCached(cacheKey, { alerts: demoAlerts });
+        setStatus('ready');
+      }).catch(() => setStatus('error'));
+      return;
+    }
+
     load();
-  }, [selectedId, refreshKey]);
+  }, [selectedId, refreshKey, isDemo, demoReadings]);
 
   async function load() {
     setStatus('loading');

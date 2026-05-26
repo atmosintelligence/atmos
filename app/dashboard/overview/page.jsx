@@ -15,7 +15,8 @@ function fmtLastContacted(str) {
 }
 
 export default function OverviewPage() {
-  const { selectedId, devices, refreshKey, getCached, setCached, selectedDevice } = useDevice();
+  const { selectedId, devices, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
+  const selectedDevice = devices.find(d => d.device_id === selectedId);
 
   const [profile, setProfile]             = useState(null);
   const [optimizations, setOptimizations] = useState([]);
@@ -36,8 +37,8 @@ export default function OverviewPage() {
           setOptimizations(cached.optimizations);
           setEnvironmental(cached.environmental);
           setStatus(cached.noData ? 'no-data' : 'ready');
-          if (cached.profile) setProfile(cached.profile);
-          else {
+          if (!isDemo && cached.profile) setProfile(cached.profile);
+          else if (!isDemo && !cached.profile) {
             const supabase = createClient();
             supabase.auth.getUser().then(async ({ data: { user } }) => {
               if (!user) return;
@@ -55,27 +56,29 @@ export default function OverviewPage() {
       }
 
       setStatus('loading');
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || cancelled) return;
 
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('display_name, username')
-        .eq('id', user.id)
-        .single();
+      if (!isDemo) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('display_name, username')
+          .eq('id', user.id)
+          .single();
+        if (cancelled) return;
+        setProfile(prof);
+      }
 
-      if (cancelled) return;
-      setProfile(prof);
+      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
+      const body     = isDemo
+        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
+        : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId };
 
-      const res = await fetch('/api/engine', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: { lat: 28.6, lon: 77.2 },
-          roomAreaM2: 20,
-          deviceId: selectedId,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (cancelled) return;
@@ -89,7 +92,7 @@ export default function OverviewPage() {
         setOptimizations([]);
         setEnvironmental(null);
         setStatus('no-data');
-        setCached(cacheKey, { profile: prof, latest: null, optimizations: [], environmental: null, noData: true });
+        setCached(cacheKey, { profile: null, latest: null, optimizations: [], environmental: null, noData: true });
         return;
       }
 
@@ -99,7 +102,7 @@ export default function OverviewPage() {
       setEnvironmental(env ?? null);
       setStatus('ready');
       setCached(cacheKey, {
-        profile: prof,
+        profile: isDemo ? null : undefined,
         latest: l,
         optimizations: opts ?? [],
         environmental: env ?? null,
@@ -108,10 +111,9 @@ export default function OverviewPage() {
     }
 
     load();
-
     const interval = setInterval(() => { if (!cancelled) load(true); }, 60_000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [selectedId, refreshKey]);
+  }, [selectedId, refreshKey, isDemo, demoReadings]);
 
   if (status === 'loading') return (
     <div className="dash-empty" style={{ border: 'none' }}>Loading your data...</div>
@@ -129,7 +131,7 @@ export default function OverviewPage() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
             <div className="dash-greeting-name">
-              Hey, {profile?.display_name ?? '...'}
+              {isDemo ? 'Hey there' : `Hey, ${profile?.display_name ?? '...'}`}
             </div>
 
             <div className="dash-greeting-sub">

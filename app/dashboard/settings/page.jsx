@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { exportPDF, exportJSON } from '@/lib/pdf/export';
 import { useDevice } from '../DeviceContext';
+import Link from 'next/link';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { selectedId } = useDevice();
+  const { selectedId, isDemo, demoReadings } = useDevice();
 
   const [theme, setTheme]               = useState('dark');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -164,10 +165,10 @@ export default function SettingsPage() {
         prof = data;
       }
 
-      const res = await fetch('/api/engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId }),
+      const { fetchEngine } = await import('@/lib/engineFetch');
+      const res = await fetchEngine({
+        isDemo, demoReadings, deviceId: selectedId,
+        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
       });
       const { readings, optimizations, environmental, analysis } = await res.json();
 
@@ -188,10 +189,10 @@ export default function SettingsPage() {
   async function handleExportJSON() {
     setExportingJSON(true);
     try {
-      const res = await fetch('/api/engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId }),
+      const { fetchEngine } = await import('@/lib/engineFetch');
+      const res = await fetchEngine({
+        isDemo, demoReadings, deviceId: selectedId,
+        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
       });
       const { readings, optimizations } = await res.json();
       exportJSON({ deviceId: selectedId, readings: readings ?? [], optimizations: optimizations ?? [] });
@@ -217,6 +218,12 @@ export default function SettingsPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', maxWidth: '560px' }}>
+      {isDemo && (
+        <div style={{ fontSize: '0.78rem', color: '#737373', padding: '0.75rem 1rem', background: 'rgba(74,222,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(74,222,128,0.15)', marginBottom: '0.5rem' }}>
+          Most settings are read-only in demo mode. <Link href="/signup" className="link">Create an account</Link> to configure your preferences!
+        </div>
+      )}
+
       <div className="dash-greeting">
         <div className="dash-greeting-name">Settings</div>
         <div className="dash-greeting-sub">Manage your account and preferences.</div>
@@ -231,6 +238,7 @@ export default function SettingsPage() {
             <input
               type="text"
               value={displayName}
+              disabled={isDemo}
               onChange={e => setDisplayName(e.target.value)}
               className="field-input"
               style={{ maxWidth: '280px' }}
@@ -238,7 +246,7 @@ export default function SettingsPage() {
             />
             <button
               onClick={handleSaveDisplayName}
-              disabled={displayNameSaving || !displayName}
+              disabled={displayNameSaving || !displayName || isDemo}
               className="btn bg-brand text-brand-on-bg"
               style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '0.625rem', opacity: !displayName ? 0.5 : 1 }}
             >
@@ -258,6 +266,7 @@ export default function SettingsPage() {
             <input
               type="password"
               value={currentPassword}
+              disabled={isDemo}
               onChange={e => setCurrentPassword(e.target.value)}
               className="field-input"
               placeholder="Current password"
@@ -265,6 +274,7 @@ export default function SettingsPage() {
             <input
               type="password"
               value={newPassword}
+              disabled={isDemo}
               onChange={e => setNewPassword(e.target.value)}
               className="field-input"
               placeholder="New password"
@@ -272,7 +282,7 @@ export default function SettingsPage() {
           </div>
           <button
             onClick={handleChangePassword}
-            disabled={passwordSaving || !currentPassword || !newPassword}
+            disabled={passwordSaving || !currentPassword || !newPassword || isDemo}
             className="btn bg-brand text-brand-on-bg"
             style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '0.625rem', width: 'fit-content', opacity: (!currentPassword || !newPassword) ? 0.5 : 1 }}
           >
@@ -329,6 +339,7 @@ export default function SettingsPage() {
             <input
               type="number"
               value={tariff}
+              disabled={isDemo}
               onChange={e => setTariff(e.target.value)}
               min="0"
               step="0.5"
@@ -338,6 +349,7 @@ export default function SettingsPage() {
             <span style={{ fontSize: '0.8rem', color: '#737373' }}>/ kWh</span>
             <button
               onClick={handleSaveTariff}
+              disabled={isDemo}
               className="btn bg-brand text-brand-on-bg"
               style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '0.625rem' }}
             >
@@ -360,6 +372,7 @@ export default function SettingsPage() {
               <input
                 type="number"
                 value={lat}
+                disabled={isDemo}
                 onChange={e => setLat(e.target.value)}
                 step="0.000001"
                 placeholder="28.6139"
@@ -372,6 +385,7 @@ export default function SettingsPage() {
               <input
                 type="number"
                 value={lon}
+                disabled={isDemo}
                 onChange={e => setLon(e.target.value)}
                 step="0.000001"
                 placeholder="77.2090"
@@ -381,6 +395,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={handleSaveLocation}
+              disabled={isDemo}
               className="btn bg-brand text-brand-on-bg"
               style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '0.625rem' }}
             >
@@ -388,6 +403,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={handleDetectLocation}
+              disabled={isDemo}
               style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '0.625rem', background: 'rgba(0,0,0,0.04)', color: '#737373', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer' }}
             >
               Detect
@@ -442,6 +458,7 @@ export default function SettingsPage() {
           {!confirmDelete ? (
             <button
               onClick={() => setConfirmDelete(true)}
+              disabled={isDemo}
               style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }}
             >
               Delete my account

@@ -16,7 +16,7 @@ const COLS = [
 ];
 
 export default function HistoryPage() {
-  const { selectedId, refreshKey, getCached, setCached } = useDevice();
+  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
   const [rows, setRows]                 = useState([]);
   const [status, setStatus]             = useState('loading');
   const [clearing, setClearing]         = useState(false);
@@ -24,6 +24,13 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (!selectedId) return;
+    if (isDemo) {
+      const sorted = [...demoReadings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setRows(sorted);
+      setStatus('ready');
+      return;
+    }
+
     let cancelled = false;
     const cacheKey = `history-${selectedId}`;
     const cached = getCached(cacheKey);
@@ -36,10 +43,10 @@ export default function HistoryPage() {
 
     async function load() {
       setStatus('loading');
-      const res = await fetch('/api/engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId }),
+      const { fetchEngine } = await import('@/lib/engineFetch');
+      const res = await fetchEngine({
+        isDemo, demoReadings, deviceId: selectedId,
+        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
       });
       if (cancelled) return;
       if (!res.ok) { setStatus('error'); return; }
@@ -86,6 +93,7 @@ export default function HistoryPage() {
               {!confirmClear ? (
                 <button
                   onClick={() => setConfirmClear(true)}
+                  disabled={isDemo}
                   style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.4rem 1rem', borderRadius: '0.5rem', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }}
                 >
                   Forget history

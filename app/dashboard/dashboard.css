@@ -396,3 +396,11 @@
   color: #a3a3a3;
   text-align: center;
 }
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

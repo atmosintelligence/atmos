@@ -58,10 +58,19 @@ export default function SubscriptionPage() {
   const [targetPlan, setTargetPlan] = useState(null);
   const [confirmPlan, setConfirmPlan] = useState(null);
   const [msg, setMsg]           = useState('');
-
   const { getSubCache, setSubCacheData } = useDevice();
+  const { isDemo } = useDevice();
 
   useEffect(() => {
+    if (isDemo) {
+      setSub({
+        plan: 'premium',
+        last_payment_at: new Date().toISOString(),
+        next_payment_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+      });
+      setStatus('ready');
+      return;
+    }
     const cached = getSubCache();
     if (cached) { setSub(cached); setStatus('ready'); return; }
     const supabase = createClient();
@@ -77,8 +86,7 @@ export default function SubscriptionPage() {
       setSubCacheData(data);
       setStatus('ready');
     });
-    setSubCacheData(data);
-  }, []);
+  }, [isDemo]);
 
   async function handleUpgrade(plan) {
     const cleanPlan = plan.replace('down-', '');

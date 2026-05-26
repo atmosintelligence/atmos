@@ -8,16 +8,26 @@ import Icon from '@/components/Icon';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
 import { createClient } from '@/utils/supabase/client';
 import { DeviceProvider, useDevice } from './DeviceContext';
+import { DemoProvider, useDemo } from './DemoContext';
+import DemoGate from './DemoGate';
 
 const pages = [
-  { name: 'Overview',     href: '/dashboard/overview',     icon: 'overview' },
-  { name: 'History',      href: '/dashboard/history',      icon: 'history'  },
-  { name: 'Devices',      href: '/dashboard/devices',      icon: 'devices'  },
-  { name: 'Alerts',       href: '/dashboard/alerts',       icon: 'alerts'   },
-  { name: 'Analysis',     href: '/dashboard/analysis',     icon: 'analysis'  },
+  { name: 'Overview',     href: '/dashboard/overview',     icon: 'overview'     },
+  { name: 'History',      href: '/dashboard/history',      icon: 'history'      },
+  { name: 'Devices',      href: '/dashboard/devices',      icon: 'devices'      },
+  { name: 'Alerts',       href: '/dashboard/alerts',       icon: 'alerts'       },
+  { name: 'Analysis',     href: '/dashboard/analysis',     icon: 'analysis'     },
+  { name: 'API',          href: '/dashboard/api',          icon: 'api'          },
   { name: 'Subscription', href: '/dashboard/subscription', icon: 'subscription' },
-  { name: 'API',          href: '/dashboard/api',          icon: 'api' },
-  { name: 'Settings',     href: '/dashboard/settings',     icon: 'settings' }
+  { name: 'Settings',     href: '/dashboard/settings',     icon: 'settings'     },
+];
+
+const analysisSubs = [
+  { name: 'Lighting',              href: '/dashboard/analysis/lighting',      icon: 'lightingAnalysis'      },
+  { name: 'Temperature',           href: '/dashboard/analysis/temperature',   icon: 'temperatureAnalysis'   },
+  { name: 'Power Usage',           href: '/dashboard/analysis/power',         icon: 'powerAnalysis'         },
+  { name: 'Trends & Predictions',  href: '/dashboard/analysis/trends',        icon: 'trendsAnalysis'        },
+  { name: 'Environmental Savings', href: '/dashboard/analysis/environmental', icon: 'environmentalAnalysis' },
 ];
 
 function formatDate(str) {
@@ -28,49 +38,16 @@ function formatDate(str) {
   }).replace('am', 'AM').replace('pm', 'PM');
 }
 
-function AnalysisNavItem({ page, pathname }) {
-  const anyChildActive = page.children.some(c => pathname === c.href);
-
-  return (
-    <div>
-      <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm select-none ${
-        anyChildActive
-          ? 'text-neutral-900 dark:text-neutral-100'
-          : 'text-neutral-500'
-      }`}>
-        <Icon name={page.icon} />
-        <span>{page.name}</span>
-      </div>
-      <div style={{ paddingLeft: '0.75rem', marginTop: '0.125rem', display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
-        {page.children.map(c => (
-          <Link key={c.name} href={c.href} className={`flex items-center px-3 py-1.5 rounded-lg transition-colors text-xs select-none ${
-            pathname === c.href
-              ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-black/4 dark:hover:bg-white/4'
-          }`}>
-            {c.name}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Sidebar() {
-  const pathname = usePathname();
-  const router   = useRouter();
-  const { devices, selectedId, setSelectedId, selectedDevice, loadingDevices, triggerRefresh, refreshKey } = useDevice();
+function Sidebar({ refreshing }) {
+  const pathname   = usePathname();
+  const router     = useRouter();
+  const { devices, selectedId, setSelectedId, selectedDevice, loadingDevices, triggerRefresh, refreshKey, weatherError } = useDevice();
+  const { isDemo } = useDemo();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [refreshing, setRefreshing]     = useState(false);
   const [localTime, setLocalTime]       = useState('');
-
-  const isOverview = pathname === '/dashboard/overview' || pathname === '/dashboard';
 
   useEffect(() => {
     if (refreshKey === 0) return;
-    setRefreshing(true);
-    const t = setTimeout(() => setRefreshing(false), 800);
-    return () => clearTimeout(t);
   }, [refreshKey]);
 
   useEffect(() => {
@@ -96,11 +73,6 @@ function Sidebar() {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.replace('/');
-  }
-
-  function handleSelectDevice(id) {
-    setSelectedId(id);
-    setDropdownOpen(false);
   }
 
   return (
@@ -130,7 +102,7 @@ function Sidebar() {
                   <div
                     key={d.device_id}
                     className={`dash-dropdown-option ${selectedId === d.device_id ? 'active' : ''}`}
-                    onClick={() => handleSelectDevice(d.device_id)}
+                    onClick={() => { setSelectedId(d.device_id); setDropdownOpen(false); }}
                   >
                     <span>{d.device_id}</span>
                     {selectedId === d.device_id && (
@@ -161,6 +133,12 @@ function Sidebar() {
             Last contacted: {formatDate(selectedDevice.last_contacted_at)}
           </div>
         )}
+
+        {weatherError && weatherError !== 'No location set' && (
+          <div style={{ marginTop: '0.25rem', fontSize: '0.65rem', color: 'rgba(239,68,68,0.75)' }}>
+            Weather API unreachable
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 p-4 pt-2 flex flex-col gap-0.5 text-sm overflow-y-auto">
@@ -177,13 +155,7 @@ function Sidebar() {
                   Analysis
                 </Link>
                 <div style={{ paddingLeft: '0.75rem', marginTop: '0.125rem', display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
-                  {[
-                    { name: 'Lighting',              href: '/dashboard/analysis/lighting',      icon: 'lightingAnalysis'       },
-                    { name: 'Temperature',           href: '/dashboard/analysis/temperature',   icon: 'temperatureAnalysis'    },
-                    { name: 'Power Usage',           href: '/dashboard/analysis/power',         icon: 'powerAnalysis'          },
-                    { name: 'Trends & Predictions',  href: '/dashboard/analysis/trends',        icon: 'trendsAnalysis'         },
-                    { name: 'Environmental Savings', href: '/dashboard/analysis/environmental', icon: 'environmentalAnalysis'  },
-                  ].map(c => (
+                  {analysisSubs.map(c => (
                     <Link key={c.name} href={c.href} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-xs select-none ${
                       pathname === c.href
                         ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
@@ -197,6 +169,7 @@ function Sidebar() {
               </div>
             );
           }
+
           const active = pathname === p.href || (pathname === '/dashboard' && p.href === '/dashboard/overview');
           return (
             <Link key={p.name} href={p.href} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors select-none ${
@@ -222,21 +195,41 @@ function Sidebar() {
             </div>
           </div>
         )}
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-neutral-500 hover:text-red-500 hover:bg-red-500/6 transition-colors w-full text-left cursor-pointer select-none"
-        >
-          <Icon name="logout" />
-          Log out
-        </button>
+
+        {isDemo ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 600, paddingLeft: '0.75rem' }}>
+              Enterprise Demo
+            </div>
+            <Link href="/signup" className="btn bg-brand text-brand-on-bg text-center text-xs font-semibold py-2 rounded-xl select-none">
+              Create free account
+            </Link>
+          </div>
+        ) : (
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-neutral-500 hover:text-red-500 hover:bg-red-500/6 transition-colors w-full text-left cursor-pointer select-none"
+          >
+            <Icon name="logout" />
+            Log out
+          </button>
+        )}
         <Link href="/privacy" className="link text-xs px-3 select-none">Privacy Policy</Link>
       </div>
     </aside>
   );
 }
 
-function DashboardShell({ children, checking }) {
+function DashboardShell({ children, checking, isDemo }) {
+  const [refreshing, setRefreshing] = useState(false);
   const { refreshKey } = useDevice();
+
+  useEffect(() => {
+    if (refreshKey === 0) return;
+    setRefreshing(true);
+    const t = setTimeout(() => setRefreshing(false), 800);
+    return () => clearTimeout(t);
+  }, [refreshKey]);
 
   if (checking) return (
     <div className="min-h-dvh flex items-center justify-center text-neutral-400 text-sm">
@@ -248,32 +241,52 @@ function DashboardShell({ children, checking }) {
     <div className="flex min-h-dvh pt-16">
       <NavbarBorderOverride />
       <div className="w-64 shrink-0" />
-      <Sidebar />
+      <Sidebar refreshing={refreshing} />
       <main className="flex-1 min-w-0 p-8">{children}</main>
     </div>
   );
 }
 
 export default function DashboardLayout({ children }) {
-  const [checking, setChecking] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
+  const [authState, setAuthState] = useState('checking'); // 'checking' | 'authed' | 'guest'
+  const [isDemo, setIsDemo]       = useState(false);
+  const router                    = useRouter();
+
+  useEffect(() => {
+    if (authState === 'authed') localStorage.removeItem('atmos:demoMode');
+  }, [authState]);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { router.replace('/login'); return; }
-      setChecking(false);
+      if (user) setAuthState('authed');
+      else setAuthState('guest');
     });
   }, []);
 
+  if (authState === 'checking') return (
+    <div className="min-h-dvh flex items-center justify-center text-neutral-400 text-sm">
+      Checking session...
+    </div>
+  );
+
+  if (authState === 'guest' && !isDemo) {
+    return (
+      <DemoProvider isDemo={false}>
+        <DeviceProvider isDemo={false} demoDevices={null} demoReadings={null}>
+          <DemoGate onEnterDemo={() => setIsDemo(true)} />
+        </DeviceProvider>
+      </DemoProvider>
+    );
+  }
+
   return (
-    <DeviceProvider onNoDevices={() => {
-      if (pathname !== '/dashboard/no-device') router.replace('/dashboard/no-device');
-    }}>
-      <DashboardShell checking={checking}>
-        {children}
-      </DashboardShell>
-    </DeviceProvider>
+    <DemoProvider isDemo={isDemo}>
+      <DeviceProvider isDemo={isDemo}>
+        <DashboardShell checking={false} isDemo={isDemo}>
+          {children}
+        </DashboardShell>
+      </DeviceProvider>
+    </DemoProvider>
   );
 }

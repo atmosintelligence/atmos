@@ -8,7 +8,7 @@ import TableWrapper from '@/components/dashboard/TableWrapper';
 import OptCard      from '@/components/dashboard/OptCard';
 
 export default function TrendsPage() {
-  const { selectedId, refreshKey, getCached, setCached, selectedDevice } = useDevice();
+  const { selectedId, selectedDevice, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
   const [data, setData]     = useState(null);
   const [status, setStatus] = useState('loading');
 
@@ -25,10 +25,10 @@ export default function TrendsPage() {
 
     async function load() {
       setStatus('loading');
-      const res = await fetch('/api/engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId }),
+      const { fetchEngine } = await import('@/lib/engineFetch');
+      const res = await fetchEngine({
+        isDemo, demoReadings, deviceId: selectedId,
+        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
       });
       if (cancelled) return;
       if (!res.ok) { setStatus('error'); return; }

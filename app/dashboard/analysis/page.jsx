@@ -45,7 +45,7 @@ const SUB_TABS = [
 
 export default function AnalysisPage() {
   const router = useRouter();
-  const { selectedId, refreshKey, getCached, setCached } = useDevice();
+  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
   const [optimizations, setOptimizations] = useState([]);
   const [status, setStatus] = useState('loading');
 
@@ -62,10 +62,10 @@ export default function AnalysisPage() {
     }
 
     async function load() {
-      const res = await fetch('/api/engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId }),
+      const { fetchEngine } = await import('@/lib/engineFetch');
+      const res = await fetchEngine({
+        isDemo, demoReadings, deviceId: selectedId,
+        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
       });
       if (cancelled) return;
       if (!res.ok) { setStatus('ready'); return; }

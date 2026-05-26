@@ -58,7 +58,7 @@ function EndpointCard({ method, path, description, children }) {
 }
 
 export default function ApiPage() {
-  const { selectedId } = useDevice();
+  const { selectedId, isDemo } = useDevice();
   const [hasKey, setHasKey] = useState(false);
   const [apiKey, setApiKey] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -151,7 +151,7 @@ export default function ApiPage() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: '100%' }}>
               <button
                 onClick={generateApiKey}
-                disabled={generating}
+                disabled={generating || isDemo}
                 className="btn bg-brand text-brand-on-bg"
                 style={{ width: '33%', fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}
               >
@@ -174,7 +174,7 @@ export default function ApiPage() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: '100%' }}>
             <button
               onClick={generateApiKey}
-              disabled={generating}
+              disabled={generating || isDemo}
               className="btn bg-brand text-brand-on-bg"
               style={{ width: '33%', fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}
             >

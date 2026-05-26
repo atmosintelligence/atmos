@@ -8,7 +8,10 @@ import TableWrapper from '@/components/dashboard/TableWrapper';
 import OptCard      from '@/components/dashboard/OptCard';
 
 export default function TemperaturePage() {
-  const { selectedId, refreshKey, getCached, setCached, selectedDevice } = useDevice();
+  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings, devices } = useDevice();
+
+  const selectedDevice = devices.find(d => d.device_id === selectedId);
+
   const [data, setData]     = useState(null);
   const [status, setStatus] = useState('loading');
 
@@ -25,10 +28,10 @@ export default function TemperaturePage() {
 
     async function load() {
       setStatus('loading');
-      const res = await fetch('/api/engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId }),
+      const { fetchEngine } = await import('@/lib/engineFetch');
+      const res = await fetchEngine({
+        isDemo, demoReadings, deviceId: selectedId,
+        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
       });
       if (cancelled) return;
       if (!res.ok) { setStatus('error'); return; }
@@ -70,9 +73,9 @@ export default function TemperaturePage() {
         <div className="dash-greeting-sub">Indoor temperature and humidity trends, HVAC efficiency, and ventilation opportunities.</div>
       </div>
 
-      {weatherError && (
+      {weatherError && weatherError !== 'No location set' && (
         <div style={{ fontSize: '0.75rem', color: '#ef4444', padding: '0.5rem 0.75rem', background: 'rgba(239,68,68,0.06)', borderRadius: '0.5rem', border: '1px solid rgba(239,68,68,0.15)' }}>
-          Weather API is unreachable right now — ventilation recommendations may be unavailable.
+          Weather data is temporarily unavailable — outdoor ventilation recommendations may be missing.
         </div>
       )}
 
