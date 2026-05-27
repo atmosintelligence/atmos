@@ -16,7 +16,15 @@ const COLS = [
 ];
 
 export default function HistoryPage() {
-  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
+  const {
+    selectedId,
+    refreshKey,
+    getCached,
+    setCached,
+    isDemo,
+    demoReadings,
+    demoReadings2
+  } = useDevice();
   const [rows, setRows]                 = useState([]);
   const [status, setStatus]             = useState('loading');
   const [clearing, setClearing]         = useState(false);
@@ -25,7 +33,15 @@ export default function HistoryPage() {
   useEffect(() => {
     if (!selectedId) return;
     if (isDemo) {
-      const sorted = [...demoReadings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const source =
+        selectedId === 'ATM-DEMO2'
+          ? demoReadings2
+          : demoReadings;
+
+      const sorted = [...source].sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      );
+
       setRows(sorted);
       setStatus('ready');
       return;

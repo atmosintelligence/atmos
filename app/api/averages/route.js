@@ -14,7 +14,9 @@ export async function GET() {
     const devRes  = await fetch(`${process.env.SHEETS_API_URL}?username=all&sheet=Devices`, { redirect: 'follow' });
     const devText = await devRes.text();
     let allDevices = [];
-    try { allDevices = JSON.parse(devText).data ?? []; } catch (_) {}
+    try { allDevices = JSON.parse(devText).data ?? []; } catch (err) {
+      console.error(err);
+    }
 
     const usernames = [...new Set(allDevices.map(d => d.owner_username).filter(Boolean))];
 
@@ -23,7 +25,9 @@ export async function GET() {
       try {
         const readings = await fetchUserReadings(username);
         allReadings = allReadings.concat(readings);
-      } catch (_) {}
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     const oneYearAgo = Date.now() - 365 * 24 * 3600 * 1000;

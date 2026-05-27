@@ -3,24 +3,31 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useDemo } from './DemoContext';
-import { DEMO_DEVICE_ID } from '@/lib/demo';
+import { DEMO_DEVICE_ID, DEMO_DEVICE_ID_2 } from '@/lib/demo';
 
 const DeviceContext = createContext(null);
 
 export function DeviceProvider({ children }) {
-  const { isDemo, demoDevices, demoReadings, demoReady } = useDemo();
+  const {
+    isDemo,
+    demoDevices,
+    demoReadings,
+    demoReadings2,
+    demoReady
+  } = useDemo();
 
   const [devices, setDevices]               = useState([]);
   const [selectedId, setSelectedIdState]    = useState(null);
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [refreshKey, setRefreshKey]         = useState(0);
   const [cache, setCache]                   = useState({});
-  const [weatherError, setWeatherError] = useState(null);
+  const [weatherError, setWeatherError]     = useState(null);
   const selectedIdRef                       = useRef(null);
 
   function triggerRefresh() {
     setCache({});
     setRefreshKey(k => k + 1);
+    setSubCache(null);
   }
 
   function setSelectedId(id) {
@@ -31,12 +38,54 @@ export function DeviceProvider({ children }) {
     setRefreshKey(k => k + 1);
   }
 
-  function getCached(key) { return cache[key] ?? null; }
-  function setCached(key, value) { setCache(prev => ({ ...prev, [key]: value })); }
+  function getCached(key) {
+    return cache[key] ?? null;
+  }
+
+  function setCached(key, value) {
+    setCache(prev => ({ ...prev, [key]: value }));
+  }
+
+  function getDemoReadingsForDevice(deviceId) {
+    return deviceId === DEMO_DEVICE_ID_2
+      ? demoReadings2
+      : demoReadings;
+  }
 
   const [subCache, setSubCache] = useState(null);
-  function getSubCache() { return subCache; }
-  function setSubCacheData(data) { setSubCache(data); }
+
+  function getSubCache() {
+    return subCache;
+  }
+
+  function setSubCacheData(data) {
+    setSubCache(data);
+  }
+
+  async function preloadSubscription() {
+    if (subCache) return;
+
+    if (isDemo) {
+      setSubCache({
+        subscription: {
+          plan: 'enterprise'
+        }
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/subscription');
+
+      if (!res.ok) return;
+
+      const json = await res.json();
+
+      setSubCache(json);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   useEffect(() => {
     if (isDemo) {
@@ -50,18 +99,23 @@ export function DeviceProvider({ children }) {
       setLoadingDevices(false);
       return;
     }
-
     const supabase = createClient();
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoadingDevices(false); return; }
+      if (!user) {
+        setLoadingDevices(false);
+        return;
+      }
       const res = await fetch('/api/devices');
-      if (!res.ok) { setLoadingDevices(false); return; }
+      if (!res.ok) {
+        setLoadingDevices(false);
+        return;
+      }
       const { devices: devs } = await res.json();
       setDevices(devs ?? []);
       if (devs?.length) {
-        const saved = localStorage.getItem('atmos:selectedDevice');
-        const valid = saved && devs.find(d => d.device_id === saved);
+        const saved   = localStorage.getItem('atmos:selectedDevice');
+        const valid   = saved && devs.find(d => d.device_id === saved);
         const initial = valid ? saved : devs[0].device_id;
         selectedIdRef.current = initial;
         setSelectedIdState(initial);
@@ -72,62 +126,134 @@ export function DeviceProvider({ children }) {
   }, [isDemo, demoReady]);
 
   useEffect(() => {
-    if (!isDemo || !demoReady || !demoReadings?.length) return;
-    preloadDevice(DEMO_DEVICE_ID);
-  }, [isDemo, demoReady, demoReadings]);
+    if (!isDemo || !demoReady) return;
+    if (demoReadings?.length) {
+      preloadDevice(DEMO_DEVICE_ID);
+    }
+    if (demoReadings2?.length) {
+      preloadDevice(DEMO_DEVICE_ID_2);
+    }
+  }, [isDemo, demoReady, demoReadings, demoReadings2]);
 
   async function preloadDevice(deviceId) {
-    const alreadyCached =
-      getCached(`overview-${deviceId}`) &&
-      getCached(`lighting-${deviceId}`);
-    if (alreadyCached) return;
-
     try {
-      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
-      const body     = isDemo
-        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
-        : { location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, deviceId };
-
-      const res  = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!res.ok) return;
+      const endpoint = isDemo
+        ? '/api/engine/demo'
+        : '/api/engine';
+      const demoReadingsForDevice = getDemoReadingsForDevice(deviceId);
+      const body = isDemo
+        ? {
+            readings: demoReadingsForDevice,
+            location: { lat: 28.6139, lon: 77.2090 },
+            roomAreaM2: 20,
+            tariff: 10
+          }
+        : {
+            location: { lat: 28.6139, lon: 77.2090 },
+            roomAreaM2: 20,
+            deviceId
+          };
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        console.error(await res.text());
+        return;
+      }
       const json = await res.json();
-      const raw  = json.readings ?? [];
+      const raw     = json.readings ?? [];
       const hasData = raw.length > 0;
-
-      if (json.weatherError) setWeatherError(json.weatherError);
-
+      if (json.weatherError) {
+        setWeatherError(json.weatherError);
+      }
       if (!getCached(`overview-${deviceId}`)) {
-        setCached(`overview-${deviceId}`, hasData ? {
-          profile: null, latest: raw.at(-1),
-          optimizations: json.optimizations ?? [],
-          environmental: json.environmental ?? null,
-          noData: false,
-        } : { profile: null, latest: null, optimizations: [], environmental: null, noData: true });
+        setCached(
+          `overview-${deviceId}`,
+          hasData
+            ? {
+                profile: null,
+                latest: raw.at(-1),
+                optimizations: json.optimizations ?? [],
+                environmental: json.environmental ?? null,
+                noData: false,
+              }
+            : {
+                profile: null,
+                latest: null,
+                optimizations: [],
+                environmental: null,
+                noData: true
+              }
+        );
       }
       if (!getCached(`history-${deviceId}`) && hasData) {
-        setCached(`history-${deviceId}`, { rows: [...raw].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) });
+        setCached(`history-${deviceId}`, {
+          rows: [...raw].sort(
+            (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+          )
+        });
       }
       if (json.analysis && hasData) {
-        if (!getCached(`lighting-${deviceId}`))      setCached(`lighting-${deviceId}`,      { ...json.analysis.lighting,  optimizations: json.optimizations.filter(o => o.group === 'Lighting') });
-        if (!getCached(`temperature-${deviceId}`))   setCached(`temperature-${deviceId}`,   { ...json.analysis.hvac,      optimizations: json.optimizations.filter(o => o.group === 'HVAC' || o.group === 'Humidity'), weatherError: json.weatherError, readings: raw });
-        if (!getCached(`power-${deviceId}`))         setCached(`power-${deviceId}`,         { ...json.analysis.power,     optimizations: json.optimizations.filter(o => o.group === 'Power') });
-        if (!getCached(`trends-${deviceId}`))        setCached(`trends-${deviceId}`,        { ...json.analysis.trends,    optimizations: json.optimizations.filter(o => o.group === 'Trends') });
-        if (!getCached(`environmental-${deviceId}`)) setCached(`environmental-${deviceId}`, json.analysis.environmental);
+        if (!getCached(`lighting-${deviceId}`)) {
+          setCached(`lighting-${deviceId}`, {
+            ...json.analysis.lighting,
+            optimizations: json.optimizations.filter(
+              o => o.group === 'Lighting'
+            )
+          });
+        }
+        if (!getCached(`temperature-${deviceId}`)) {
+          setCached(`temperature-${deviceId}`, {
+            ...json.analysis.hvac,
+            optimizations: json.optimizations.filter(
+              o => o.group === 'HVAC' || o.group === 'Humidity'
+            ),
+            weatherError: json.weatherError,
+            readings: raw
+          });
+        }
+        if (!getCached(`power-${deviceId}`)) {
+          setCached(`power-${deviceId}`, {
+            ...json.analysis.power,
+            optimizations: json.optimizations.filter(
+              o => o.group === 'Power'
+            )
+          });
+        }
+        if (!getCached(`trends-${deviceId}`)) {
+          setCached(`trends-${deviceId}`, {
+            ...json.analysis.trends,
+            optimizations: json.optimizations.filter(
+              o => o.group === 'Trends'
+            )
+          });
+        }
+        if (!getCached(`environmental-${deviceId}`)) {
+          setCached(
+            `environmental-${deviceId}`,
+            json.analysis.environmental
+          );
+        }
       }
-
       await preloadAlerts(deviceId);
-    } catch (_) {}
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async function preloadAlerts(deviceId) {
     if (getCached(`alerts-${deviceId}`)) return;
     try {
       if (isDemo) {
+        const demoReadingsForDevice =
+          getDemoReadingsForDevice(deviceId);
         const res = await fetch('/api/engine/demo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            readings: demoReadings,
+            readings: demoReadingsForDevice,
             location: { lat: 28.6139, lon: 77.2090 },
             roomAreaM2: 20,
             tariff: 10,
@@ -142,51 +268,82 @@ export function DeviceProvider({ children }) {
           severity: opt.severity,
           title: opt.title,
           message: opt.message,
-          saving_inr: opt.saving?.inr ? parseFloat(opt.saving.inr) : null,
+          saving_inr: opt.saving?.inr
+            ? parseFloat(opt.saving.inr)
+            : null,
           acknowledged: false,
           created_at: opt.timestamp ?? new Date().toISOString(),
         }));
-        setCached(`alerts-${deviceId}`, { alerts: demoAlerts });
+        setCached(`alerts-${deviceId}`, {
+          alerts: demoAlerts
+        });
         return;
       }
-
-      const res = await fetch(`/api/alerts?deviceId=${deviceId}`);
+      const res = await fetch(
+        `/api/alerts?deviceId=${deviceId}`
+      );
       if (!res.ok) return;
       const { alerts } = await res.json();
-      setCached(`alerts-${deviceId}`, { alerts: alerts ?? [] });
-    } catch (_) {}
+      setCached(`alerts-${deviceId}`, {
+        alerts: alerts ?? []
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   useEffect(() => {
-    if (loadingDevices || !selectedId) return;
-    const timer = setTimeout(async () => {
-      await preloadDevice(selectedId);
-      if (!isDemo) {
-        const others = devices.filter(d => d.device_id !== selectedId);
-        for (const device of others) {
-          await preloadDevice(device.device_id);
-          await preloadAlerts(device.device_id);
-        }
-      }
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [loadingDevices, selectedId]);
+  if (loadingDevices || !selectedId) return;
+  if (refreshKey === 0) return;
 
-  const selectedDevice = devices.find(d => d.device_id === selectedId) ?? null;
+  const timer = setTimeout(async () => {
+      await preloadSubscription();
+
+      await preloadDevice(selectedId);
+      await preloadAlerts(selectedId);
+
+      const others = devices.filter(
+        d => d.device_id !== selectedId
+      );
+
+      for (const device of others) {
+        await preloadDevice(device.device_id);
+        await preloadAlerts(device.device_id);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [
+    loadingDevices,
+    selectedId,
+    refreshKey
+  ]);
+
+  const selectedDevice =
+    devices.find(d => d.device_id === selectedId) ?? null;
 
   return (
-    <DeviceContext.Provider value={{
-      devices, setDevices,
-      selectedId, setSelectedId,
-      selectedDevice, loadingDevices,
-      refreshKey, triggerRefresh,
-      getCached, setCached,
-      getSubCache, setSubCacheData,
-      preloadDevice,
-      isDemo,
-      demoReadings,
-      weatherError,
-    }}>
+    <DeviceContext.Provider
+      value={{
+        devices,
+        setDevices,
+        selectedId,
+        setSelectedId,
+        selectedDevice,
+        loadingDevices,
+        refreshKey,
+        triggerRefresh,
+        getCached,
+        setCached,
+        getSubCache,
+        setSubCacheData,
+        preloadDevice,
+        isDemo,
+        demoReadings,
+        demoReadings2,
+        weatherError
+      }}
+    >
       {children}
     </DeviceContext.Provider>
   );

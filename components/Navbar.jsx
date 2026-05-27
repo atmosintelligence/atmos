@@ -42,11 +42,23 @@ export default function Navbar() {
       setProfile(data);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) setProfile(null);
-    });
+    setIsDemoMode(
+      localStorage.getItem('atmos:demoMode') === 'true'
+    );
 
-    setIsDemoMode(localStorage.getItem('atmos:demoMode') === 'true');
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          if (session) {
+            localStorage.removeItem('atmos:demoMode');
+            setIsDemoMode(false);
+          }
+
+          if (!session) {
+            setProfile(null);
+          }
+        }
+      );
 
     return () => {
       window.removeEventListener('scroll', onScroll);

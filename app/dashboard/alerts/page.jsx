@@ -77,7 +77,6 @@ export default function AlertsPage() {
   const [alerts, setAlerts]         = useState([]);
   const [prefs, setPrefs]           = useState(null);
   const [status, setStatus]         = useState('loading');
-  const [syncing, setSyncing]       = useState(false);
   const [severityFilter, setSeverityFilter] = useState('all');
   const [groupFilter, setGroupFilter]       = useState('all');
   const [showAcknowledged, setShowAcknowledged] = useState(false);
@@ -131,25 +130,6 @@ export default function AlertsPage() {
     setAlerts(data ?? []);
     setCached(`alerts-${selectedId}`, { alerts: data ?? [] });
     setStatus('ready');
-  }
-
-  async function loadPrefs() {
-    const res = await fetch('/api/alerts/preferences');
-    if (!res.ok) return;
-    const { preferences } = await res.json();
-    setPrefs(preferences);
-    setEditPrefs(preferences);
-  }
-
-  async function handleSync() {
-    setSyncing(true);
-    await fetch('/api/alerts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: selectedId, roomAreaM2: 20 }),
-    });
-    await load();
-    setSyncing(false);
   }
 
   async function handleAcknowledge(ids) {
@@ -227,22 +207,6 @@ export default function AlertsPage() {
           <div>
             <div className="dash-greeting-name">Alerts</div>
             <div className="dash-greeting-sub">A persistent log of every rule that fired for this device — past and present.</div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, marginTop: '0.25rem' }}>
-            <button
-              onClick={handleSync}
-              disabled={syncing}
-              className="btn bg-brand text-brand-on-bg"
-              style={{ fontSize: '0.78rem', fontWeight: 600, padding: '0.4rem 0.875rem', borderRadius: '0.5rem' }}
-            >
-              {syncing ? 'Syncing...' : 'Sync now'}
-            </button>
-            <button
-              onClick={() => setShowPrefs(p => !p)}
-              style={{ fontSize: '0.78rem', fontWeight: 600, padding: '0.4rem 0.875rem', borderRadius: '0.5rem', background: 'rgba(128,128,128,0.08)', color: '#737373', border: '1px solid rgba(128,128,128,0.15)', cursor: 'pointer' }}
-            >
-              {showPrefs ? 'Hide settings' : 'Alert settings'}
-            </button>
           </div>
         </div>
       </div>
@@ -455,7 +419,7 @@ export default function AlertsPage() {
         {filtered.length === 0 ? (
           <div className="dash-empty">
             {alerts.length === 0
-              ? 'No alerts yet. Click "Sync now" to check for new alerts from your latest readings.'
+              ? 'No alerts yet. Refresh to check for new alerts from your latest readings.'
               : 'No alerts match the current filters.'}
           </div>
         ) : (

@@ -51,9 +51,11 @@ export default function AnalysisPage() {
 
   useEffect(() => {
     if (!selectedId) return;
+    if (isDemo && !demoReadings?.length) return;
     let cancelled = false;
+
     const cacheKey = `overview-${selectedId}`;
-    const cached   = getCached(cacheKey);
+    const cached = getCached(cacheKey);
 
     if (cached?.optimizations) {
       setOptimizations(cached.optimizations);
@@ -62,13 +64,13 @@ export default function AnalysisPage() {
     }
 
     async function load() {
-      const { fetchEngine } = await import('@/lib/engineFetch');
-      const res = await fetchEngine({
-        isDemo, demoReadings, deviceId: selectedId,
-        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
-      });
-      if (cancelled) return;
-      if (!res.ok) { setStatus('ready'); return; }
+      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
+      const body = isDemo
+        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
+        : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId };
+
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (cancelled || !res.ok) return;
       const { optimizations: opts } = await res.json();
       if (cancelled) return;
       setOptimizations(opts ?? []);
@@ -77,7 +79,7 @@ export default function AnalysisPage() {
 
     load();
     return () => { cancelled = true; };
-  }, [selectedId, refreshKey]);
+  }, [selectedId, refreshKey, isDemo, demoReadings]);
 
   function countForTab(tab) {
     if (!tab.group) return null;

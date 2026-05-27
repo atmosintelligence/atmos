@@ -1,11 +1,21 @@
 import { createClient } from '@/utils/supabase/server';
-import { runEngine }    from '@/lib/engine/index.js';
+import { runEngine } from '@/lib/engine/index.js';
 import { fetchUserReadings } from '@/lib/sheets';
+import { resolveApiUser } from '@/lib/apiAuth';
 
 export async function GET(request) {
+  const resolved = await resolveApiUser(request);
+
+  if (!resolved) {
+    return Response.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  const { user } = resolved;
+
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const deviceId = searchParams.get('deviceId');
@@ -16,29 +26,37 @@ export async function GET(request) {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
-  if (deviceId) query = query.eq('device_id', deviceId);
+  if (deviceId) {
+    query = query.eq('device_id', deviceId);
+  }
 
   const { data, error } = await query;
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+
+  if (error) {
+    return Response.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+
   return Response.json({ alerts: data });
 }
 
 export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  const resolved = await resolveApiUser(request);
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('username, latitude, longitude, tariff_rate')
-    .eq('id', user.id)
-    .single();
+  if (!resolved) {
+    return Response.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
 
-  const { data: prefs } = await supabase
-    .from('alert_preferences')
-    .select('*')
-    .eq('user_id', user.id)
-    .single();
+  const {
+    user,
+    profile,
+    supabase
+  } = resolved;
 
   const body     = await request.json();
   const deviceId = body.deviceId;
@@ -47,16 +65,29 @@ export async function POST(request) {
   const filtered = deviceId ? raw.filter(r => r.device_id === deviceId) : raw;
   if (!filtered.length) return Response.json({ synced: 0 });
 
+  const { data: prefs } = await supabase
+    .from('alert_preferences')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+
   const result = await runEngine({
     readings:   filtered,
-    location:   { lat: profile.latitude, lon: profile.longitude },
+    location:   {
+      lat: profile.latitude,
+      lon: profile.longitude
+    },
     roomAreaM2: body.roomAreaM2 ?? 20,
     tariff:     profile.tariff_rate ?? 10,
     thresholdOverrides: {
-      consecutiveEmpty:  prefs?.min_consecutive_empty ?? 3,
-      phantomLoadHours:  prefs?.phantom_load_hours    ?? 4,
-      spikeZScore:       prefs?.spike_zscore          ?? 2.5,
-      weekOverWeekPct:   prefs?.week_over_week_pct    ?? 8,
+      consecutiveEmpty:
+        prefs?.min_consecutive_empty ?? 3,
+      phantomLoadHours:
+        prefs?.phantom_load_hours ?? 4,
+      spikeZScore:
+        prefs?.spike_zscore ?? 2.5,
+      weekOverWeekPct:
+        prefs?.week_over_week_pct ?? 8,
     },
   });
 
