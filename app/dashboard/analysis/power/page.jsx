@@ -53,7 +53,7 @@ export default function PowerPage() {
   const totalP2Cost = p2Events.reduce((a, e) => a + parseFloat(e.cost), 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Power Usage</div>
         <div className="dash-greeting-sub">Energy consumption patterns, anomaly detection, phantom load analysis, and voltage stability.</div>

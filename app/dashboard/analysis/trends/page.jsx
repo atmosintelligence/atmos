@@ -52,7 +52,7 @@ export default function TrendsPage() {
   const { trend1, trend2, avgPowerThisWeek, avgPowerLastWeek, dailyBreakdown, optimizations } = data;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Trends & Predictions</div>
         <div className="dash-greeting-sub">Week-over-week consumption trends, predictive degradation signals, and daily energy breakdowns.</div>
@@ -82,7 +82,7 @@ export default function TrendsPage() {
       </div>
 
       <div>
-        <div className="dash-section-title">Daily breakdown — last 7 days</div>
+        <div className="dash-section-title">Daily breakdown: last 7 days</div>
         <TableWrapper headers={['Date', 'Avg power', 'Energy', 'Readings']}>
           {(() => {
             const powerStats   = getColStats(dailyBreakdown, 'avgPower');

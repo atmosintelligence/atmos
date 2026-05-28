@@ -53,7 +53,7 @@ export default function DevicesPage() {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Devices</div>
         <div className="dash-greeting-sub">All hardware devices registered to your account.</div>

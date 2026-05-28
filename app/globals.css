@@ -177,3 +177,257 @@ nav[data-force-border='true'] {
   border-color: rgba(255,255,255,0.10) !important;
   background-color: rgba(15,15,15,0.8) !important;
 }
+
+@keyframes homepageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.homepage-fade-in {
+  opacity: 0;
+  animation: homepageFadeIn 0.45s ease-out forwards;
+}
+
+.homepage-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.45s ease-out,
+    transform 0.45s ease-out;
+  will-change: opacity, transform;
+}
+
+.homepage-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes wanderingGlow {
+  0% {
+    transform: translate(0%, 0%) scale(1);
+  }
+
+  20% {
+    transform: translate(12%, -8%) scale(1.08);
+  }
+
+  40% {
+    transform: translate(-10%, 10%) scale(0.96);
+  }
+
+  60% {
+    transform: translate(8%, 16%) scale(1.12);
+  }
+
+  80% {
+    transform: translate(-14%, -6%) scale(1.02);
+  }
+
+  100% {
+    transform: translate(0%, 0%) scale(1);
+  }
+}
+
+.wandering-glow {
+  position: absolute;
+  width: 52rem;
+  height: 24rem;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  filter: blur(140px);
+  opacity: 0.18;
+  left: 50%;
+  bottom: -10rem;
+  transform: translateX(-50%);
+  will-change: transform;
+  animation: wanderGlowBottom 30s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes wanderGlowBottom {
+  0% {
+    transform:
+      translateX(-50%)
+      translate3d(-320px, 0px, 0)
+      scale(1);
+  }
+  20% {
+    transform:
+      translateX(-50%)
+      translate3d(-120px, -20px, 0)
+      scale(1.06);
+  }
+  40% {
+    transform:
+      translateX(-50%)
+      translate3d(180px, 10px, 0)
+      scale(0.96);
+  }
+  60% {
+    transform:
+      translateX(-50%)
+      translate3d(320px, -16px, 0)
+      scale(1.08);
+  }
+  80% {
+    transform:
+      translateX(-50%)
+      translate3d(120px, 6px, 0)
+      scale(1);
+  }
+  100% {
+    transform:
+      translateX(-50%)
+      translate3d(-260px, -10px, 0)
+      scale(1.04);
+  }
+}
+
+.carbon-molecule {
+  position: absolute;
+  bottom: -40px;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(8px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+
+  animation-name: carbonFloat;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+
+  pointer-events: auto;
+  overflow: visible;
+  z-index: 20;
+}
+
+@keyframes carbonFloat {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.28;
+  }
+
+  50% {
+    transform: translate3d(20px, -55vh, 0);
+    opacity: 0.38;
+  }
+  100% {
+    transform: translate3d(40px, -125vh, 0);
+    opacity: 0;
+  }
+}
+
+.carbon-bubble {
+  position: absolute;
+  bottom: -120px;
+
+  width: 6rem;
+  height: 6rem;
+
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.08);
+
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 2rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.14);
+
+  cursor: pointer;
+  pointer-events: auto;
+
+  animation: carbonBubbleFloat 18s linear infinite;
+  will-change: transform, opacity;
+
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.carbon-bubble:hover {
+  border-color: rgba(255,255,255,0.16);
+  color: rgba(255,255,255,0.22);
+}
+
+.carbon-bubble:active {
+  transform: scale(0.92);
+}
+
+@keyframes largeCarbonFloat {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      translate3d(
+        var(--drift),
+        -140vh,
+        0
+      );
+
+    opacity: 0;
+  }
+}
+
+.carbon-tooltip {
+  position: absolute;
+  top: -42px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: rgba(0,0,0,0.82);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+  font-size: 10px;
+  color: rgba(255,255,255,0.75);
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.group:hover .carbon-tooltip {
+  opacity: 1;
+}
+
+button,
+.btn {
+  user-select: none;
+}

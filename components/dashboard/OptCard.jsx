@@ -20,7 +20,7 @@ export default function OptCard({ opt, lastContacted }) {
           {opt.group}
         </span>
         <span className="dash-opt-rule">{opt.title}</span>
-        <span className="dash-opt-time">{lastContacted ?? '—'}</span>
+        <span className="dash-opt-time">{lastContacted ?? 'Never'}</span>
       </div>
       <p className="dash-opt-message">{opt.message}</p>
       {opt.saving && (

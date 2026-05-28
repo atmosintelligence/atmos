@@ -217,7 +217,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', maxWidth: '560px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '560px' }}>
       {isDemo && (
         <div style={{ fontSize: '0.78rem', color: '#737373', padding: '0.75rem 1rem', background: 'rgba(74,222,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(74,222,128,0.15)', marginBottom: '0.5rem' }}>
           Most settings are read-only in demo mode. <Link href="/signup" className="link">Create an account</Link> to configure your preferences!

@@ -13,10 +13,10 @@ import DemoGate from './DemoGate';
 
 const pages = [
   { name: 'Overview',     href: '/dashboard/overview',     icon: 'overview'     },
-  { name: 'History',      href: '/dashboard/history',      icon: 'history'      },
-  { name: 'Devices',      href: '/dashboard/devices',      icon: 'devices'      },
   { name: 'Alerts',       href: '/dashboard/alerts',       icon: 'alerts'       },
   { name: 'Analysis',     href: '/dashboard/analysis',     icon: 'analysis'     },
+  { name: 'History',      href: '/dashboard/history',      icon: 'history'      },
+  { name: 'Devices',      href: '/dashboard/devices',      icon: 'devices'      },
   { name: 'API',          href: '/dashboard/api',          icon: 'api'          },
   { name: 'Subscription', href: '/dashboard/subscription', icon: 'subscription' },
   { name: 'Settings',     href: '/dashboard/settings',     icon: 'settings'     },

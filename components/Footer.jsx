@@ -10,6 +10,8 @@ export default function Footer() {
               ATMOS<span className="text-brand">.</span>
             </span>
             <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+              <b>Sense. Optimize. Act.</b>
+              <br />
               Atmos Intelligence delivers real-time environmental monitoring and AI-driven energy optimisation across Indian buildings, from single rooms to enterprise campuses.
             </p>
           </div>

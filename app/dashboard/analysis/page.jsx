@@ -37,7 +37,7 @@ const SUB_TABS = [
   {
     name:        'Environmental Savings',
     href:        '/dashboard/analysis/environmental',
-    description: 'CO₂ prevented, money saved, and trees equivalent — benchmarked against BEE standards.',
+    description: 'CO₂ prevented, money saved, and trees equivalent as benchmarked against BEE standards.',
     group:       null,
     color:       '#4ADE80',
   },
@@ -88,7 +88,7 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Analysis</div>
         <div className="dash-greeting-sub">

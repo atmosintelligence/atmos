@@ -133,7 +133,7 @@ export default function SubscriptionPage() {
   const isUrgent     = days !== null && days <= 5 && days >= 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', maxWidth: '680px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '680px' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Subscription</div>
         <div className="dash-greeting-sub">Your current plan, billing details, and upgrade options.</div>

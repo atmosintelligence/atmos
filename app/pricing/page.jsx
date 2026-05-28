@@ -161,8 +161,8 @@ function Calculator() {
               {recLabel[recommendation]}
             </div>
             <div style={{ fontSize: '0.72rem', color: '#737373', lineHeight: 1.6 }}>
-              {recommendation === 'spark'      && 'Your setup fits within the free Spark plan — perfect for getting started.'}
-              {recommendation === 'basic'      && 'Basic gives you unlimited units and recommendations — the right fit for your scale.'}
+              {recommendation === 'spark'      && 'Your setup fits within the free Spark plan. That\'s perfect for getting started.'}
+              {recommendation === 'basic'      && 'Basic gives you unlimited units and recommendations, which may be the right fit for your scale.'}
               {recommendation === 'premium'    && 'At this scale, real-time alerts and predictive maintenance will pay for themselves quickly.'}
               {recommendation === 'enterprise' && 'A deployment of this size warrants a dedicated account manager and custom pricing.'}
             </div>
@@ -439,7 +439,7 @@ export default function PricingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="font-heading text-3xl font-semibold tracking-tight text-center mb-3">Compare plans</h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-md mx-auto">
-            Every feature, every plan — side by side.
+            Explore and compare every feature and plan, side by side.
           </p>
 
           <div style={{ overflowX: 'auto' }}>
@@ -506,7 +506,7 @@ export default function PricingPage() {
           </h2>
 
           <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-2xl mx-auto">
-            Designed for Indian infrastructure, compliance requirements, and energy economics — with enterprise-grade margins, scalable deployment, and long-term sustainability incentives built in.
+            Designed for Indian infrastructure, compliance requirements, and energy economics, with enterprise-grade margins, scalable deployment, and long-term sustainability incentives built in.
           </p>
 
           <div className="grid md:grid-cols-3 gap-5">
@@ -538,7 +538,7 @@ export default function PricingPage() {
               {
                 title: 'Multi-layer revenue model',
                 description:
-                  'Beyond subscriptions, Atmos monetises implementation, analytics, sustainability incentives, and ecosystem partnerships — diversifying revenue streams.',
+                  'Beyond subscriptions, Atmos monetises implementation, analytics, sustainability incentives, and ecosystem partnerships, ultimately diversifying revenue streams.',
               },
 
               {

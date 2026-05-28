@@ -59,7 +59,7 @@ export default function LightingPage() {
   const totalL2Save  = l2Events.reduce((a, e) => a + parseFloat(e.saving), 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Lighting</div>
         <div className="dash-greeting-sub">Analysis of lighting conditions, occupancy patterns, and energy waste from artificial lighting.</div>

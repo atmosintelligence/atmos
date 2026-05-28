@@ -126,7 +126,7 @@ export default function OverviewPage() {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
@@ -139,9 +139,29 @@ export default function OverviewPage() {
             </div>
           </div>
 
-          <div className="dash-stat" style={{ flexShrink: 0, minWidth: '110px', textAlign: 'center', alignItems: 'center', marginLeft: 'auto' }}>
-            <div className="dash-stat-value">{devices.length}</div>
-            <div className="dash-stat-label">Devices linked</div>
+          <div className="dash-stat" style={{ flexShrink: 0, minWidth: '140px', textAlign: 'center' }}>
+            <div
+              className="dash-stat-value"
+              style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                fontWeight: 600,
+                fontSize: '1rem',
+              }}
+            >
+              <span style={{ color: '#fff', fontWeight: 600 }}>
+                {devices.length}
+              </span>
+
+              <span
+                className="text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+                style={{ fontWeight: 600 }}
+              >
+                devices linked
+              </span>
+            </div>
           </div>
         </div>
       </div>

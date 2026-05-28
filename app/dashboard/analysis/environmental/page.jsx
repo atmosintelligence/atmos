@@ -50,11 +50,11 @@ export default function EnvironmentalPage() {
   const isSaving  = parseFloat(env.savedKwh) > 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Environmental Savings</div>
         <div className="dash-greeting-sub">
-          CO₂ emissions prevented, money saved, and carbon equivalence — calculated against the Bureau of Energy Efficiency benchmark of {BEE_BENCHMARK_KWH_M2} kWh/m²/year.
+          CO₂ emissions prevented, money saved, and carbon equivalence, as calculated against the Bureau of Energy Efficiency benchmark of {BEE_BENCHMARK_KWH_M2} kWh/m²/year.
         </div>
       </div>
 

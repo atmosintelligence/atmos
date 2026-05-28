@@ -118,7 +118,7 @@ export default function ApiPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">API</div>
         <div className="dash-greeting-sub">
@@ -129,7 +129,7 @@ export default function ApiPage() {
       <div className="dash-device-card">
         <div className="dash-section-title" style={{ marginBottom: '0.75rem' }}>Your API key</div>
         <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, marginBottom: '1rem' }}>
-          All API requests must include your key in the <code style={{ fontSize: '0.75rem', background: 'rgba(128,128,128,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem' }}>Authorization</code> header. Keep this key secret — it provides full read access to your device data.
+          All API requests must include your key in the <code style={{ fontSize: '0.75rem', background: 'rgba(128,128,128,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem' }}>Authorization</code> header. You may integrate this API whereever you deem fit. Keep this key secret!
         </p>
 
         {apiKey ? (
@@ -296,7 +296,7 @@ export default function ApiPage() {
       </div>
 
       <div>
-        <div className="dash-section-title">Example — fetch optimisations with curl</div>
+        <div className="dash-section-title">Example: Fetch optimisations with CURL</div>
         <CodeBlock
           label="curl"
           code={`curl -X POST ${BASE_URL}/api/engine \\
@@ -306,7 +306,7 @@ export default function ApiPage() {
       </div>
 
       <div>
-        <div className="dash-section-title">Example — fetch optimisations with JavaScript</div>
+        <div className="dash-section-title">Example: Fetch optimisations with JavaScript</div>
         <CodeBlock
           label="JavaScript (fetch)"
           code={`const res = await fetch('${BASE_URL}/api/engine', {

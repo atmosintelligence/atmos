@@ -67,7 +67,7 @@ export default function TemperaturePage() {
   const totalT2Save = t2Events.reduce((a, e) => a + parseFloat(e.estimatedSaving), 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Temperature</div>
         <div className="dash-greeting-sub">Indoor temperature and humidity trends, HVAC efficiency, and ventilation opportunities.</div>
@@ -75,7 +75,7 @@ export default function TemperaturePage() {
 
       {weatherError && weatherError !== 'No location set' && (
         <div style={{ fontSize: '0.75rem', color: '#ef4444', padding: '0.5rem 0.75rem', background: 'rgba(239,68,68,0.06)', borderRadius: '0.5rem', border: '1px solid rgba(239,68,68,0.15)' }}>
-          Weather data is temporarily unavailable — outdoor ventilation recommendations may be missing.
+          Oh no, weather data is currently unavailable! Outdoor ventilation recommendations may be missing.
         </div>
       )}
 

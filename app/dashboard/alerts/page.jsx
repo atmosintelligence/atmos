@@ -200,13 +200,13 @@ export default function AlertsPage() {
   if (status === 'error')   return <div className="dash-empty" style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}>Failed to load alerts.</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
 
       <div className="dash-greeting">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
           <div>
             <div className="dash-greeting-name">Alerts</div>
-            <div className="dash-greeting-sub">A persistent log of every rule that fired for this device — past and present.</div>
+            <div className="dash-greeting-sub">A persistent log of every rule that fired for this device, from the past and in the present. You can acknowledge notifications here.</div>
           </div>
         </div>
       </div>
@@ -227,7 +227,7 @@ export default function AlertsPage() {
 
       {last30.length > 0 && (
         <div>
-          <div className="dash-section-title" style={{ marginBottom: '0.625rem' }}>Alert frequency — last 14 days</div>
+          <div className="dash-section-title" style={{ marginBottom: '0.625rem' }}>Alert frequency: last 14 days</div>
           <div className="card" style={{ padding: '1rem 1.25rem' }}>
             <BarChart alerts={last30} />
             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
@@ -259,7 +259,7 @@ export default function AlertsPage() {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '0.72rem', color: '#737373', marginBottom: '0.375rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Phantom load — min empty duration</div>
+              <div style={{ fontSize: '0.72rem', color: '#737373', marginBottom: '0.375rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Phantom load: min empty duration</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <input
                   type="number" min="1" max="12"

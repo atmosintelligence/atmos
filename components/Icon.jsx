@@ -173,6 +173,41 @@ const icons = {
       <path d="M3.82 19.34C4.85 17.5 7 14 9 12"/>
     </svg>
   ),
+  home: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>
+    </svg>
+  ),
+  office: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="3" width="16" height="18" rx="2"/>
+      <path d="M9 9h6M9 13h6M9 17h6"/>
+    </svg>
+  ),
+  school: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10L12 5 2 10l10 5 10-5z"/>
+      <path d="M6 12v5c3 2 9 2 12 0v-5"/>
+    </svg>
+  ),
+  hospital: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M12 8v8M8 12h8"/>
+    </svg>
+  ),
+  factory: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21V10l6 4V10l6 4V10l6 4v7z"/>
+      <path d="M3 10l6-4v4M9 10l6-4v4M15 10l6-4v4"/>
+    </svg>
+  ),
+  building: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2"/>
+      <path d="M9 6h2M13 6h2M9 10h2M13 10h2M9 14h2M13 14h2"/>
+    </svg>
+  ),
 };
 
 export default function Icon({ name, className = '' }) {
