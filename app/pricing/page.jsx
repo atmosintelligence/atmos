@@ -609,6 +609,9 @@ export default function PricingPage() {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/signup" className="btn bg-brand text-brand-on-bg px-8 py-2.5 rounded-full font-medium text-sm inline-flex">
+              Enter Demo Mode
+            </Link>
+            <Link href="/signup" className="btn bg-brand text-brand-on-bg px-8 py-2.5 rounded-full font-medium text-sm inline-flex">
               Start for free
             </Link>
           </div>

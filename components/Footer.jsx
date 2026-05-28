@@ -10,7 +10,7 @@ export default function Footer() {
               ATMOS<span className="text-brand">.</span>
             </span>
             <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              Also known as Atmos Intel. Providing environmental intelligence for smarter spaces in India. An interesting business project! Don't you agree?
+              Atmos Intelligence delivers real-time environmental monitoring and AI-driven energy optimisation across Indian buildings, from single rooms to enterprise campuses.
             </p>
           </div>
 
@@ -33,7 +33,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-black/8 dark:border-white/8 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-neutral-400">
-          <span>© 2026 Atmos Intelligence. This project is under the MIT License.</span>
+          <span>© 2026 Atmos Intelligence.</span>
           <span>Made with 💖 in India</span>
         </div>
       </div>

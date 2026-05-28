@@ -94,7 +94,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p className="mt-2.5 text-xs text-neutral-400">Average across all connected devices over the past year</p>
+          <p className="mt-2.5 text-xs text-neutral-400">Average data from the Demo Mode</p>
         </div>
 
         <div className="mt-auto pt-4">
@@ -271,7 +271,7 @@ export default function HomePage() {
               { value: '24 kg', label: 'CO₂ per tree per year', desc: 'One mature urban tree absorbs approximately 24 kg of CO₂ annually (FAO).' },
               { value: '60%', label: 'Carbon credit proceeds to you', desc: 'On Premium, Atmos automates carbon credit sales and returns 60% of revenue to your account.' },
             ].map((s, i) => (
-              <div key={i} className="card" style={{ padding: '2rem', borderRadius: 0, border: 'none' }}>
+              <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '2rem' }}>
                 <div className="font-heading font-semibold text-brand" style={{ fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '0.5rem' }}>{s.value}</div>
                 <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem' }}>{s.label}</div>
                 <p className="text-neutral-500 dark:text-neutral-400" style={{ fontSize: '0.78rem', lineHeight: 1.7 }}>{s.desc}</p>
@@ -372,7 +372,7 @@ export default function HomePage() {
                 plan: 'Enterprise',
               },
             ].map((u, i) => (
-              <div key={i} className="card" style={{ padding: '1.25rem 1.75rem', display: 'grid', gridTemplateColumns: '2fr 3fr 1fr', gap: '1.5rem', alignItems: 'center', borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}>
+              <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '1.25rem 1.75rem', display: 'grid', gridTemplateColumns: '2fr 3fr 1fr', gap: '1.5rem', alignItems: 'center' }}>
                 <div className="font-heading font-semibold" style={{ fontSize: '0.9rem' }}>{u.type}</div>
                 <p className="text-neutral-500 dark:text-neutral-400" style={{ fontSize: '0.8rem', lineHeight: 1.65 }}>{u.description}</p>
                 <div style={{ textAlign: 'right', fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-primary-dark)' }} className="dark:text-[var(--color-primary)] whitespace-nowrap">{u.plan}</div>
@@ -450,7 +450,7 @@ export default function HomePage() {
               },
               {
                 q: 'Can I use Atmos without the hardware?',
-                a: 'No. The dashboard and analytics engine require live sensor data. There is no simulation or demo mode — the system is designed around real environmental readings.',
+                a: "Atmos is built around real sensor data, which is a live device is what unlocks the full system. Without the hardware, you can't make use of the dashboard. You can try the Demo Mode while you don't have the hardware, though.",
               },
               {
                 q: 'Is my energy data shared with anyone?',
@@ -474,8 +474,11 @@ export default function HomePage() {
         <div className="max-w-2xl mx-auto">
           <h2 className="font-heading text-3xl font-semibold tracking-tight mb-3">Optimise your space!</h2>
           <p className="text-neutral-500 dark:text-neutral-400 mb-7">India's premier energy optimisation tech, built for homes and offices alike. Get the hardware and hear what the walls of your room have to say.</p>
+          <Link href="/dashboard" className="btn inline-flex bg-brand text-brand-on-bg px-8 py-2.5 rounded-full font-medium text-sm">
+            Enter Demo Mode
+          </Link>
           <Link href="/signup" className="btn inline-flex bg-brand text-brand-on-bg px-8 py-2.5 rounded-full font-medium text-sm">
-            Debug your space
+            Sign up
           </Link>
         </div>
       </section>

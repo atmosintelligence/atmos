@@ -1,58 +1,68 @@
-import { fetchUserReadings } from '@/lib/sheets';
+import fs from 'fs/promises';
+import path from 'path';
 
 const CACHE_DURATION = 5 * 60 * 1000;
+
 let cached = null;
 let lastFetched = 0;
 
 export async function GET() {
   const now = Date.now();
+
   if (cached && now - lastFetched < CACHE_DURATION) {
     return Response.json(cached);
   }
 
   try {
-    const devRes  = await fetch(`${process.env.SHEETS_API_URL}?username=all&sheet=Devices`, { redirect: 'follow' });
-    const devText = await devRes.text();
-    let allDevices = [];
-    try { allDevices = JSON.parse(devText).data ?? []; } catch (err) {
-      console.error(err);
-    }
+    const demoPath1 = path.join(process.cwd(), 'public', 'demo.json');
+    const demoPath2 = path.join(process.cwd(), 'public', 'demo2.json');
 
-    const usernames = [...new Set(allDevices.map(d => d.owner_username).filter(Boolean))];
+    const [file1, file2] = await Promise.all([
+      fs.readFile(demoPath1, 'utf-8'),
+      fs.readFile(demoPath2, 'utf-8'),
+    ]);
 
-    let allReadings = [];
-    for (const username of usernames) {
-      try {
-        const readings = await fetchUserReadings(username);
-        allReadings = allReadings.concat(readings);
-      } catch (err) {
-        console.error(err);
-      }
-    }
+    const data1 = JSON.parse(file1);
+    const data2 = JSON.parse(file2);
 
-    const oneYearAgo = Date.now() - 365 * 24 * 3600 * 1000;
-    const recent = allReadings.filter(r => new Date(r.timestamp).getTime() > oneYearAgo);
+    const readings = [...data1, ...data2];
 
-    if (!recent.length) {
-      return Response.json({ temperature: null, humidity: null, power: null, light: null });
+    if (!readings.length) {
+      return Response.json({
+        temperature: null,
+        humidity: null,
+        power: null,
+        light: null,
+      });
     }
 
     function avg(key) {
-      const vals = recent.map(r => parseFloat(r[key])).filter(v => !isNaN(v));
-      return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : null;
+      const vals = readings
+        .map(r => parseFloat(r[key]))
+        .filter(v => !isNaN(v));
+
+      if (!vals.length) return null;
+
+      return Number(
+        vals.reduce((a, b) => a + b, 0) / vals.length
+      ).toFixed(1);
     }
 
     const data = {
       temperature: avg('temperature'),
-      humidity:    avg('humidity'),
-      power:       avg('power'),
-      light:       avg('light'),
+      humidity: avg('humidity'),
+      power: avg('power'),
+      light: avg('light'),
     };
 
     cached = data;
     lastFetched = now;
+
     return Response.json(data);
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    return Response.json(
+      { error: err.message },
+      { status: 500 }
+    );
   }
 }

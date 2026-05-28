@@ -199,7 +199,7 @@ function Sidebar({ refreshing }) {
         {isDemo ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 600, paddingLeft: '0.75rem' }}>
-              Enterprise Demo
+              Premium Demo
             </div>
             <Link href="/signup" className="btn bg-brand text-brand-on-bg text-center text-xs font-semibold py-2 rounded-xl select-none">
               Create free account

@@ -8,10 +8,15 @@ import NavbarBorderOverride from '@/components/NavbarBorderOverride';
 import { createClient } from '@/utils/supabase/client';
 
 const firstNames = [
-  'Aryan', 'Priya', 'Rohan', 'Ananya', 'Vikram',
-  'Neha', 'Aditya', 'Kavya', 'Rahul', 'Sneha',
-  'Karan', 'Pooja', 'Amit', 'Divya', 'Nikhil',
-  'Riya', 'Siddharth', 'Meera', 'Arjun', 'Tanya',
+  'Aryan', 'Rohan', 'Vikram', 'Aditya', 'Rahul',
+  'Karan', 'Amit', 'Nikhil', 'Siddharth', 'Arjun',
+  'Aarav', 'Vivaan', 'Krishna', 'Yash', 'Akash',
+  'Raj', 'Varun', 'Harsh', 'Manav', 'Dhruv',
+
+  'Priya', 'Ananya', 'Neha', 'Kavya', 'Sneha',
+  'Pooja', 'Divya', 'Riya', 'Meera', 'Tanya',
+  'Aanya', 'Diya', 'Ishita', 'Aditi', 'Shruti',
+  'Simran', 'Naina', 'Anjali', 'Muskan', 'Saanvi',
 ];
 
 const lastNames = [
@@ -19,6 +24,10 @@ const lastNames = [
   'Singh', 'Joshi', 'Kumar', 'Mishra', 'Nair',
   'Rao', 'Iyer', 'Bose', 'Das', 'Pillai',
   'Reddy', 'Malhotra', 'Chopra', 'Saxena', 'Trivedi',
+  'Agarwal', 'Bhat', 'Chatterjee', 'Desai', 'Dubey',
+  'Ghosh', 'Jain', 'Kapoor', 'Khanna', 'Kulkarni',
+  'Mukherjee', 'Pandey', 'Sethi', 'Sinha', 'Thakur',
+  'Yadav', 'Bansal', 'Bhattacharya', 'Tiwari', 'Menon',
 ];
 
 const f = firstNames[Math.floor(Math.random() * firstNames.length)];
