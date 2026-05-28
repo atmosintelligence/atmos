@@ -89,7 +89,7 @@ export default function SubscriptionPage() {
   }, [isDemo]);
 
   async function handleUpgrade(plan) {
-    const cleanPlan = plan.replace('down-', '');
+    const cleanPlan = plan;
     const confirmKey = confirmPlan;
     if (confirmKey !== plan) { setConfirmPlan(plan); return; }
     setUpgrading(true);
@@ -214,7 +214,7 @@ export default function SubscriptionPage() {
                       <>
                         <button
                           onClick={() => handleUpgrade(planKey)}
-                          disabled={upgrading}
+                          disabled={isDemo || upgrading}
                           className="btn bg-brand text-brand-on-bg"
                           style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.375rem 0.75rem', borderRadius: '0.5rem' }}
                         >
@@ -230,10 +230,18 @@ export default function SubscriptionPage() {
                     ) : (
                       <button
                         onClick={() => handleUpgrade(planKey)}
+                        disabled={isDemo || upgrading}
                         className="btn bg-brand text-brand-on-bg"
-                        style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.375rem 0.75rem', borderRadius: '0.5rem' }}
+                        style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          padding: '0.375rem 0.75rem',
+                          borderRadius: '0.5rem',
+                          opacity: isDemo ? 0.5 : 1,
+                          cursor: isDemo ? 'not-allowed' : 'pointer',
+                        }}
                       >
-                        Upgrade
+                        {isDemo ? "Can't upgrade in Demo" : 'Upgrade'}
                       </button>
                     )}
                   </div>
@@ -246,54 +254,6 @@ export default function SubscriptionPage() {
               Upgrading simulates a plan change. Real payment integration can be wired in when ready.
             </p>
           )}
-        </div>
-      )}
-
-      {currentIndex > 0 && (
-        <div>
-          <div className="dash-section-title">Downgrade</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            {UPGRADE_ORDER.slice(0, currentIndex).reverse().map(planKey => {
-              const plan = PLANS[planKey];
-              const isConfirming = confirmPlan === `down-${planKey}`;
-              return (
-                <div key={planKey} className="dash-device-card" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '1rem 1.25rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: plan.color }}>{plan.label}</div>
-                    <div style={{ fontSize: '0.72rem', color: '#737373', marginTop: '0.2rem' }}>{plan.description}</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                    <span className="font-heading" style={{ fontSize: '0.9rem', fontWeight: 700 }}>{plan.price}</span>
-                    {planKey !== 'spark' && <span style={{ fontSize: '0.65rem', color: '#737373' }}>/unit/mo</span>}
-                    {isConfirming ? (
-                      <>
-                        <button
-                          onClick={() => handleUpgrade(`down-${planKey}`)}
-                          disabled={upgrading}
-                          style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.375rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }}
-                        >
-                          Confirm downgrade
-                        </button>
-                        <button
-                          onClick={() => setConfirmPlan(null)}
-                          style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.375rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(0,0,0,0.06)', color: '#737373', border: 'none', cursor: 'pointer' }}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmPlan(`down-${planKey}`)}
-                        style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.375rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }}
-                      >
-                        Downgrade
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 

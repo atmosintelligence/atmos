@@ -569,7 +569,7 @@ export default function PricingPage() {
             {[
               {
                 q: 'Can I change my plan later?',
-                a: 'Of course! You may upgrade or downgrade at any time. Remember, the changes will take effect from the next billing cycle.',
+                a: 'Of course! You may upgrade at any time. Remember, the changes will take effect from the next billing cycle.',
               },
               {
                 q: 'What is a "unit"?',
