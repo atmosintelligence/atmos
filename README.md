@@ -28,5 +28,4 @@ The project is a culmination of efforts by…
 
 We are a curious group of high school students at Tagore International School, Vasant Vihar. This project was created throughout March–June 2026, and is still quite scalable.
 
-© 2026 Atmos Intelligence. This project is under the MIT License.
-Made with 💖 in India
+© 2026 Atmos Intelligence. This project is under the MIT License. Made with 💖 in India.

@@ -14,7 +14,7 @@ export function DemoProvider({ children, isDemo }) {
     if (!isDemo) { setDemoReady(true); return; }
     Promise.all([
       fetch('/demo.json').then(r => r.json()),
-      fetch('/demo2.json').then(r => r.json()),
+      fetch('/demo_2.json').then(r => r.json()),
     ]).then(([raw1, raw2]) => {
       setDemoReadings(generateDemoReadings(raw1));
       setDemoReadings2(generateDemoReadings2(raw2));

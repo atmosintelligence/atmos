@@ -9,6 +9,7 @@ import RevealSection from '@/components/RevealSection';
 import CarbonFlow from '@/components/CarbonFlow';
 import WanderingGlow from '@/components/WanderingGlow';
 import CarbonBubbles from '@/components/CarbonBubbles';
+import AtmosWeather from '@/components/AtmosWeather';
 
 const features = [
   {
@@ -72,29 +73,28 @@ export default function HomePage() {
 
   return (
     <main>
-      <section className="min-h-dvh flex flex-col items-center justify-center text-center px-6 pt-16 relative overflow-hidden section-border">
+      <section className="min-h-dvh flex flex-col items-center justify-center text-center px-6 pt-16 relative overflow-hidden section-border bg-white dark:bg-black">
         <div className="hero-glow" />
         <GlobeBackground />
         <CarbonFlow />
 
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(52,211,105,0.14),transparent_45%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(52,211,105,0.10),transparent_45%)] dark:bg-[radial-gradient(circle_at_top,rgba(52,211,105,0.14),transparent_45%)] pointer-events-none" />
 
-        <div
-          className="relative z-[1] flex flex-col items-center text-center w-full min-h-[calc(100dvh-4rem)]"
-        >
+        <div className="relative z-[1] flex flex-col items-center text-center w-full min-h-[calc(100dvh-4rem)]">
           <div className="flex-1 flex flex-col items-center justify-center w-full">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 bg-transparent border-0">
               <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
+
               <span className="text-[11px] uppercase tracking-[0.28em] text-brand font-semibold">
                 Sense · Optimise · Act
               </span>
             </div>
 
-            <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[1.02] max-w-4xl">
+            <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[1.02] max-w-4xl text-neutral-900 dark:text-white">
               Tech that <span className="text-brand">speaks</span> your environment
             </h1>
 
-            <p className="mt-6 text-neutral-300/90 text-lg max-w-2xl leading-relaxed">
+            <p className="mt-6 text-neutral-600 dark:text-neutral-300/90 text-lg max-w-2xl leading-relaxed">
               Plug in a compact Atmos sensor, stream live building data to the cloud,
               and uncover exactly where electricity is being wasted, ranked by rupee savings.
             </p>
@@ -110,7 +110,7 @@ export default function HomePage() {
               <a
                 href="#how-atmos-works"
                 onClick={scrollToHowAtmosWorks}
-                className="arrow-link text-sm text-neutral-400 hover:text-neutral-100 transition-colors inline-flex items-center gap-2 select-none"
+                className="arrow-link text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors inline-flex items-center gap-2 select-none"
               >
                 <span>See how it works</span>
 
@@ -125,7 +125,7 @@ export default function HomePage() {
                 {sampleMetrics.map((m) => (
                   <div
                     key={m.label}
-                    className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04] backdrop-blur-xl px-5 py-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-brand/30"
+                    className="relative overflow-hidden rounded-[1.5rem] border border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.04] backdrop-blur-xl px-5 py-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-brand/30"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-transparent opacity-70" />
 
@@ -146,18 +146,18 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    <div className="relative text-3xl font-semibold tracking-tight text-neutral-100">
+                    <div className="relative text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
                       {m.value}
                     </div>
 
-                    <div className="relative text-xs text-neutral-500 mt-1 tracking-wide">
+                    <div className="relative text-xs text-neutral-500 dark:text-neutral-500 mt-1 tracking-wide">
                       {m.label}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-5 flex items-center justify-center gap-2 text-xs text-neutral-500">
+              <div className="mt-5 flex items-center justify-center gap-2 text-xs text-neutral-500 dark:text-neutral-500">
                 <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
 
                 <span>Live sensor readings</span>
@@ -548,14 +548,16 @@ export default function HomePage() {
         </div>
       </RevealSection>
 
-      <RevealSection className="section-pad section-border">
-        <div className="max-w-5xl mx-auto">
+      <RevealSection className="section-pad section-border relative overflow-hidden">
+        <AtmosWeather />
+
+        <div className="max-w-5xl mx-auto relative z-[2]">
           <div
             style={{
-              fontSize: '1rem',
-              fontWeight: 600,
+              fontSize: '0.75rem',
+              fontWeight: 700,
               textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              letterSpacing: '0.12em',
               color: 'var(--color-primary-dark)',
               marginBottom: '1rem',
               textAlign: 'center',
@@ -565,46 +567,43 @@ export default function HomePage() {
             How data flows
           </div>
 
-          <h2 className="font-heading text-3xl font-semibold tracking-tight text-center mb-3">
-            From sensors to insights in seconds.
+          <h2 className="font-heading text-4xl font-semibold tracking-tight text-center mb-4 text-neutral-900 dark:text-white">
+            From your room to your screen.
           </h2>
 
-          <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-xl mx-auto text-sm leading-relaxed">
-            Atmos collects real-time data from your space, processes it instantly, and turns it into clear actions you can use.
+          <p
+            className="text-neutral-500 dark:text-neutral-400 text-center mb-10 max-w-lg mx-auto leading-relaxed"
+            style={{ fontSize: '1rem' }}
+          >
+            Atmos picks up what's happening in your space, thinks about it,
+            and tells you exactly what to do — in seconds.
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'stretch',
-              gap: '0',
-              position: 'relative',
-            }}
-          >
+          <div style={{ display: 'flex', alignItems: 'stretch' }}>
             {[
               {
                 step: '01',
-                title: 'Sensing',
+                title: 'The device senses',
                 description:
-                  'The device captures temperature, humidity, light, power usage, voltage stability, and occupancy in real time.',
+                  'Temperature, humidity, light, power usage, voltage, and occupancy — all captured in real time by the Atmos hardware.',
               },
               {
                 step: '02',
-                title: 'Transmission',
+                title: 'Data travels up',
                 description:
-                  'Data is securely sent over Wi-Fi to a cloud database that stores raw readings for processing.',
+                  'Readings are sent securely over Wi-Fi to a cloud store every few seconds, ready for analysis.',
               },
               {
                 step: '03',
-                title: 'Processing',
+                title: 'The engine thinks',
                 description:
-                  'The engine analyzes incoming data using predefined rules to detect waste, patterns, and inefficiencies.',
+                  'A rule-based intelligence engine scans every reading for waste, anomalies, and patterns you would never notice manually.',
               },
               {
                 step: '04',
-                title: 'Insights',
+                title: 'You get answers',
                 description:
-                  'Findings appear on your dashboard as simple actions, alerts, and savings you can act on immediately.',
+                  'Plain-language recommendations, savings estimates, and alerts appear on your dashboard — ready to act on.',
               },
             ].map((s, i, arr) => (
               <div
@@ -612,34 +611,36 @@ export default function HomePage() {
                 className="card"
                 style={{
                   flex: 1,
-                  padding: '1.5rem',
+                  padding: '1.75rem 1.5rem',
                   borderRadius: 0,
                   borderRight: i < arr.length - 1 ? 'none' : undefined,
                   borderLeft: i > 0 ? 'none' : undefined,
                 }}
               >
                 <div
-                  className="font-heading text-brand"
+                  className="text-brand"
                   style={{
-                    fontSize: '0.65rem',
+                    fontFamily: 'monospace',
+                    fontSize: '0.7rem',
                     fontWeight: 700,
-                    letterSpacing: '0.1em',
-                    marginBottom: '0.75rem',
+                    letterSpacing: '0.08em',
+                    marginBottom: '0.875rem',
+                    opacity: 0.7,
                   }}
                 >
                   {s.step}
                 </div>
 
                 <h3
-                  className="font-heading font-semibold"
-                  style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}
+                  className="font-heading font-semibold text-neutral-900 dark:text-white"
+                  style={{ fontSize: '1.05rem', marginBottom: '0.625rem' }}
                 >
                   {s.title}
                 </h3>
 
                 <p
                   className="text-neutral-500 dark:text-neutral-400"
-                  style={{ fontSize: '0.78rem', lineHeight: 1.7 }}
+                  style={{ fontSize: '0.875rem', lineHeight: 1.75 }}
                 >
                   {s.description}
                 </p>

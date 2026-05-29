@@ -248,7 +248,7 @@ function DashboardShell({ children, checking, isDemo }) {
 }
 
 export default function DashboardLayout({ children }) {
-  const [authState, setAuthState] = useState('checking'); // 'checking' | 'authed' | 'guest'
+  const [authState, setAuthState] = useState('checking');
   const [isDemo, setIsDemo]       = useState(false);
   const router                    = useRouter();
 

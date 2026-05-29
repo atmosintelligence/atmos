@@ -15,7 +15,7 @@ export async function GET() {
 
   try {
     const demoPath1 = path.join(process.cwd(), 'public', 'demo.json');
-    const demoPath2 = path.join(process.cwd(), 'public', 'demo2.json');
+    const demoPath2 = path.join(process.cwd(), 'public', 'demo_2.json');
 
     const [file1, file2] = await Promise.all([
       fs.readFile(demoPath1, 'utf-8'),

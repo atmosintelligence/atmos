@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-black/8 dark:border-white/8 px-8 py-10">
+    <footer className="bg-black text-white border-t border-black/8 dark:border-white/8 px-8 py-10">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
         <div className="flex flex-col sm:flex-row justify-between gap-8">
           <div className="max-w-xs">
@@ -18,24 +18,78 @@ export default function Footer() {
 
           <div className="flex gap-12 text-sm">
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1">Product</span>
-              <Link href="/pricing" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Pricing</Link>
-              <Link href="/dashboard" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Dashboard</Link>
+              <span className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1">
+                Product
+              </span>
+              <Link
+                href="/pricing"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/dashboard"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Dashboard
+              </Link>
+              <a
+                href="https://github.com/atmosintelligence/atmos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                GitHub
+              </a>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1">Account</span>
-              <Link href="/login" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Log in</Link>
-              <Link href="/signup" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Sign up</Link>
+              <span className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1">
+                Account
+              </span>
+              <Link
+                href="/login"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Sign up
+              </Link>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1">Legal</span>
-              <Link href="/privacy" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Privacy Policy</Link>
+              <span className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1">
+                Legal
+              </span>
+              <Link
+                href="/privacy"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="https://github.com/atmosintelligence/atmos/blob/main/LICENSE"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                License
+              </Link>
             </div>
           </div>
         </div>
 
         <div className="border-t border-black/8 dark:border-white/8 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-neutral-400">
-          <span>© 2026 Atmos Intelligence.</span>
+          <a
+            href="https://github.com/atmosintelligence/atmos/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+          >
+            © 2026 Atmos Intelligence.
+          </a>
           <span>Made with 💖 in India</span>
         </div>
       </div>
