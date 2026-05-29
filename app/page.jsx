@@ -160,7 +160,7 @@ export default function HomePage() {
               <div className="mt-5 flex items-center justify-center gap-2 text-xs text-neutral-500 dark:text-neutral-500">
                 <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
 
-                <span>Live sensor readings</span>
+                <span>Average sample sensor data from our demo</span>
               </div>
             </div>
           </div>
