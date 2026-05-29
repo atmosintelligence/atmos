@@ -3,7 +3,7 @@
   "name": "atmos",
   "author": "Team Atmos",
   "license": "MIT",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -21,6 +21,7 @@
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "recharts": "^3.8.1",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {

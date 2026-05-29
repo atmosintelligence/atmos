@@ -208,6 +208,30 @@ const icons = {
       <path d="M9 6h2M13 6h2M9 10h2M13 10h2M9 14h2M13 14h2"/>
     </svg>
   ),
+  leaf: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M6 20C15 20 20 15 20 6C11 6 6 11 6 20Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 16C10.5 13.5 13.5 10.5 18 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  ),
+  gauge: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M4 14A8 8 0 1 1 20 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M12 14L16 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  ),
+  coins: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <ellipse cx="12" cy="6" rx="6" ry="3" stroke="currentColor" strokeWidth="1.8"/>
+      <path d="M6 6V12C6 13.7 8.7 15 12 15C15.3 15 18 13.7 18 12V6" stroke="currentColor" strokeWidth="1.8"/>
+      <path d="M6 12V18C6 19.7 8.7 21 12 21C15.3 21 18 19.7 18 18V12" stroke="currentColor" strokeWidth="1.8"/>
+    </svg>
+  ),
+  bolt: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M13 2L5 14H11L10 22L19 9H13L13 2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+    </svg>
+  ),
 };
 
 export default function Icon({ name, className = '' }) {

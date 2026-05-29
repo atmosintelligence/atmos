@@ -110,8 +110,9 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-6 text-base">
-        <Link href="/pricing" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Pricing</Link>
+        <Link href="/" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Home</Link>
         <Link href="/dashboard" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Dashboard</Link>
+        <Link href="/pricing" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Pricing</Link>
 
         {profile ? (
           <div className="flex items-center gap-2.5 text-sm px-2.5 py-1.5 rounded-[5px] bg-black/6 dark:bg-white/6 cursor-default">
