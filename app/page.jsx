@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import Icon from '@/components/Icon';
 import Footer from '@/components/Footer';
+import TypewriterHero from '@/components/TypewriterHero';
 import GlobeBackground from '@/components/GlobeBackground';
 import RevealSection from '@/components/RevealSection';
 import CarbonFlow from '@/components/CarbonFlow';
@@ -35,18 +36,26 @@ import {
 
 const features = [
   {
-    title: 'Pay',
-    description: 'Pay for the physical device, within reasonable pricing. Just lightweight product and economical solutions contribute to this price.',
+    title: 'Get',
+    description: 'Purchase the device at a cheap one-time cost.',
   },
   {
     title: 'Install',
-    description: "Your device is automatically associated to your account. The installation is simple setup.",
+    description: "The device is already linked to your account. Simple plug-in setup, no professional needed.",
   },
   {
     title: 'Optimize',
-    description: "The rest of the work is ours. You'll find improvements and relevant data directly in your dashboard!",
+    description: "Track savings, alerts, and optimizations from your dashboard.",
   },
 ];
+
+const scrollToHowAtmosWorks = (e) => {
+  e.preventDefault();
+
+  document
+    .getElementById('how-atmos-works')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 function ScrollIndicator() {
   const [visible, setVisible] = useState(true);
@@ -56,7 +65,11 @@ function ScrollIndicator() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   return (
-    <div className={`flex flex-col items-center gap-1.5 text-neutral-400 transition-opacity duration-500 mb-10 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+    <div
+      className={`flex flex-col items-center gap-1.5 text-neutral-400 transition-opacity duration-500 mb-10 cursor-pointer ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      href="#how-atmos-works"
+      onClick={scrollToHowAtmosWorks}
+    >
       <span className="text-xs tracking-widest uppercase">Scroll</span>
       <Icon name="arrowDown" className="animate-bounce" />
     </div>
@@ -93,14 +106,6 @@ export default function HomePage() {
     },
   ];
 
-  const scrollToHowAtmosWorks = (e) => {
-    e.preventDefault();
-
-    document
-      .getElementById('how-atmos-works')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   return (
     <main>
       <section className="min-h-dvh flex flex-col items-center justify-center text-center px-6 pt-16 relative overflow-hidden section-border bg-white dark:bg-black">
@@ -121,12 +126,11 @@ export default function HomePage() {
             </div>
 
             <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[1.02] max-w-4xl text-neutral-900 dark:text-white">
-              Tech that <span className="text-brand">speaks</span> your environment
+              Enhance your room. <TypewriterHero />
             </h1>
 
             <p className="mt-6 text-neutral-600 dark:text-neutral-300/90 text-lg max-w-2xl leading-relaxed">
-              Plug in a compact Atmos sensor, stream live building data to the cloud,
-              and uncover exactly where electricity is being wasted, ranked by rupee savings.
+              Connect the physical device and get energy optimizations directly on the dashboard. Save bills by smartening your room or building.
             </p>
 
             <div className="mt-10 flex items-center gap-4 flex-wrap justify-center">
@@ -150,62 +154,7 @@ export default function HomePage() {
               </a>
             </div>
 
-            <div className="mt-16 w-full max-w-6xl">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                {impactMetrics.map((m) => (
-                  <div
-                    key={m.title}
-                    className="relative overflow-hidden rounded-[1.75rem] border border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.04] backdrop-blur-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand/30"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-transparent opacity-70" />
-
-                    <div className="relative flex items-center justify-between mb-8">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-brand animate-pulse shadow-[0_0_14px_rgba(52,211,105,0.9)]" />
-
-                        <span className="text-[10px] uppercase tracking-[0.18em] text-brand/90 font-medium">
-                          Projected Impact
-                        </span>
-                      </div>
-
-                      <div className="text-brand/70">
-                        <Icon name={m.icon} />
-                      </div>
-                    </div>
-
-                    <div className="relative flex items-end justify-center gap-2 leading-none text-center">
-                      <div className="text-4xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        {m.value}
-                      </div>
-
-                      {m.suffix && (
-                        <div className="pb-1 text-[11px] text-neutral-500 dark:text-neutral-400 font-medium tracking-wide uppercase">
-                          {m.suffix}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="relative mt-4 text-center">
-                      <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                        {m.title}
-                      </div>
-
-                      <p className="mt-2 text-[0.72rem] leading-relaxed text-neutral-500 dark:text-neutral-400">
-                        {m.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex items-center justify-center gap-2 text-xs text-neutral-500 dark:text-neutral-500">
-                <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
-
-                <span>
-                  Estimated environmental and financial impact based on Atmos deployment projections
-                </span>
-              </div>
-            </div>
+            
           </div>
 
           <div id="how-atmos-works" className="pb-10">
@@ -346,50 +295,50 @@ export default function HomePage() {
               </div>
 
               <h2 className="font-heading text-3xl font-semibold tracking-tight mb-4">
-                From signals to savings.
+                Get Optimizations
               </h2>
 
               <p className="text-neutral-500 dark:text-neutral-400 max-w-xl text-sm leading-relaxed mb-10">
-                Atmos doesn't just collect data. It interprets behaviour across lighting, HVAC, and power usage to surface exactly where energy is being wasted and what to fix first.
+                Atmos interprets lighting, ventilation, and power in your room. It tells where energy is being wasted and what to fix first.
               </p>
 
               <div className="space-y-4">
                 {[
                   {
                     category: 'Lighting',
-                    title: 'Lights running in empty rooms',
-                    description: 'Detects occupancy mismatch and quantifies unnecessary lighting cost in real time.',
+                    title: 'Lights on in empty room',
+                    description: 'Why leave lights on when nobody is in the room?',
                     tag: 'Occupancy-aware',
                   },
                   {
-                    category: 'HVAC',
+                    category: 'Ventilation',
                     title: 'Cooling or heating unused spaces',
-                    description: 'Identifies HVAC usage in vacant zones and flags avoidable energy loss.',
+                    description: 'Don\'t keep the air conditioner running when nobody is in the room!',
                     tag: 'HVAC analysis',
                   },
                   {
                     category: 'Power',
-                    title: 'Hidden standby consumption',
-                    description: 'Finds devices drawing power even when not actively in use.',
-                    tag: 'Standby detection',
+                    title: 'Passive consumption',
+                    description: 'Imagine using electricity when you don\'t need it.',
+                    tag: 'Issue detection',
                   },
                   {
-                    category: 'Trends',
-                    title: 'Unusual consumption patterns',
-                    description: 'Compares live usage against historical baselines to detect anomalies early.',
-                    tag: 'Anomaly detection',
+                    category: 'Trends & Predictions',
+                    title: 'Unusual patterns',
+                    description: 'Compare live usage against historical baselines to fix things early.',
+                    tag: 'Issue detection',
                   },
                   {
                     category: 'Lighting',
-                    title: 'Daylight underutilisation',
-                    description: 'Highlights opportunities to reduce artificial lighting during sufficient natural light.',
+                    title: 'Welcome some daylight',
+                    description: 'Why have lights on when the sun is there for you?',
                     tag: 'Lux-aware',
                   },
                   {
                     category: 'HVAC',
-                    title: 'Outdoor climate advantage missed',
-                    description: 'Suggests ventilation opportunities when external conditions make AC unnecessary.',
-                    tag: 'Weather-linked',
+                    title: 'Outdoor weather missed',
+                    description: 'You don\'t need to miss out on ventilation opportunities when the weather is perfect outside.',
+                    tag: 'Weather API',
                   },
                 ].map((r, i) => (
                   <div
@@ -493,21 +442,33 @@ export default function HomePage() {
             Environmental impact
           </div>
           <h2 className="font-heading text-3xl font-semibold tracking-tight text-center mb-3">
-            Energy saved is carbon avoided.
+            Get rid of carbon
           </h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-xl mx-auto text-sm leading-relaxed">
-            Every kilowatt-hour your building does not consume is a kilowatt-hour the grid does not have to generate. Atmos tracks your impact in terms that matter.
+            The following are some carbon-related stats. What if you had a superpower to get rid of this carbon dioxide?
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
             {[
-              { value: '0.727 kg', label: 'CO₂ per kWh', desc: 'India\'s current grid emission factor per the Central Electricity Authority.' },
-              { value: '24 kg', label: 'CO₂ per tree per year', desc: 'One mature urban tree absorbs approximately 24 kg of CO₂ annually (FAO).' },
-              { value: '60%', label: 'Carbon credit proceeds to you', desc: 'On Premium, Atmos automates carbon credit sales and returns 60% of revenue to your account.' },
+              {
+                value: '25%',
+                label: 'energy wasted in buildings',
+                desc: 'For reasons that Atmos knows',
+              },
+              {
+                value: '₹4,000',
+                label: 'wasted per year',
+                desc: 'That\'s a lot per building',
+              },
+              {
+                value: '1',
+                label: 'family could use the waste per year',
+                desc: 'Your waste could be shelter for 4 people',
+              },
             ].map((s, i) => (
               <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '2rem' }}>
-                <div className="font-heading font-semibold text-brand" style={{ fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '0.5rem' }}>{s.value}</div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem' }}>{s.label}</div>
-                <p className="text-neutral-500 dark:text-neutral-400" style={{ fontSize: '0.78rem', lineHeight: 1.7 }}>{s.desc}</p>
+                <div className="font-heading font-semibold text-brand text-center" style={{ fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '0.5rem' }}>{s.value}</div>
+                <div className="text-center" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem' }}>{s.label}</div>
+                <p className="text-neutral-500 dark:text-neutral-400 text-center" style={{ fontSize: '0.78rem', lineHeight: 1.7 }}>{s.desc}</p>
               </div>
             ))}
           </div>
@@ -542,34 +503,34 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-5">
             {[
               {
-                title: 'Voltage stability (India grid)',
+                title: 'Voltage',
                 description:
-                  'Continuously tracks 220V ±5% fluctuations (210–245V range). Detects instability that reduces appliance efficiency and lifespan.',
+                  'We track voltage changes; get alerted when power becomes unstable',
               },
               {
-                title: 'BEE efficiency benchmarks',
+                title: 'Subsidy finder',
                 description:
-                  'Uses Bureau of Energy Efficiency standards (180 kWh/m²/year) as a baseline to measure savings and inefficiency.',
+                  'You\'re in luck! We identify government energy-saving and solar subsidies',
               },
               {
-                title: 'MNRE subsidy mapping',
+                title: 'Scalable',
                 description:
-                  'Automatically identifies eligibility for renewable energy and efficiency subsidies under MNRE schemes.',
+                  'Start small, because we\'ll end up motivating you to grow',
               },
               {
-                title: 'State energy incentives',
+                title: 'Reports',
                 description:
-                  'Tracks evolving state-level efficiency programs and highlights applicable financial incentives in real time.',
+                  'We create sustainability reports for businesses programmatically',
               },
               {
-                title: 'BRSR reporting support',
+                title: 'API',
                 description:
-                  'Generates structured sustainability and ESG reports aligned with Business Responsibility & Sustainability Reporting norms.',
+                  'Use our official and blazingly fast API, which has simple-to-call endpoints',
               },
               {
-                title: 'CEA emission factors',
+                title: 'Benchmarks followed',
                 description:
-                  'Uses official Central Electricity Authority grid emission data for accurate and audit-ready carbon calculations.',
+                  'We rely on standardised Indian benchmarks.',
               },
             ].map((f, i) => (
               <div key={i} className="card" style={{ padding: '1.5rem' }}>
@@ -626,27 +587,21 @@ export default function HomePage() {
             {[
               {
                 step: '01',
-                title: 'The device senses',
+                title: 'Device senses',
                 description:
-                  'Temperature, humidity, light, power usage, voltage, and occupancy — all captured in real time by the Atmos hardware.',
+                  'Everything\'s captured in real-time by the installed device',
               },
               {
                 step: '02',
-                title: 'Data travels up',
+                title: 'Cloud knows',
                 description:
-                  'Readings are sent securely over Wi-Fi to a cloud store every few seconds, ready for analysis.',
+                  'Readings are sent securely to a cloud store very frequently',
               },
               {
                 step: '03',
-                title: 'The engine thinks',
+                title: 'We think',
                 description:
-                  'A rule-based intelligence engine scans every reading for waste, anomalies, and patterns you would never notice manually.',
-              },
-              {
-                step: '04',
-                title: 'You get answers',
-                description:
-                  'Plain-language recommendations, savings estimates, and alerts appear on your dashboard — ready to act on.',
+                  'Optimizations and alerts are already waiting for you in your dashboard',
               },
             ].map((s, i, arr) => (
               <div
@@ -714,7 +669,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-6">
             <GraphCard
               title="CO₂ avoided per year"
-              description="Annual carbon emissions prevented through building optimisation and reduced electricity waste."
+              description="Avoid CO₂ over the years with Atmos installed"
               data={co2ChartData.labels.map((label, i) => ({
                 year: label,
                 value: co2ChartData.co2[i],
@@ -722,8 +677,8 @@ export default function HomePage() {
               }))}
             />
             <GraphCard
-              title="Carbon Credit Revenue Growth"
-              description="Carbon credit monetisation begins once the platform reaches large-scale building aggregation. By Year 5, projected revenue crosses ₹108 lakh annually."
+              title="Carbon credit revenue growth"
+              description="Accelerate with carbon credit with Atmos installed"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
@@ -788,8 +743,8 @@ export default function HomePage() {
               </ResponsiveContainer>
             </GraphCard>
             <GraphCard
-              title="Annual Energy Saved"
-              description="Energy savings increase as Atmos scales across more buildings, reducing electricity waste year after year."
+              title="Energy savings"
+              description="Save energy over the years with Atmos installed"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
@@ -853,8 +808,8 @@ export default function HomePage() {
             </GraphCard>
 
             <GraphCard
-              title="Pollutants & Coal Avoided"
-              description="Reduced electricity demand means less coal burned and fewer harmful emissions released into the atmosphere."
+              title="Energy conservation"
+              description="With Atmos installed, you conserve tonnes of resources in 5 years"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -908,7 +863,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6">
-            <div className="relative overflow-hidden rounded-[2rem] border border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03] backdrop-blur-xl p-7">
+            <div className="relative overflow-hidden rounded-[2rem] border border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03] backdrop-blur-xl p-5">
               <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-transparent opacity-60 pointer-events-none" />
 
               <div className="relative">
@@ -916,17 +871,15 @@ export default function HomePage() {
                   Growth trajectory
                 </div>
 
-                <h3 className="font-heading text-xl font-semibold tracking-tight mb-2">
-                  Buildings onboarded vs environmental impact
+                <h3 className="font-heading text-xl font-semibold tracking-tight mb-2 text-center">
+                  Environmental impact
                 </h3>
 
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed mb-8 max-w-3xl">
-                  As Atmos expands across buildings, environmental impact rises in
-                  parallel — creating measurable reductions in carbon emissions at
-                  national scale.
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed mb-8 max-w-3xl text-center mx-auto">
+                  As you can see, this graph is going upwards. Very smoothly.
                 </p>
 
-                <div className="w-full h-[30rem] min-h-[30rem] min-w-0">
+                <div className="w-full h-[22rem] min-h-[22rem] min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={growthChartData}
@@ -953,7 +906,7 @@ export default function HomePage() {
 
                       <YAxis
                         yAxisId="left"
-                        tick={{ fill: '#34d369', fontSize: 11 }}
+                        tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 11 }}
                         axisLine={false}
                         tickLine={false}
                         tickFormatter={(v) => v.toLocaleString()}
@@ -962,7 +915,7 @@ export default function HomePage() {
                       <YAxis
                         yAxisId="right"
                         orientation="right"
-                        tick={{ fill: '#2dd4bf', fontSize: 11 }}
+                        tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 11 }}
                         axisLine={false}
                         tickLine={false}
                         tickFormatter={(v) => `${Math.round(v / 1000)}k`}
@@ -975,12 +928,33 @@ export default function HomePage() {
                           borderRadius: '1rem',
                           fontSize: '0.78rem',
                         }}
+                        formatter={(value, name) => [
+                          Number(value).toLocaleString(),
+                          name,
+                        ]}
+                      />
+
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="co2"
+                        name="CO₂"
+                        stroke="rgba(255,255,255,0.45)"
+                        strokeWidth={3}
+                        strokeDasharray="8 4"
+                        dot={{
+                          r: 5,
+                          fill: 'rgba(255,255,255,0.45)',
+                          stroke: '#04110a',
+                          strokeWidth: 2,
+                        }}
                       />
 
                       <Line
                         yAxisId="left"
                         type="monotone"
                         dataKey="buildings"
+                        name="Buildings"
                         stroke="#34d369"
                         strokeWidth={3}
                         fill="url(#growthGradient)"
@@ -988,21 +962,6 @@ export default function HomePage() {
                         dot={{
                           r: 5,
                           fill: '#34d369',
-                          stroke: '#04110a',
-                          strokeWidth: 2,
-                        }}
-                      />
-
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="co2"
-                        stroke="#2dd4bf"
-                        strokeWidth={3}
-                        strokeDasharray="8 4"
-                        dot={{
-                          r: 5,
-                          fill: '#2dd4bf',
                           stroke: '#04110a',
                           strokeWidth: 2,
                         }}
@@ -1106,11 +1065,11 @@ export default function HomePage() {
 
         <div className="relative z-[1] max-w-2xl mx-auto">
           <h2 className="font-heading text-3xl font-semibold tracking-tight mb-3">
-            Optimise your space!
+            Don't just look at it. Go touch it!
           </h2>
 
           <p className="text-neutral-500 dark:text-neutral-400 mb-7">
-            India's premier energy optimisation tech, built for homes and offices alike. Get the hardware and hear what the walls of your room have to say.
+            Experience the dashboard first-hand accountless using the Demo Mode.
           </p>
 
           <div className="flex items-center justify-center gap-4 flex-wrap">

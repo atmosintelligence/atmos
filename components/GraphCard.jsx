@@ -17,23 +17,23 @@ export default function GraphCard({
   data,
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03] backdrop-blur-xl p-7">
+    <div className="relative overflow-hidden rounded-[2rem] border border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03] backdrop-blur-xl p-5">
       <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-transparent opacity-60 pointer-events-none" />
 
       <div className="relative">
-        <div className="text-[0.78rem] uppercase tracking-[0.18em] text-brand font-semibold mb-3">
+        <div className="text-[0.78rem] uppercase tracking-[0.18em] text-brand font-semibold mb-2">
           Analytics
         </div>
 
-        <h3 className="font-heading text-xl font-semibold tracking-tight mb-2">
+        <h3 className="font-heading text-xl font-semibold tracking-tight mb-1">
           {title}
         </h3>
 
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed mb-8 max-w-xl">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed mb-4 max-w-xl">
           {description}
         </p>
 
-        <div className="w-full h-[24rem] min-h-[24rem] min-w-0">
+        <div className="w-full h-[18rem] min-h-[18rem] min-w-0">
           {children ? (
             children
           ) : (

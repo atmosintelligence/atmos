@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 function Cloud({ cloud, toggleRain }) {
   return (
@@ -54,6 +54,7 @@ function Cloud({ cloud, toggleRain }) {
 
 export default function AtmosWeather() {
   const [clouds, setClouds] = useState([]);
+  const nextId = useRef(0);
 
   useEffect(() => {
     let id = 0;
@@ -62,7 +63,7 @@ export default function AtmosWeather() {
       const duration = 65 + Math.random() * 28;
 
       const cloud = {
-        id: id++,
+        id: nextId.current++,
         top: 2 + Math.random() * 22,
         scale: 0.9 + Math.random() * 0.4,
         duration: 52 + Math.random() * 36,
