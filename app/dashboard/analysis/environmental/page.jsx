@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useDevice }           from '../../DeviceContext';
 import { getColStats, scaleColor, tdBase } from '../tableUtils';
-import Stat         from '@/components/dashboard/Stat';
-import TableWrapper from '@/components/dashboard/TableWrapper';
+import Stat               from '@/components/dashboard/Stat';
+import TableWrapper        from '@/components/dashboard/TableWrapper';
+import EnvironmentalChart  from '@/components/dashboard/charts/EnvironmentalChart';
 import { BEE_BENCHMARK_KWH_M2 } from '@/lib/engine/constants.js';
 
 const ROOM_AREA = 20;
@@ -16,18 +17,20 @@ export default function EnvironmentalPage() {
 
   useEffect(() => {
     if (!selectedId) return;
+    if (isDemo && !demoReadings?.length) return;
     let cancelled = false;
     const cacheKey = `environmental-${selectedId}`;
-    const cached = getCached(cacheKey);
-    if (cached) { setData(cached); setStatus('ready'); return; }
+    const cached   = getCached(cacheKey);
+    if (cached) { setData(cached); setStatus('ready'); }
 
     async function load() {
       setStatus('loading');
-      const { fetchEngine } = await import('@/lib/engineFetch');
-      const res = await fetchEngine({
-        isDemo, demoReadings, deviceId: selectedId,
-        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
-      });
+      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
+      const body     = isDemo
+        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: ROOM_AREA, tariff: 10 }
+        : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: ROOM_AREA, deviceId: selectedId };
+
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (cancelled) return;
       if (!res.ok) { setStatus('error'); return; }
       const json = await res.json();
@@ -40,49 +43,58 @@ export default function EnvironmentalPage() {
 
     load();
     return () => { cancelled = true; };
-  }, [selectedId, refreshKey]);
+  }, [selectedId, refreshKey, isDemo, demoReadings]);
 
   if (status === 'loading') return <div className="dash-empty" style={{ border: 'none' }}>Loading...</div>;
   if (status === 'error')   return <div className="dash-empty" style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}>Failed to load data.</div>;
   if (status === 'no-data' || !data) return <div className="dash-empty">No data available for this device.</div>;
 
-  const env       = data;
-  const isSaving  = parseFloat(env.savedKwh) > 0;
+  const env      = data;
+  const isSaving = parseFloat(env.savedKwh) > 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       <div className="dash-greeting">
         <div className="dash-greeting-name">Environmental Savings</div>
         <div className="dash-greeting-sub">
-          CO₂ emissions prevented, money saved, and carbon equivalence, as calculated against the Bureau of Energy Efficiency benchmark of {BEE_BENCHMARK_KWH_M2} kWh/m²/year.
+          CO₂ emissions prevented, money saved, and carbon equivalence — benchmarked against the BEE standard of {BEE_BENCHMARK_KWH_M2} kWh/m²/year.
         </div>
       </div>
 
       {isSaving ? (
         <div className="dash-opt-card info" style={{ borderColor: 'rgba(74,222,128,0.2)', background: 'rgba(74,222,128,0.04)' }}>
           <div className="dash-opt-meta">
-            <span className="dash-opt-badge Lighting">Environmental</span>
+            <span className="dash-opt-badge" style={{ background: 'rgba(74,222,128,0.15)', color: '#4ADE80' }}>Environmental</span>
           </div>
           <p className="dash-opt-message">
-            This device is performing better than the BEE benchmark. Over the past month, it has consumed {env.actualKwh} kWh against a benchmark of {env.baselineKwh} kWh — saving {env.savedKwh} kWh, preventing {env.co2KgSaved} kg of CO₂, and saving ₹{env.moneySavedINR}. That is equivalent to {env.treesEquiv} {env.treesEquiv === '1' ? 'tree' : 'trees'} absorbing carbon for a year.
+            This device is performing below the BEE benchmark. Over the past month it consumed {env.actualKwh} kWh against a benchmark of {env.baselineKwh} kWh — saving {env.savedKwh} kWh, preventing {env.co2KgSaved} kg of CO₂, and saving ₹{env.moneySavedINR}. Equivalent to {env.treesEquiv} {env.treesEquiv === '1' ? 'tree' : 'trees'} absorbing carbon for a year.
           </p>
         </div>
       ) : (
         <div className="dash-empty">
-          Consumption this month exceeds the BEE benchmark. Implementing the recommendations on other tabs should help bring this down.
+          Consumption this month exceeds the BEE benchmark. Implementing the recommendations across other tabs should help.
         </div>
       )}
 
       <div>
         <div className="dash-section-title">This month's impact</div>
         <div className="dash-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <Stat label="Energy consumed"  value={`${env.actualKwh} kWh`}      sub={`Benchmark: ${env.baselineKwh} kWh`} />
-          <Stat label="Energy saved"     value={`${env.savedKwh} kWh`}        accent={isSaving} />
-          <Stat label="CO₂ prevented"    value={`${env.co2KgSaved} kg`}       sub="At 0.727 kg per kWh" accent={isSaving} />
-          <Stat label="Money saved"      value={`₹${env.moneySavedINR}`}      sub="Per your tariff rate" accent={isSaving} />
-          <Stat label="Trees equivalent" value={env.treesEquiv}               sub="FAO: 24 kg CO₂/tree/year" accent={isSaving} />
+          <Stat label="Energy consumed"  value={`${env.actualKwh} kWh`}     sub={`Benchmark: ${env.baselineKwh} kWh`} />
+          <Stat label="Energy saved"     value={`${env.savedKwh} kWh`}       accent={isSaving} />
+          <Stat label="CO₂ prevented"    value={`${env.co2KgSaved} kg`}      sub="At 0.727 kg per kWh" accent={isSaving} />
+          <Stat label="Money saved"      value={`₹${env.moneySavedINR}`}     sub="Per your tariff rate" accent={isSaving} />
+          <Stat label="Trees equivalent" value={env.treesEquiv}              sub="FAO: 24 kg CO₂/tree/year" accent={isSaving} />
           <Stat label="BEE benchmark"    value={`${BEE_BENCHMARK_KWH_M2} kWh/m²/yr`} sub={`For ${ROOM_AREA} m² room`} />
         </div>
+      </div>
+
+      <div>
+        <div className="dash-section-title">Graphs</div>
+        <EnvironmentalChart
+          key={`${selectedId}-${refreshKey}`}
+          weeklyData={env.weeklyData}
+          baselineKwh={env.baselineKwh}
+        />
       </div>
 
       <div>

@@ -244,7 +244,7 @@ export default function HomePage() {
 
             <div className="relative hidden lg:block">
               <div className="sticky top-28">
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0f0f0f] shadow-2xl">
+                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0f0f0f] shadow-2xl transition-all duration-500 ease-out hover:scale-[1.04]">
                   <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-transparent z-[1]" />
 
                   <img
@@ -264,7 +264,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="mt-8">
-                  <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0f0f0f] shadow-xl">
+                  <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0f0f0f] shadow-xl transition-all duration-500 ease-out hover:scale-[1.04]">
                     <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-transparent z-[1]" />
 
                     <img

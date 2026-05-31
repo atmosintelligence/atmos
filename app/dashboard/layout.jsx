@@ -23,11 +23,11 @@ const pages = [
 ];
 
 const analysisSubs = [
+  { name: 'Environmental Savings', href: '/dashboard/analysis/environmental', icon: 'environmentalAnalysis' },
   { name: 'Lighting',              href: '/dashboard/analysis/lighting',      icon: 'lightingAnalysis'      },
   { name: 'Temperature',           href: '/dashboard/analysis/temperature',   icon: 'temperatureAnalysis'   },
   { name: 'Power Usage',           href: '/dashboard/analysis/power',         icon: 'powerAnalysis'         },
   { name: 'Trends & Predictions',  href: '/dashboard/analysis/trends',        icon: 'trendsAnalysis'        },
-  { name: 'Environmental Savings', href: '/dashboard/analysis/environmental', icon: 'environmentalAnalysis' },
 ];
 
 function formatDate(str) {

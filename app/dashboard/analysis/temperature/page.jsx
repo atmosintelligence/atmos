@@ -3,36 +3,38 @@
 import { useEffect, useState } from 'react';
 import { useDevice }           from '../../DeviceContext';
 import { getColStats, scaleColor, fmtDate, tdBase } from '../tableUtils';
-import Stat         from '@/components/dashboard/Stat';
-import TableWrapper from '@/components/dashboard/TableWrapper';
-import OptCard      from '@/components/dashboard/OptCard';
+import Stat             from '@/components/dashboard/Stat';
+import TableWrapper     from '@/components/dashboard/TableWrapper';
+import OptCard          from '@/components/dashboard/OptCard';
+import TemperatureChart from '@/components/dashboard/charts/TemperatureChart';
 
 export default function TemperaturePage() {
-  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings, devices } = useDevice();
-
-  const selectedDevice = devices.find(d => d.device_id === selectedId);
-
+  const { selectedId, refreshKey, getCached, setCached, selectedDevice, isDemo, demoReadings } = useDevice();
   const [data, setData]     = useState(null);
   const [status, setStatus] = useState('loading');
 
   const lastContacted = selectedDevice?.last_contacted_at
-    ? new Date(selectedDevice.last_contacted_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }).replace('am','AM').replace('pm','PM')
+    ? new Date(selectedDevice.last_contacted_at).toLocaleString('en-IN', {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true,
+      }).replace('am', 'AM').replace('pm', 'PM')
     : null;
 
   useEffect(() => {
     if (!selectedId) return;
+    if (isDemo && !demoReadings?.length) return;
     let cancelled = false;
     const cacheKey = `temperature-${selectedId}`;
-    const cached = getCached(cacheKey);
-    if (cached) { setData(cached); setStatus('ready'); return; }
+    const cached   = getCached(cacheKey);
+    if (cached) { setData(cached); setStatus('ready'); }
 
     async function load() {
       setStatus('loading');
-      const { fetchEngine } = await import('@/lib/engineFetch');
-      const res = await fetchEngine({
-        isDemo, demoReadings, deviceId: selectedId,
-        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
-      });
+      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
+      const body     = isDemo
+        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
+        : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId };
+
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (cancelled) return;
       if (!res.ok) { setStatus('error'); return; }
       const json = await res.json();
@@ -41,8 +43,8 @@ export default function TemperaturePage() {
       const d = {
         ...json.analysis.hvac,
         optimizations: json.optimizations.filter(o => o.group === 'HVAC' || o.group === 'Humidity'),
-        weatherError: json.weatherError,
-        readings: json.readings,
+        weatherError:  json.weatherError,
+        readings:      json.readings ?? [],
       };
       setData(d);
       setCached(cacheKey, d);
@@ -51,19 +53,19 @@ export default function TemperaturePage() {
 
     load();
     return () => { cancelled = true; };
-  }, [selectedId, refreshKey]);
+  }, [selectedId, refreshKey, isDemo, demoReadings]);
 
   if (status === 'loading') return <div className="dash-empty" style={{ border: 'none' }}>Loading...</div>;
   if (status === 'error')   return <div className="dash-empty" style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}>Failed to load data.</div>;
   if (status === 'no-data' || !data) return <div className="dash-empty">No data available for this device.</div>;
 
   const { t1Events, t2Events, t3Events, optimizations, weatherError, readings } = data;
-  const sorted   = readings ? [...readings].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)) : [];
-  const latest   = sorted.at(-1);
+  const sorted     = [...(readings ?? [])].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const latest     = sorted.at(-1);
   const latestTemp = parseFloat(latest?.temperature ?? 0);
-  const latestHum  = parseFloat(latest?.humidity ?? 0);
-  const avgTemp    = sorted.reduce((a, r) => a + parseFloat(r.temperature || 0), 0) / (sorted.length || 1);
-  const avgHum     = sorted.reduce((a, r) => a + parseFloat(r.humidity || 0), 0) / (sorted.length || 1);
+  const latestHum  = parseFloat(latest?.humidity    ?? 0);
+  const avgTemp    = sorted.length ? sorted.reduce((a, r) => a + parseFloat(r.temperature || 0), 0) / sorted.length : 0;
+  const avgHum     = sorted.length ? sorted.reduce((a, r) => a + parseFloat(r.humidity    || 0), 0) / sorted.length : 0;
   const totalT2Save = t2Events.reduce((a, e) => a + parseFloat(e.estimatedSaving), 0);
 
   return (
@@ -75,21 +77,19 @@ export default function TemperaturePage() {
 
       {weatherError && weatherError !== 'No location set' && (
         <div style={{ fontSize: '0.75rem', color: '#ef4444', padding: '0.5rem 0.75rem', background: 'rgba(239,68,68,0.06)', borderRadius: '0.5rem', border: '1px solid rgba(239,68,68,0.15)' }}>
-          Oh no, weather data is currently unavailable! Outdoor ventilation recommendations may be missing.
+          Weather data is temporarily unavailable — outdoor ventilation recommendations may be missing.
         </div>
       )}
 
-      {optimizations.length > 0 && (
+      {optimizations.length > 0 ? (
         <div>
           <div className="dash-section-title">Recommendations</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {optimizations.map((opt, i) => <OptCard key={i} opt={opt} lastContacted={lastContacted} />)}
           </div>
         </div>
-      )}
-
-      {optimizations.length === 0 && (
-        <div className="dash-empty">No temperature or humidity recommendations at this time. Conditions look comfortable.</div>
+      ) : (
+        <div className="dash-empty">No temperature or humidity recommendations at this time.</div>
       )}
 
       <div>
@@ -97,9 +97,17 @@ export default function TemperaturePage() {
         <div className="dash-grid">
           <Stat label="Current temperature" value={`${latestTemp.toFixed(1)}°C`} sub={latestTemp < 22 ? 'Below comfort band' : latestTemp > 30 ? 'Above comfort band' : 'Within comfort band'} />
           <Stat label="Average temperature" value={`${avgTemp.toFixed(1)}°C`} />
-          <Stat label="Current humidity" value={`${latestHum.toFixed(0)}%`} sub={latestHum > 72 ? 'Too humid' : latestHum < 28 ? 'Too dry' : 'Comfortable'} />
-          <Stat label="Average humidity" value={`${avgHum.toFixed(0)}%`} />
+          <Stat label="Current humidity"    value={`${latestHum.toFixed(0)}%`} sub={latestHum > 72 ? 'Too humid' : latestHum < 28 ? 'Too dry' : 'Comfortable'} />
+          <Stat label="Average humidity"    value={`${avgHum.toFixed(0)}%`} />
         </div>
+      </div>
+
+      <div>
+        <div className="dash-section-title">Graphs</div>
+        <TemperatureChart
+          key={`${selectedId}-${refreshKey}`}
+          readings={readings}
+        />
       </div>
 
       {t1Events.length > 0 && (

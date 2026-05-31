@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={`${syne.variable} ${inter.variable}`}
+      className={`dark ${syne.variable} ${inter.variable}`}
     >
       <head>
         <Script
@@ -39,7 +39,9 @@ export default function RootLayout({ children }) {
           {`
             (function(){
               var t = localStorage.getItem('theme') || 'dark';
-              document.documentElement.classList.toggle('dark', t === 'dark');
+              if (t !== 'dark') {
+                document.documentElement.classList.remove('dark');
+              }
             })();
           `}
         </Script>
