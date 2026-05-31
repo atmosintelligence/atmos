@@ -192,7 +192,7 @@ export default function PricingPage() {
     price: '₹699',
     period: 'per unit / month',
     description: 'The most complete plan for serious energy optimisation',
-    features: ['Everything in Basic', 'Fast data refresh rate', 'Advanced export', 'Simple API access'],
+    features: ['Unlimited devices', 'All the essentials', 'Alerts', 'Fast data refresh rate', 'Advanced export', 'Simple API access'],
     href: '/signup',
   };
 
