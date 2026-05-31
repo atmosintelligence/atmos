@@ -6,38 +6,54 @@ import Footer from '@/components/Footer';
 import Icon from '@/components/Icon';
 
 function Calculator() {
-  const [rooms, setRooms] = useState([{ size: 200 }]);
-  const [plan, setPlan]   = useState('basic');
+  const [rooms, setRooms] = useState([{ size: 150 }]);
 
-  function addRoom() { setRooms(r => [...r, { size: 200 }]); }
+  function addRoom() { setRooms(r => [...r, { size: 150 }]); }
   function removeRoom(i) { setRooms(r => r.filter((_, idx) => idx !== i)); }
-  function updateSize(i, val) { setRooms(r => r.map((room, idx) => idx === i ? { size: val } : room)); }
+  function updateSize(i, val) { setRooms(r => r.map((room, idx) => idx === i ? { size: Number(val) } : room)); }
 
   function unitsForRoom(sqft) {
-    if (sqft <= 300)  return 1;
-    if (sqft <= 800)  return 2;
-    if (sqft <= 1500) return 3;
+    if (sqft <= 150) return 1;
+    if (sqft <= 300) return 2;
+    if (sqft <= 500) return 3;
     return Math.ceil(sqft / 500);
   }
 
-  const totalUnits   = rooms.reduce((a, r) => a + unitsForRoom(Number(r.size)), 0);
-  const totalSqft    = rooms.reduce((a, r) => a + Number(r.size), 0);
-  const planPrices   = { spark: 0, basic: 349, premium: 699, enterprise: null };
-  const planPrice    = planPrices[plan];
-  const monthlyCost  = planPrice !== null ? totalUnits * planPrice : null;
-  const annualCost   = monthlyCost !== null ? monthlyCost * 12 : null;
+  const totalUnits = rooms.reduce((a, r) => a + unitsForRoom(r.size), 0);
+  const totalSqft  = rooms.reduce((a, r) => a + r.size, 0);
 
-  const recommendation = totalUnits <= 2 ? 'spark'
-    : totalSqft <= 5000 ? 'basic'
-    : totalSqft <= 20000 ? 'premium'
-    : 'enterprise';
+  const recommendation =
+    rooms.length >= 4 && totalSqft >= 1200
+      ? 'enterprise'
+      : totalSqft >= 1800
+      ? 'enterprise'
+      : totalSqft >= 350
+      ? 'premium'
+      : totalSqft >= 200
+      ? 'basic'
+      : 'spark';
 
-  const recLabel = { spark: 'Spark', basic: 'Basic', premium: 'Premium', enterprise: 'Enterprise' };
-  const recColor = { spark: '#737373', basic: '#60a5fa', premium: '#4ADE80', enterprise: '#a78bfa' };
+  const planMeta = {
+    spark:      { label: 'Spark',      price: 0,    color: '#737373' },
+    basic:      { label: 'Basic',      price: 349,  color: '#60a5fa' },
+    premium:    { label: 'Premium',    price: 699,  color: '#4ADE80' },
+    enterprise: { label: 'Enterprise', price: null, color: '#a78bfa' },
+  };
+
+  const rec          = planMeta[recommendation];
+  const monthlyCost  = rec.price !== null ? totalUnits * rec.price : null;
+  const costPerRoom  = monthlyCost !== null && rooms.length > 0 ? Math.round(monthlyCost / rooms.length) : null;
+
+  const recDesc = {
+    spark:      'Your setup fits within the free and simple Spark plan.',
+    basic:      'Basic gives you unlimited units and recommendations. Right for your scale.',
+    premium:    'At this scale, you unlock almost everything you need to live a carbon-free life.',
+    enterprise: 'A deployment this size warrants dedicated account management and custom pricing.',
+  };
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <div>
           <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#737373', marginBottom: '0.75rem' }}>
             Your rooms
@@ -56,8 +72,8 @@ function Calculator() {
                   style={{ maxWidth: '100px', textAlign: 'right' }}
                 />
                 <span style={{ fontSize: '0.75rem', color: '#737373' }}>sq ft</span>
-                <span style={{ fontSize: '0.72rem', color: '#4ADE80', minWidth: '60px' }}>
-                  {unitsForRoom(Number(room.size))} unit{unitsForRoom(Number(room.size)) > 1 ? 's' : ''}
+                <span style={{ fontSize: '0.72rem', color: '#4ADE80', minWidth: '70px' }}>
+                  {unitsForRoom(room.size)} unit{unitsForRoom(room.size) > 1 ? 's' : ''}
                 </span>
                 {rooms.length > 1 && (
                   <button
@@ -79,38 +95,15 @@ function Calculator() {
           </button>
         </div>
 
-        <div>
-          <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#737373', marginBottom: '0.75rem' }}>
-            Plan
-          </div>
-          <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-            {['spark', 'basic', 'premium', 'enterprise'].map(p => (
-              <button
-                key={p}
-                onClick={() => setPlan(p)}
-                style={{
-                  fontSize: '0.75rem', fontWeight: 600, padding: '0.375rem 0.875rem',
-                  borderRadius: '9999px', cursor: 'pointer', border: '1px solid',
-                  borderColor: plan === p ? recColor[p] : 'rgba(128,128,128,0.2)',
-                  background: plan === p ? recColor[p] + '20' : 'transparent',
-                  color: plan === p ? recColor[p] : '#737373',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {recLabel[p]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ fontSize: '0.72rem', color: '#737373', lineHeight: 1.65, padding: '0.875rem', background: 'rgba(128,128,128,0.06)', borderRadius: '0.625rem' }}>
-          <strong style={{ color: 'inherit', fontWeight: 600 }}>How we calculate units:</strong> rooms up to 300 sq ft need 1 unit, up to 800 sq ft need 2, up to 1,500 sq ft need 3, and larger spaces need 1 unit per 500 sq ft. One unit covers sensors for temperature, humidity, power, light, and occupancy.
+        <div style={{ fontSize: '0.72rem', color: '#737373', lineHeight: 1.65, padding: '0.875rem', background: 'rgba(128,128,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(128,128,128,0.12)' }}>
+          <strong style={{ color: 'inherit', fontWeight: 600 }}>How units are counted:</strong> rooms up to 300 sq ft need 1 unit, up to 800 sq ft need 2, up to 1,500 sq ft need 3, and larger spaces need 1 unit per 500 sq ft.
         </div>
       </div>
 
       <div style={{ position: 'sticky', top: '5rem' }}>
-        <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div>
+        <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '0' }}>
+
+          <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid rgba(128,128,128,0.12)' }}>
             <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#737373', marginBottom: '0.5rem' }}>
               Hardware units needed
             </div>
@@ -122,58 +115,57 @@ function Calculator() {
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(128,128,128,0.15)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+          <div style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(128,128,128,0.12)' }}>
+            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#737373', marginBottom: '0.5rem' }}>
+              Recommended plan
+            </div>
+            <div className="font-heading" style={{ fontSize: '1.5rem', fontWeight: 700, color: rec.color, marginBottom: '0.375rem' }}>
+              {rec.label}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#737373', lineHeight: 1.6 }}>
+              {recDesc[recommendation]}
+            </div>
+          </div>
+
+          <div style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#737373', marginBottom: '0.25rem' }}>
+              Costs
+            </div>
             {monthlyCost !== null ? (
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.78rem', color: '#737373' }}>Monthly cost</span>
+                  <span style={{ fontSize: '0.82rem', color: '#737373' }}>Monthly cost</span>
                   <span className="font-heading" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
                     {monthlyCost === 0 ? 'Free' : `₹${monthlyCost.toLocaleString()}`}
                   </span>
                 </div>
-                {annualCost !== null && annualCost > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontSize: '0.78rem', color: '#737373' }}>Annual cost</span>
-                    <span className="font-heading" style={{ fontSize: '1rem', fontWeight: 600, color: '#737373' }}>
-                      ₹{annualCost.toLocaleString()}
-                    </span>
-                  </div>
-                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.78rem', color: '#737373' }}>Cost per room</span>
-                  <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>
-                    {monthlyCost === 0 ? 'Free' : `₹${Math.round(monthlyCost / rooms.length).toLocaleString()}/mo`}
+                  <span style={{ fontSize: '0.82rem', color: '#737373' }}>One-time hardware cost</span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>
+                    ₹{(totalUnits * 3499).toLocaleString()}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: '0.82rem', color: '#737373' }}>Cost per room</span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>
+                    {costPerRoom === 0 ? 'Free' : `₹${costPerRoom.toLocaleString()} / mo`}
                   </span>
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: '0.82rem', color: '#737373' }}>
-                Enterprise pricing is custom. <a href="mailto:hello@atmos.in" className="link">Contact us</a> for a quote based on your exact requirements.
+              <div style={{ fontSize: '0.82rem', color: '#737373', lineHeight: 1.65 }}>
+                Enterprise pricing is custom. <a href="mailto:atmosintelligence@gmail.com" className="link">Contact us</a> for a tailored quote.
               </div>
             )}
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(128,128,128,0.15)', paddingTop: '1.25rem' }}>
-            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: '#737373', marginBottom: '0.5rem' }}>
-              Recommended plan for your setup
-            </div>
-            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: recColor[recommendation], marginBottom: '0.25rem' }}>
-              {recLabel[recommendation]}
-            </div>
-            <div style={{ fontSize: '0.72rem', color: '#737373', lineHeight: 1.6 }}>
-              {recommendation === 'spark'      && 'Your setup fits within the free Spark plan. That\'s perfect for getting started.'}
-              {recommendation === 'basic'      && 'Basic gives you unlimited units and recommendations, which may be the right fit for your scale.'}
-              {recommendation === 'premium'    && 'At this scale, real-time alerts and predictive maintenance will pay for themselves quickly.'}
-              {recommendation === 'enterprise' && 'A deployment of this size warrants a dedicated account manager and custom pricing.'}
-            </div>
-          </div>
-
-          <Link
+          <a
             href="/signup"
             className="btn bg-brand text-brand-on-bg text-center text-sm font-medium py-2.5 rounded-xl"
+            style={{ marginTop: '1.5rem', display: 'block' }}
           >
-            Get started with {recLabel[recommendation]}
-          </Link>
+            Get started with {rec.label}
+          </a>
         </div>
       </div>
     </div>
@@ -199,7 +191,7 @@ export default function PricingPage() {
     name: 'Premium',
     price: '₹699',
     period: 'per unit / month',
-    description: 'The most complete plan for serious energy optimisation.',
+    description: 'The most complete plan for serious energy optimisation',
     features: ['30-second data refresh', 'Real-time anomaly alerts', 'Predictive maintenance', 'Carbon credit revenue', 'BRSR compliance reports', 'API access'],
     href: '/signup',
   };
@@ -209,8 +201,8 @@ export default function PricingPage() {
       name: 'Spark',
       price: '₹0',
       period: 'forever',
-      description: 'Get started with basic monitoring.',
-      features: ['2 sensor units', '10-min data refresh', 'Live energy dashboard', '30-day historical graphs'],
+      description: 'Enjoy basic monitoring with simple features',
+      features: ['Enough data refresh rate', '1 or 2 devices', 'All the essentials', 'Savings'],
       cta: 'Get started',
       href: '/signup',
       highlight: false,
@@ -219,8 +211,8 @@ export default function PricingPage() {
       name: 'Basic',
       price: '₹349',
       period: 'per unit / month',
-      description: 'Recommendations and reporting for growing teams.',
-      features: ['Unlimited units', 'Top 5 recommendations', 'Anomaly email alerts', 'Monthly PDF report', 'CO₂ footprint tracker', 'Subsidy calculator'],
+      description: 'An awesome and scalable choice to begin with',
+      features: ['Everything in Spark', 'Unlimited devices', 'Alerts', 'Simple export'],
       cta: 'Start free trial',
       href: '/signup',
       highlight: false,
@@ -229,8 +221,8 @@ export default function PricingPage() {
       name: 'Premium',
       price: '₹699',
       period: 'per unit / month',
-      description: 'Real-time intelligence for serious operations.',
-      features: ['30-sec refresh', 'Real-time anomaly alerts', 'Predictive maintenance', 'BRSR compliance', 'Carbon credit revenue', 'API access'],
+      description: 'Small businesses and growing teams can turn eco-friendly',
+      features: ['Everything in Basic', 'Fast data refresh rate', 'Advanced export', 'Simple API access'],
       cta: 'Start free trial',
       href: '/signup',
       highlight: true,
@@ -238,71 +230,58 @@ export default function PricingPage() {
     {
       name: 'Enterprise',
       price: 'Custom',
-      period: 'contact us',
-      description: 'Tailored for large portfolios and institutions.',
-      features: ['Multi-building view', 'Dedicated manager', 'White-label reports', 'Custom integrations', 'Carbon credit automation', 'Priority SLA'],
+      period: 'contact us for a quote',
+      description: 'Tailored for large portfolios and institutions',
+      features: ['Everything in Premium', 'Advanced API access', 'Go white-label', 'Dedicated support'],
       cta: 'Contact sales',
-      href: 'mailto:hello@atmos.in',
+      href: 'mailto:atmosintelligence@gmail.com',
       highlight: false,
     },
   ];
 
   const CHECK   = <span style={{ color: '#4ADE80', fontWeight: 700 }}>✓</span>;
   const CROSS   = <span style={{ color: '#444', fontWeight: 700 }}>✗</span>;
-  const NOTE    = (t) => <span style={{ color: '#4ADE80', fontWeight: 700 }}>✓ <span style={{ color: '#737373', fontWeight: 400, fontSize: '0.7rem' }}>— {t}</span></span>;
+  const NOTE    = (t) => <span style={{ color: '#4ADE80', fontWeight: 700 }}>✓ <span style={{ color: '#737373', fontWeight: 400, fontSize: '0.7rem' }}><br />{t}</span></span>;
 
   const tableGroups = [
     {
       group: 'Core',
       rows: [
-        { feature: 'Data refresh rate',                      spark: '10 min', basic: '10 min',    premium: '30 sec',    enterprise: '30 sec'    },
-        { feature: 'Live energy usage dashboard',            spark: CHECK,    basic: CHECK,       premium: CHECK,       enterprise: CHECK       },
-        { feature: 'Historical usage graphs (last 30 days)', spark: CHECK,    basic: CHECK,       premium: CHECK,       enterprise: CHECK       },
-        { feature: 'Maximum sensor units',                   spark: '2 only', basic: 'Unlimited', premium: 'Unlimited', enterprise: 'Unlimited' },
-        { feature: 'Multi-building portfolio view',          spark: CROSS,    basic: CROSS,       premium: CHECK,       enterprise: CHECK       },
+        { feature: 'Data refresh rate',           spark: '10 min',  basic: '10 min',    premium: '30 sec',    enterprise: '30 sec'    },
+        { feature: 'Maximum number of devices',   spark: '2 units', basic: 'Unlimited', premium: 'Unlimited', enterprise: 'Unlimited' },
+        { feature: 'Live dashboard',              spark: CHECK,     basic: CHECK,       premium: CHECK,       enterprise: CHECK       },
+        { feature: 'Latest readings and savings', spark: CHECK,     basic: CHECK,       premium: CHECK,       enterprise: CHECK       },
+        { feature: 'Benchmark comparison',        spark: CHECK,     basic: CHECK,       premium: CHECK,       enterprise: CHECK       },
       ],
     },
     {
-      group: 'Savings and Recommendations',
+      group: 'Analysis',
       rows: [
-        { feature: 'Top 5 energy-saving recommendations',            spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
-        { feature: 'Daylight harvesting alerts',                     spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
-        { feature: 'Occupancy-based HVAC scheduling',                spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
-        { feature: 'Government subsidy calculator (MNRE/ADEETIE)',   spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
-        { feature: 'Benchmark comparison against similar buildings', spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
+        { feature: 'Recommendations',             spark: CHECK, basic: CHECK, premium: CHECK, enterprise: CHECK },
+        { feature: 'Summaries',                   spark: CHECK, basic: CHECK, premium: CHECK, enterprise: CHECK },
+        { feature: 'Graphs',                      spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
       ],
     },
     {
-      group: 'Alerts and Anomaly Detection',
+      group: 'Alerts',
       rows: [
-        { feature: 'Basic anomaly alert (next-day email)',      spark: CROSS, basic: CHECK, premium: CHECK,                       enterprise: CHECK },
-        { feature: 'Real-time anomaly alert',                   spark: CROSS, basic: CROSS, premium: NOTE('30-sec data'),         enterprise: CHECK },
-        { feature: 'Predictive maintenance alert',              spark: CROSS, basic: CROSS, premium: NOTE('trend extrapolation'), enterprise: CHECK },
+        { feature: 'Acknowledgements',            spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
+        { feature: 'Alert frequency',             spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
       ],
     },
     {
-      group: 'Reporting',
+      group: 'Reporting and API',
       rows: [
-        { feature: 'Exportable monthly energy report (PDF/JSON)', spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
-        { feature: 'Automated weekly report (every Monday)',      spark: CROSS, basic: CROSS, premium: CHECK, enterprise: CHECK },
-        { feature: 'BRSR Core compliance report',                 spark: CROSS, basic: CROSS, premium: CHECK, enterprise: CHECK },
-        { feature: 'Savings certificate',                         spark: CROSS, basic: CROSS, premium: CHECK, enterprise: CHECK },
+        { feature: 'Data JSON export',            spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
+        { feature: 'Data PDF export',             spark: CROSS, basic: CROSS, premium: CHECK, enterprise: CHECK },
+        { feature: 'API access',                  spark: CROSS, basic: CROSS, premium: NOTE("Limited endpoints"), enterprise: NOTE("All endpoints") },
+        { feature: 'White-label exports',         spark: CROSS, basic: CROSS, premium: CROSS, enterprise: CHECK },
       ],
     },
     {
-      group: 'Climate and Carbon',
+      group: 'Support',
       rows: [
-        { feature: 'CO₂ footprint tracker',                                     spark: CROSS, basic: CHECK, premium: CHECK,               enterprise: CHECK },
-        { feature: 'Carbon credit revenue estimate',                            spark: CROSS, basic: CROSS, premium: CHECK,               enterprise: CHECK },
-        { feature: 'Automatic carbon credit aggregation and sale (60% to you)', spark: CROSS, basic: CROSS, premium: NOTE('from Year 3'), enterprise: CHECK },
-      ],
-    },
-    {
-      group: 'Integration and Support',
-      rows: [
-        { feature: 'API access',                  spark: CROSS,      basic: CROSS,    premium: CHECK,      enterprise: CHECK               },
-        { feature: 'Email support response time', spark: '3–5 days', basic: '2 days', premium: 'Same day', enterprise: 'Dedicated manager' },
-        { feature: 'White-label reports',         spark: CROSS,      basic: CROSS,    premium: CROSS,      enterprise: CHECK               },
+        { feature: 'Response time by email',          spark: 'Up to 1 week', basic: 'Up to 2 days', premium: 'Same day', enterprise: 'Dedicated manager' },
       ],
     },
   ];
@@ -333,7 +312,7 @@ export default function PricingPage() {
     textAlign: 'left',
     color: '#c0c0c0',
     fontWeight: 400,
-    paddingLeft: '0',
+    paddingLeft: '1rem',
   };
 
   const groupStyle = {
@@ -345,6 +324,7 @@ export default function PricingPage() {
     color: '#4ADE80',
     textAlign: 'left',
     borderBottom: '1px solid rgba(128,128,128,0.08)',
+    paddingLeft: '1rem'
   };
 
   return (
@@ -405,7 +385,7 @@ export default function PricingPage() {
               }`}>
                 {plan.highlight && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-medium bg-white text-[var(--color-primary-dark)] px-3 py-1 rounded-full whitespace-nowrap">
-                    Most popular
+                    The idealistic option
                   </span>
                 )}
                 <div className="mb-5">
@@ -432,6 +412,28 @@ export default function PricingPage() {
               </div>
             ))}
           </div>
+
+          <div className="mt-4 card rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div>
+              <div className="text-sm font-medium mb-1 opacity-70">
+                THE HARDWARE DEVICE
+              </div>
+
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xl">
+                Apart from the subscription, you'll also need the hardware device itself. Pay only once.
+              </p>
+            </div>
+
+            <div className="text-right">
+              <div className="font-heading text-4xl font-semibold tracking-tight">
+                ₹3,499
+              </div>
+
+              <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                One-time cost
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -446,7 +448,7 @@ export default function PricingPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', minWidth: '700px' }}>
               <thead>
                 <tr>
-                  <th style={{ ...thStyle, textAlign: 'left', paddingLeft: 0, width: '35%' }}>Feature</th>
+                  <th style={{ ...thStyle, textAlign: 'left', paddingLeft: '1rem', width: '35%' }}>Feature</th>
                   <th style={thStyle}>Spark</th>
                   <th style={thStyle}>Basic</th>
                   <th style={{ ...thStyle, color: '#4ADE80' }}>Premium</th>
@@ -502,57 +504,57 @@ export default function PricingPage() {
       <section className="section-pad section-border">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="font-heading text-3xl font-semibold tracking-tight text-center mb-3">
-            Built for your home
+            Your plan is special.
           </h2>
 
           <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-2xl mx-auto">
-            Designed for Indian infrastructure, compliance requirements, and energy economics, with enterprise-grade margins, scalable deployment, and long-term sustainability incentives built in.
+            Every plan comes with these outcomes.
           </p>
 
           <div className="grid md:grid-cols-3 gap-5">
             {[
               {
-                title: 'Compliance-ready infrastructure',
+                title: 'Compliance-ready',
                 description:
-                  'Automatically generates sustainability and energy reporting required by modern enterprises, reducing manual audits and operational overhead.',
+                  'We always comply with national standards',
               },
 
               {
-                title: 'Recurring savings & carbon revenue',
+                title: 'Save and repeat',
                 description:
-                  'Atmos continuously identifies inefficiencies, unlocks retrofit opportunities, and enables recurring carbon-credit income from verified energy reductions.',
+                  'Atmos continuously enables recurring carbon-credit income',
               },
 
               {
-                title: 'Scalable by design',
+                title: 'Scalable',
                 description:
-                  'Built on a high-margin software model with extremely low infrastructure cost per building, enabling affordable deployment across campuses, offices, and chains.',
+                  'We\'re built on a high-margin software model',
               },
 
               {
-                title: 'Enterprise retention engine',
+                title: 'Bulk deployment',
                 description:
-                  'Long-term contracts, analytics lock-in, and measurable operational savings create strong retention and growing customer value over time.',
+                  'Grab multiple devices to multiply the output',
               },
 
               {
-                title: 'Multi-layer revenue model',
+                title: 'Upgrade anytime',
                 description:
-                  'Beyond subscriptions, Atmos monetises implementation, analytics, sustainability incentives, and ecosystem partnerships, ultimately diversifying revenue streams.',
+                  'Don\'t worry if you\'re not confident with your plan',
               },
 
               {
-                title: 'Optimised for rapid adoption',
+                title: 'Enterprise solution',
                 description:
-                  'Bulk deployment pricing, annual plans, referrals, and education-focused programmes reduce acquisition cost while accelerating nationwide growth.',
+                  'Large enterprises are welcome and prioritised',
               },
             ].map(f => (
               <div key={f.title} className="card p-6">
-                <h3 className="font-heading font-semibold text-sm mb-2 text-brand">
+                <h3 className="font-heading font-semibold text-sm mb-2 text-brand text-center">
                   {f.title}
                 </h3>
 
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed text-center">
                   {f.description}
                 </p>
               </div>
@@ -577,19 +579,15 @@ export default function PricingPage() {
               },
               {
                 q: 'Is the hardware included in the price?',
-                a: 'Nope. The hardware is a one-time purchase for which you pay separately. The monthly subscription covers the software, dashboard, analytics, and support.',
+                a: 'No, the hardware is a one-time purchase which you pay for separately. The monthly subscription covers the core software, analysis, reporting, and support.',
               },
               {
                 q: 'What happens to my data if I cancel?',
-                a: 'Your data is retained for 90 days after cancellation. You can export it at any time from the dashboard before the time window closes.',
+                a: 'Your data is retained for 90 days after cancellation, unless you choose to subscribe again. If you\'re on the Basic plan or higher, you can export it at any time from the dashboard before the time window closes.',
               },
               {
                 q: 'Does the Spark plan expire?',
-                a: 'No. Spark is free forever, with no credit card required. It is limited to 2 units and 10-minute refresh intervals.',
-              },
-              {
-                q: 'How does the carbon credit automation work?',
-                a: 'From Year 3 of a Premium subscription, Atmos aggregates your verified energy savings and sells them as carbon credits on your behalf. You receive 60% of the proceeds directly.',
+                a: 'No, Spark is free forever, with no credit card required. However, it is limited to 2 units and 10-minute refresh intervals, among other small features.',
               },
             ].map((item, i) => (
               <div key={i} className="py-5">
