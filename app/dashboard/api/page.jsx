@@ -39,7 +39,20 @@ function EndpointCard({ method, path, description, children }) {
         onClick={() => setOpen(o => !o)}
         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.02)', border: 'none', cursor: 'pointer', textAlign: 'left' }}
       >
-        <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '0.375rem', background: methodColor + '18', color: methodColor, fontFamily: 'monospace', flexShrink: 0 }}>
+        <span
+          style={{
+            width: '4.5rem',
+            fontSize: '0.7rem',
+            fontWeight: 800,
+            padding: '0.2rem 0.6rem',
+            borderRadius: '0.375rem',
+            background: methodColor + '18',
+            color: methodColor,
+            fontFamily: 'monospace',
+            flexShrink: 0,
+            textAlign: 'center',
+          }}
+        >
           {method}
         </span>
         <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: '#c0c0c0', flex: 1 }}>{path}</span>

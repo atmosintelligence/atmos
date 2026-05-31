@@ -51,7 +51,6 @@ export default function PowerPage() {
     }
 
     load();
-    console.log(data === cached);
     return () => { cancelled = true; };
   }, [selectedId, refreshKey, isDemo, demoReadings]);
 

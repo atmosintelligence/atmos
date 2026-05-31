@@ -18,7 +18,6 @@ function fmtDay(ts) {
 }
 
 export default function PowerChart({ readings, avgPower }) {
-  console.log('PowerChart render');
   const grid = C.gridDark;
   const tick = C.tickDark;
   const axis = C.axisDark;
@@ -66,9 +65,6 @@ export default function PowerChart({ readings, avgPower }) {
   const interval = Math.floor(powerTimeline.length / 6);
 
   if (!powerTimeline.length) return null;
-
-  console.log('render');
-  console.log(powerTimeline.length);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
