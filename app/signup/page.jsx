@@ -152,7 +152,7 @@ export default function SignupPage() {
               </div>
               {error && <p className="text-xs text-red-500">{error}</p>}
               <button type="submit" disabled={loading} className="btn-primary mt-2 w-full bg-brand text-brand-on-bg py-2.5 rounded-xl text-sm font-medium disabled:opacity-50">
-                {loading ? 'Creating account...' : 'Create account'}
+                {loading ? 'Creating account…' : 'Create account'}
               </button>
             </form>
           )}

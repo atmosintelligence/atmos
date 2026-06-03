@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 const words = [
   'Lower bills.',
-  'Get eco-friendly.',
+  'Go eco-friendly.',
   'Enjoy savings.',
   'Reduce waste.',
 ];

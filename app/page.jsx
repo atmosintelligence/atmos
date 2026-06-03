@@ -34,6 +34,19 @@ import {
   growthChartData,
 } from './data/charts';
 
+import dynamic from 'next/dynamic';
+
+const HardwareViewer = dynamic(() => import('@/components/HardwareViewer'), {
+  ssr:     false,
+  loading: () => (
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 600, letterSpacing: '0.06em' }}>
+        LOADING MODEL…
+      </div>
+    </div>
+  ),
+});
+
 const features = [
   {
     title: 'Get',
@@ -130,7 +143,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-6 text-neutral-600 dark:text-neutral-300/90 text-lg max-w-2xl leading-relaxed">
-              Connect the physical device and get energy optimizations directly on the dashboard. Save bills by smartening your room or building.
+              Transform your room, office, or building into an intelligent energy-efficient space. Our IoT sensor-based solution delivers real-time monitoring and actionable insights on your personalised dashboards to help you optimize energy usage and lower bills.
             </p>
 
             <div className="mt-10 flex items-center gap-4 flex-wrap justify-center">
@@ -153,8 +166,51 @@ export default function HomePage() {
                 </span>
               </a>
             </div>
+          </div>
 
-            
+          <div style={{
+            position:    'absolute',
+            bottom:      '2rem',
+            left:        '2rem',
+            zIndex:      2,
+            width:       '340px',
+            height:      '170px',
+            background:  'rgba(10,10,10,0.52)',
+            border:      '1px solid rgba(255,255,255,0.07)',
+            borderRadius: '0.875rem',
+            overflow:    'hidden',
+            display:     'grid',
+            gridTemplateColumns: '1fr 1fr',
+            pointerEvents: 'auto',
+          }}>
+            <div style={{ height: '170px', position: 'relative', minWidth: 0, overflow: 'hidden' }}>
+              <HardwareViewer />
+            </div>
+
+            <div style={{
+                padding:        '1.25rem 1rem',
+                display:        'flex',
+                flexDirection:  'column',
+                justifyContent: 'center',
+                gap:            '0.5rem',
+                borderLeft:     '1px solid rgba(255,255,255,0.05)',
+                textAlign:      'left',
+                minWidth:       0,
+                overflow:       'hidden',
+            }}>
+              <div style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#4ADE80' }}>
+                Hardware
+              </div>
+              <div style={{ fontFamily: 'var(--font-syne)', fontSize: '0.9rem', fontWeight: 700, color: '#e8e8e8', lineHeight: 1.2 }}>
+                SENSOR DEVICE
+              </div>
+              <p style={{ fontSize: '0.7rem', color: '#555', lineHeight: 1.6, margin: 0 }}>
+                The 3D-printed cover of the device
+              </p>
+              <a href="/pricing" style={{ fontSize: '0.68rem', fontWeight: 700, color: '#4ADE80', textDecoration: 'none', marginTop: '0.25rem' }}>
+                GET →
+              </a>
+            </div>
           </div>
 
           <div id="how-atmos-works" className="pb-10">

@@ -337,7 +337,7 @@ export default function PricingPage() {
               Simple,<br />honest<br /><span className="text-brand">pricing.</span>
             </h1>
             <p className="text-neutral-500 dark:text-neutral-400 text-lg leading-relaxed max-w-sm">
-              Start free. Upgrade when you need more. No hidden fees, no lock-in.
+              Get the real deal. Start free with no hidden fees. Upgrade when you need more.
             </p>
             <a href="#plans" onClick={scrollToPlans} className="arrow-link link self-start text-sm">
               <span>See all plans</span>
