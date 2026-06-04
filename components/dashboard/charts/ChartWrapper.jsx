@@ -11,7 +11,7 @@ export default function ChartWrapper({ title, subtitle, children, height }) {
           {subtitle}
         </p>
       )}
-      <div className="card" style={{ padding: '1.25rem 1rem 0.875rem', height: height ?? 'auto', minWidth: 0, }}>
+      <div className="card" style={{ padding: '1.25rem 1rem 0.875rem', height: height ?? 'auto' }}>
         {children}
       </div>
     </div>
