@@ -10,29 +10,29 @@ const PLANS = {
     label: 'Spark',
     price: '₹0',
     color: '#737373',
-    description: 'Free forever. Basic monitoring for up to 2 devices.',
-    features: ['2 sensor units', '10-min refresh', 'Live dashboard', '30-day history'],
+    description: 'Enjoy basic monitoring with simple features; free forever',
+    features: ['10-min refresh', 'Up to 2 devices', 'All the essentials', 'Savings'],
   },
   basic: {
     label: 'Basic',
     price: '₹349',
     color: '#60a5fa',
-    description: 'Recommendations and reporting for growing teams.',
-    features: ['Unlimited units', '10-min refresh', 'Top 5 recommendations', 'Monthly PDF report'],
+    description: 'An awesome and scalable choice to begin with; get to optimizing!',
+    features: ['10-min refresh rate', 'Unlimited devices', 'Alerts', 'Simple export'],
   },
   premium: {
     label: 'Premium',
     price: '₹699',
     color: '#4ADE80',
-    description: 'Real-time intelligence for serious operations.',
-    features: ['30-sec refresh', 'Real-time alerts', 'Predictive maintenance', 'BRSR compliance', 'API access'],
+    description: 'Small businesses and growing teams can turn eco-friendly; you got the idealistic option',
+    features: ['30-sec refresh rate', 'Unlimited devices', 'Advanced export', 'Simple API access'],
   },
   enterprise: {
     label: 'Enterprise',
     price: 'Custom',
     color: '#a78bfa',
-    description: 'Tailored for large portfolios and institutions.',
-    features: ['Everything in Premium', 'Dedicated manager', 'White-label reports', 'Custom integrations'],
+    description: 'Based on a custom price. Tailored for large portfolios and institutions; you have earned it all!',
+    features: ['30-sec refresh rate', 'Unlimited devices', 'Dedicated support', 'Advanced exports and API', 'Everything, basically'],
   },
 };
 
@@ -140,7 +140,7 @@ export default function SubscriptionPage() {
       </div>
 
       <div className="dash-device-card" style={{ borderColor: currentPlan.color + '40' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.25rem' }}>
           <div>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: currentPlan.color, marginBottom: '0.375rem' }}>
               Current plan
@@ -258,7 +258,7 @@ export default function SubscriptionPage() {
       )}
 
       {sub.plan === 'enterprise' && (
-        <div className="dash-empty">You are on the Enterprise plan. Contact your account manager for renewals or changes.</div>
+        <div className="dash-empty">You are on the elite Enterprise plan! Contact your account manager for renewals or support.</div>
       )}
 
       <div style={{ fontSize: '0.72rem', color: '#737373', lineHeight: 1.6 }}>

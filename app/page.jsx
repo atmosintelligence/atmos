@@ -36,17 +36,6 @@ import {
 
 import dynamic from 'next/dynamic';
 
-const HardwareViewer = dynamic(() => import('@/components/HardwareViewer'), {
-  ssr:     false,
-  loading: () => (
-    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 600, letterSpacing: '0.06em' }}>
-        LOADING MODEL…
-      </div>
-    </div>
-  ),
-});
-
 const features = [
   {
     title: 'Get',
@@ -58,7 +47,7 @@ const features = [
   },
   {
     title: 'Optimize',
-    description: "Track savings, alerts, and optimizations from your dashboard.",
+    description: "Track savings, alerts, and optimisations from your dashboard.",
   },
 ];
 
@@ -133,8 +122,8 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 bg-transparent border-0">
               <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
 
-              <span className="text-[11px] uppercase tracking-[0.28em] text-brand font-semibold">
-                Sense · Optimise · Act
+              <span className="text-[11px] uppercase tracking-[0.28em] text-brand font-bold">
+                Sense • Optimise • Act
               </span>
             </div>
 
@@ -168,48 +157,91 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div style={{
-            position:    'absolute',
-            bottom:      '2rem',
-            left:        '2rem',
-            zIndex:      2,
-            width:       '340px',
-            height:      '170px',
-            background:  'rgba(10,10,10,0.52)',
-            border:      '1px solid rgba(255,255,255,0.07)',
-            borderRadius: '0.875rem',
-            overflow:    'hidden',
-            display:     'grid',
-            gridTemplateColumns: '1fr 1fr',
-            pointerEvents: 'auto',
-          }}>
-            <div style={{ height: '170px', position: 'relative', minWidth: 0, overflow: 'hidden' }}>
-              <HardwareViewer />
-            </div>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '2rem',
+              left: '2rem',
+              zIndex: 2,
+              width: '420px',
+              height: '240px',
+              borderRadius: '1rem',
+              overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(10,10,10,0.45)',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+              pointerEvents: 'auto',
+            }}
+          >
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            >
+              <source src="/movie.mp4" type="video/mp4" />
+            </video>
 
-            <div style={{
-                padding:        '1.25rem 1rem',
-                display:        'flex',
-                flexDirection:  'column',
-                justifyContent: 'center',
-                gap:            '0.5rem',
-                borderLeft:     '1px solid rgba(255,255,255,0.05)',
-                textAlign:      'left',
-                minWidth:       0,
-                overflow:       'hidden',
-            }}>
-              <div style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#4ADE80' }}>
-                Hardware
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background:
+                  'linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.15), transparent)',
+              }}
+            />
+
+            <div
+              style={{
+                position: 'absolute',
+                left: '1.25rem',
+                bottom: '1.25rem',
+                zIndex: 1,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '0.58rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: '#4ADE80',
+                  marginBottom: '0.4rem',
+                  textAlign: 'left',
+                }}
+              >
+                ANIMATED
               </div>
-              <div style={{ fontFamily: 'var(--font-syne)', fontSize: '0.9rem', fontWeight: 700, color: '#e8e8e8', lineHeight: 1.2 }}>
-                SENSOR DEVICE
+
+              <div
+                style={{
+                  fontFamily: 'var(--font-syne)',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  color: '#fff',
+                  marginBottom: '0.35rem',
+                  textAlign: 'left',
+                }}
+              >
+                FLOW OF DATA
               </div>
-              <p style={{ fontSize: '0.7rem', color: '#555', lineHeight: 1.6, margin: 0 }}>
-                The 3D-printed cover of the device
-              </p>
-              <a href="/pricing" style={{ fontSize: '0.68rem', fontWeight: 700, color: '#4ADE80', textDecoration: 'none', marginTop: '0.25rem' }}>
-                GET →
-              </a>
+
+              <div
+                style={{
+                  fontSize: '0.72rem',
+                  color: 'rgba(255,255,255,0.72)',
+                  textAlign: 'left',
+                }}
+              >
+                Data moving on the right path
+              </div>
             </div>
           </div>
 
@@ -305,7 +337,7 @@ export default function HomePage() {
 
                   <img
                     src="/hero_2.png"
-                    alt="Atmos dashboard showing live energy optimization insights"
+                    alt="Atmos dashboard showing live energy optimisation insights"
                     className="w-full h-auto object-cover select-none"
                     draggable={false}
                   />
@@ -351,7 +383,7 @@ export default function HomePage() {
               </div>
 
               <h2 className="font-heading text-3xl font-semibold tracking-tight mb-4">
-                Get Optimizations
+                Get Optimisations
               </h2>
 
               <p className="text-neutral-500 dark:text-neutral-400 max-w-xl text-sm leading-relaxed mb-10">
@@ -381,7 +413,7 @@ export default function HomePage() {
                   {
                     category: 'Trends & Predictions',
                     title: 'Unusual patterns',
-                    description: 'Compare live usage against historical baselines to fix things early.',
+                    description: 'Something feels off. Do you care to check?',
                     tag: 'Issue detection',
                   },
                   {
@@ -564,9 +596,9 @@ export default function HomePage() {
                   'We track voltage changes; get alerted when power becomes unstable',
               },
               {
-                title: 'Subsidy finder',
+                title: 'Privacy',
                 description:
-                  'You\'re in luck! We identify government energy-saving and solar subsidies',
+                  'Your home is only yours; we don\'t share or sell your information',
               },
               {
                 title: 'Scalable',
@@ -657,7 +689,7 @@ export default function HomePage() {
                 step: '03',
                 title: 'We think',
                 description:
-                  'Optimizations and alerts are already waiting for you in your dashboard',
+                  'Optimisations and alerts are already waiting for you in your dashboard',
               },
             ].map((s, i, arr) => (
               <div
@@ -1045,45 +1077,45 @@ export default function HomePage() {
           </h2>
 
           <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-xl mx-auto text-sm leading-relaxed">
-            Whether it's a single apartment or an entire property network, Atmos adapts its intelligence to match your environment without adding complexity.
+            We have a solution for everyone. Atmos adapts its intelligence to match your environment without adding complexity.
           </p>
 
           <div className="grid md:grid-cols-2 gap-5">
             {[
               {
-                type: 'Homes & apartments',
+                type: 'Homes',
                 icon: 'home',
-                description: 'Track usage patterns, detect wasteful habits, and get simple efficiency suggestions without technical setup.',
-                plan: 'Spark / Basic',
+                description: 'No technical setup for a home that wants to be eco-friendly',
+                plan: 'Spark',
               },
               {
-                type: 'Offices & co-working',
+                type: 'Workspaces',
                 icon: 'office',
-                description: 'Reduce occupancy-based waste in lighting and HVAC with automatic insights across rooms.',
-                plan: 'Basic / Premium',
+                description: 'Get detailed insights for multiple rooms',
+                plan: 'Basic',
               },
               {
-                type: 'Schools & universities',
+                type: 'Schools',
                 icon: 'school',
-                description: 'Build energy awareness across campuses and support sustainability programs with real data.',
+                description: 'Let students know how important the environment is',
                 plan: 'Premium',
               },
               {
-                type: 'Hospitals & clinics',
+                type: 'Hospitals',
                 icon: 'hospital',
-                description: 'Maintain strict environmental conditions while optimizing energy usage safely.',
+                description: 'Maintain and monitor environmental conditions, save energy',
                 plan: 'Premium',
               },
               {
-                type: 'Industrial facilities',
+                type: 'Industry',
                 icon: 'factory',
-                description: 'Detect anomalies, reduce downtime risk, and improve energy efficiency at scale.',
-                plan: 'Premium / Enterprise',
+                description: 'Save energy as you manufacture, it\'s a win-win situation',
+                plan: 'Enterprise',
               },
               {
-                type: 'Real estate portfolios',
+                type: 'Bigger portfolios',
                 icon: 'building',
-                description: 'Centralized analytics, ESG reporting, and multi-site monitoring for large property networks.',
+                description: 'Worldwide reporting, fast API, setup is simple still',
                 plan: 'Enterprise',
               },
             ].map((u, i) => (
@@ -1100,7 +1132,7 @@ export default function HomePage() {
                     <div className="flex items-center justify-between gap-3 mb-1">
                       <h3 className="font-heading font-semibold text-sm">{u.type}</h3>
 
-                      <span className="text-[10px] px-2 py-1 rounded-full bg-brand/10 text-brand whitespace-nowrap">
+                      <span className="text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-brand/10 text-brand whitespace-nowrap tracking-wide">
                         {u.plan}
                       </span>
                     </div>

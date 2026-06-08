@@ -20,7 +20,7 @@ const inter = localFont({
 
 export const metadata = {
   title: 'Atmos Intelligence',
-  description: "India's premier energy optimization tech, built for homes and offices alike"
+  description: "India's premier energy optimisation tech, built for homes and offices alike"
 };
 
 export default function RootLayout({ children }) {

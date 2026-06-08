@@ -2,13 +2,13 @@
 
 This repository houses the code for Atmos Intelligence's software, which is essentially a web server backed by Next.js. You can visit the website at: https://atmosintelligence.vercel.app
 
-**Note:** This repository does not include core protected directories such as the API that exposes premium endpoints, optimizations, and the dashboard. The remaining parts of the repository such as the homepage or the Pricing page are open-source.
+**Note:** This repository does not include core protected directories such as the API that exposes premium endpoints, optimisations, and the dashboard. The remaining parts of the repository such as the homepage or the Pricing page are open-source.
 
-Atmos Intelligence is a smart environmental optimization system designed to make indoor spaces more energy-efficient and sustainable. Using real-time sensor data, it analyzes room conditions and generates intelligent recommendations that help users reduce unnecessary energy consumption. By combining hardware sensing with cloud-based analytics, Atmos Intelligence transforms raw environmental data into actionable insights.
+Atmos Intelligence is a smart environmental optimisation system designed to make indoor spaces more energy-efficient and sustainable. Using real-time sensor data, it analyzes room conditions and generates intelligent recommendations that help users reduce unnecessary energy consumption. By combining hardware sensing with cloud-based analytics, Atmos Intelligence transforms raw environmental data into actionable insights.
 
 **Vision:** Atmos Intelligence envisions a future where every indoor space becomes self-aware, energy-efficient, and environmentally responsible.
 
-**Mission:** Our mission is to transform passive rooms into intelligent ecosystems that continuously analyze their conditions and recommend sustainable actions. By making environmental intelligence accessible through simple hardware and cloud technology, we aim to democratize smart energy optimization for homes, schools, offices, and public spaces.
+**Mission:** Our mission is to transform passive rooms into intelligent ecosystems that continuously analyze their conditions and recommend sustainable actions. By making environmental intelligence accessible through simple hardware and cloud technology, we aim to democratize smart energy optimisation for homes, schools, offices, and public spaces.
 
 Every day, significant amounts of energy are wasted in indoor environments simply because inefficiencies go unnoticed. Team Atmos is here to save the day!
 
@@ -16,7 +16,7 @@ Every day, significant amounts of energy are wasted in indoor environments simpl
 
 Atmos Intelligence comes with its own physical hardware device, powered with relevant sensors that help trace issues with your room. A user can have an unlimited number of such devices. The user receives data to a well-lit dashboard. This requires an Internet connection.
 
-The dashboard features insightful analytics, backed by optimizations. One can work upon these optimizations to save money and energy. Thus, our goal is simple: __to provide energy optimization__.
+The dashboard features insightful analytics, backed by optimisations. One can work upon these optimisations to save money and energy. Thus, our goal is simple: __to provide energy optimisation__.
 
 ## Team Atmos
 

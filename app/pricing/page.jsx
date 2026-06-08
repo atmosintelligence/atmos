@@ -96,7 +96,10 @@ function Calculator() {
         </div>
 
         <div style={{ fontSize: '0.72rem', color: '#737373', lineHeight: 1.65, padding: '0.875rem', background: 'rgba(128,128,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(128,128,128,0.12)' }}>
-          <strong style={{ color: 'inherit', fontWeight: 600 }}>How units are counted:</strong> rooms up to 300 sq ft need 1 unit, up to 800 sq ft need 2, up to 1,500 sq ft need 3, and larger spaces need 1 unit per 500 sq ft.
+          <strong style={{ color: 'inherit', fontWeight: 600 }}>
+            How units are calculated:
+          </strong>{' '}
+          Hardware needs scale with room size, while plan recommendations depend on total area and room count. Larger buildings require more units for complete coverage and may qualify for Premium or Enterprise plans.
         </div>
       </div>
 
@@ -232,7 +235,7 @@ export default function PricingPage() {
       price: 'Custom',
       period: 'contact us for a quote',
       description: 'Tailored for large portfolios and institutions',
-      features: ['Everything in Premium', 'Advanced API access', 'Go white-label', 'Dedicated support'],
+      features: ['Everything in Premium', 'Advanced API access', 'Advanced reports', 'Dedicated support'],
       cta: 'Contact sales',
       href: 'mailto:atmosintelligence@gmail.com',
       highlight: false,
@@ -275,7 +278,7 @@ export default function PricingPage() {
         { feature: 'Data JSON export',            spark: CROSS, basic: CHECK, premium: CHECK, enterprise: CHECK },
         { feature: 'Data PDF export',             spark: CROSS, basic: CROSS, premium: CHECK, enterprise: CHECK },
         { feature: 'API access',                  spark: CROSS, basic: CROSS, premium: NOTE("Limited endpoints"), enterprise: NOTE("All endpoints") },
-        { feature: 'White-label exports',         spark: CROSS, basic: CROSS, premium: CROSS, enterprise: CHECK },
+        { feature: 'Advanced exports',         spark: CROSS, basic: CROSS, premium: CROSS, enterprise: CHECK },
       ],
     },
     {
