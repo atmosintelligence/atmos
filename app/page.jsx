@@ -163,8 +163,8 @@ export default function HomePage() {
               bottom: '2rem',
               left: '2rem',
               zIndex: 2,
-              width: '420px',
-              height: '240px',
+              width: '300px',
+              height: '300px',
               borderRadius: '1rem',
               overflow: 'hidden',
               border: '1px solid rgba(255,255,255,0.08)',
@@ -217,7 +217,7 @@ export default function HomePage() {
                   textAlign: 'left',
                 }}
               >
-                ANIMATED
+                ATMOS IN ACTION
               </div>
 
               <div
@@ -230,7 +230,7 @@ export default function HomePage() {
                   textAlign: 'left',
                 }}
               >
-                FLOW OF DATA
+                DATA FLOW
               </div>
 
               <div
@@ -240,7 +240,7 @@ export default function HomePage() {
                   textAlign: 'left',
                 }}
               >
-                Data moving on the right path
+                From the hardware to the dashboard
               </div>
             </div>
           </div>
