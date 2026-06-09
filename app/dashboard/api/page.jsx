@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useDevice } from '../DeviceContext';
 import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
 
 function CodeBlock({ code, label }) {
   const [copied, setCopied] = useState(false);
@@ -132,6 +133,12 @@ export default function ApiPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+      {isDemo && (
+        <div style={{ fontSize: '0.78rem', color: '#737373', padding: '0.75rem 1rem', background: 'rgba(74,222,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(74,222,128,0.15)', marginBottom: '0.5rem' }}>
+          API key generation is not possible in demo mode. <Link href="/signup" className="link">Create an account</Link> and grab a hardware unit to generate an API key!
+        </div>
+      )}
+
       <div className="dash-greeting">
         <div className="dash-greeting-name">API</div>
         <div className="dash-greeting-sub">
@@ -142,7 +149,7 @@ export default function ApiPage() {
       <div className="dash-device-card">
         <div className="dash-section-title" style={{ marginBottom: '0.75rem' }}>Your API key</div>
         <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, marginBottom: '1rem' }}>
-          All API requests must include your key in the <code style={{ fontSize: '0.75rem', background: 'rgba(128,128,128,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem' }}>Authorization</code> header. You may integrate this API whereever you deem fit. Keep this key secret!
+          All API requests must include your key in the <code style={{ fontSize: '0.75rem', background: 'rgba(128,128,128,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem' }}>Authorization</code> header. You may integrate this API wherever you deem fit. Keep this key secret!
         </p>
 
         {apiKey ? (
