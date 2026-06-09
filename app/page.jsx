@@ -539,18 +539,18 @@ export default function HomePage() {
             {[
               {
                 value: '25%',
-                label: 'energy wasted in buildings',
+                label: 'energy gets wasted in non-Atmos buildings',
                 desc: 'For reasons that Atmos knows',
               },
               {
-                value: '₹4,000',
-                label: 'wasted per year',
+                value: 'Up to ₹3.3 lakhs',
+                label: 'in electrical savings per year',
                 desc: 'That\'s a lot per building',
               },
               {
-                value: '1',
-                label: 'family could use the waste per year',
-                desc: 'Your waste could be shelter for 4 people',
+                value: '24 tons / yr',
+                label: 'of carbon reduced per building',
+                desc: 'Let oxygen take over for once',
               },
             ].map((s, i) => (
               <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '2rem' }}>
@@ -766,7 +766,7 @@ export default function HomePage() {
             />
             <GraphCard
               title="Carbon credit revenue growth"
-              description="Accelerate with carbon credit with Atmos installed"
+              description="Accelerate carbon credit with Atmos installed; graph shown is for 500 buildings"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
@@ -832,7 +832,7 @@ export default function HomePage() {
             </GraphCard>
             <GraphCard
               title="Energy savings"
-              description="Save energy over the years with Atmos installed"
+              description="Save energy over the years with Atmos installed; graph shown is for 500 buildings"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
