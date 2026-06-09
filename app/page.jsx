@@ -523,46 +523,6 @@ export default function HomePage() {
         </div>
       </RevealSection>
 
-      <RevealSection className="section-pad section-border relative overflow-hidden">
-        <CarbonBubbles />
-        <div className="max-w-5xl mx-auto">
-          <div style={{ fontSize: '1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-primary-dark)', marginBottom: '1rem', textAlign: 'center' }} className="dark:text-[var(--color-primary)]">
-            Environmental impact
-          </div>
-          <h2 className="font-heading text-3xl font-semibold tracking-tight text-center mb-3">
-            Get rid of carbon
-          </h2>
-          <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-xl mx-auto text-sm leading-relaxed">
-            The following are some carbon-related stats. What if you had a superpower to get rid of this carbon dioxide?
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
-            {[
-              {
-                value: '25%',
-                label: 'energy gets wasted in non-Atmos buildings',
-                desc: 'For reasons that Atmos knows',
-              },
-              {
-                value: 'Up to ₹3.3 lakhs',
-                label: 'in electrical savings per year',
-                desc: 'That\'s a lot per building',
-              },
-              {
-                value: '24 tons / yr',
-                label: 'of carbon reduced per building',
-                desc: 'Let oxygen take over for once',
-              },
-            ].map((s, i) => (
-              <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '2rem' }}>
-                <div className="font-heading font-semibold text-brand text-center" style={{ fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '0.5rem' }}>{s.value}</div>
-                <div className="text-center" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem' }}>{s.label}</div>
-                <p className="text-neutral-500 dark:text-neutral-400 text-center" style={{ fontSize: '0.78rem', lineHeight: 1.7 }}>{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
-
       <RevealSection className="section-pad section-border">
         <div className="max-w-5xl mx-auto">
           <div
@@ -733,6 +693,101 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </RevealSection>
+
+      <RevealSection className="section-pad section-border">
+        <CarbonBubbles />
+        <div className="max-w-7xl mx-auto">
+
+          <div
+            style={{
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              color: 'var(--color-primary-dark)',
+              marginBottom: '1rem',
+              textAlign: 'center',
+            }}
+            className="dark:text-[var(--color-primary)]"
+          >
+            What you get
+          </div>
+
+          <h2 className="font-heading text-3xl font-semibold tracking-tight text-center mb-3">
+            Per building. Per year.
+          </h2>
+
+          <p className="text-neutral-500 dark:text-neutral-400 text-center mb-16 max-w-2xl mx-auto text-sm leading-relaxed">
+            Real numbers based on BEE and CEA benchmarks. These figures represent
+            what a typical building can achieve with Atmos installed.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
+            {[
+              {
+                value: '33,000 kWh',
+                title: 'Energy saved per building',
+                desc: 'Based on BEE research',
+                upto: true,
+              },
+              {
+                value: '₹3.3 L',
+                title: 'Monetary savings per building',
+                desc: 'Back in your pocket every year',
+                upto: true,
+              },
+              {
+                value: '24 tons',
+                title: 'CO₂ cut per building',
+                desc: 'Lower emissions through efficiency',
+                upto: true,
+              },
+              {
+                value: '₹10,000',
+                title: 'Carbon credits unlocked',
+                desc: 'Earn while reducing emissions',
+                upto: true,
+              },
+              {
+                value: '₹0',
+                title: 'Installation cost',
+                desc: 'No setup fees for Atmos hardware',
+                upto: false,
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="
+                  px-6 py-2
+                  text-center
+                  flex flex-col items-center
+                  border-b sm:border-b-0
+                  border-black/8 dark:border-white/10
+                  xl:border-r
+                  last:border-r-0
+                "
+              >
+                <div className="text-[10px] uppercase tracking-[0.14em] text-brand font-semibold mb-1 h-[14px]">
+                  {item.upto ? 'Up to' : ''}
+                </div>
+
+                <div className="font-heading text-brand text-[2.6rem] font-semibold leading-none tracking-tight mb-4">
+                  {item.value}
+                </div>
+
+                <div className="text-xs font-semibold mb-2">
+                  {item.title}
+                </div>
+
+                <div className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-[12rem] mx-auto">
+                  {item.desc}
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </RevealSection>
 
