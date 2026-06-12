@@ -51,50 +51,29 @@ const features = [
   },
 ];
 
+const scrollToHowAtmosWorks = (e) => {
+  e.preventDefault();
+
+  document
+    .getElementById('how-atmos-works')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 function ScrollIndicator() {
-  const [opacity, setOpacity] = useState(1);
-
+  const [visible, setVisible] = useState(true);
   useEffect(() => {
-    function onScroll() {
-      const threshold = window.innerHeight * 0.6;
-      setOpacity(Math.max(0, 1 - window.scrollY / threshold));
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const onScroll = () => setVisible(window.scrollY < 80);
+    window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
   return (
     <div
-      aria-hidden="true"
-      style={{
-        position: 'fixed',
-        bottom: '2rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 50,
-        opacity,
-        transition: 'opacity 0.15s linear',
-        pointerEvents: opacity < 0.05 ? 'none' : 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.375rem',
-        color: 'rgba(255,255,255,0.45)',
-      }}
+      className={`flex flex-col items-center gap-1.5 text-neutral-400 transition-opacity duration-500 mb-10 cursor-pointer ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      href="#how-atmos-works"
+      onClick={scrollToHowAtmosWorks}
     >
-      <span
-        style={{
-          fontSize: '0.6rem',
-          textTransform: 'uppercase',
-          letterSpacing: '0.14em',
-          fontWeight: 600,
-        }}
-      >
-        Scroll
-      </span>
-
-      <Icon name="arrowDown" />
+      <span className="text-xs tracking-widest uppercase">Scroll</span>
+      <Icon name="arrowDown" className="animate-bounce" />
     </div>
   );
 }
@@ -131,46 +110,7 @@ export default function HomePage() {
 
   return (
     <main>
-      <section
-        style={{
-          position: 'relative',
-          height: '100dvh',
-          overflow: 'hidden',
-        }}
-      >
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-          }}
-        >
-          <source src="/movie.mp4" type="video/mp4" />
-        </video>
-
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '30%',
-            background:
-              'linear-gradient(to bottom, transparent, #0f0f0f)',
-            pointerEvents: 'none',
-          }}
-        />
-      </section>
-
-      <RevealSection className="min-h-dvh flex flex-col items-center justify-center text-center px-6 pt-16 relative overflow-hidden section-border bg-white dark:bg-black">
+      <section className="min-h-dvh flex flex-col items-center justify-center text-center px-6 pt-16 relative overflow-hidden section-border bg-white dark:bg-black">
         <div className="hero-glow" />
         <GlobeBackground />
         <CarbonFlow />
@@ -205,6 +145,7 @@ export default function HomePage() {
 
               <a
                 href="#how-atmos-works"
+                onClick={scrollToHowAtmosWorks}
                 className="arrow-link text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors inline-flex items-center gap-2 select-none"
               >
                 <span>See how it works</span>
@@ -215,8 +156,13 @@ export default function HomePage() {
               </a>
             </div>
           </div>
+
+          
+          <div id="how-atmos-works" className="pb-10">
+            <ScrollIndicator />
+          </div>
         </div>
-      </RevealSection>
+      </section>
 
       <RevealSection
         className="section-pad section-border overflow-hidden"
@@ -256,7 +202,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="relative hidden lg:flex justify-end">
+            {/* RIGHT COLUMN — image + video anchored together */}
+            <div className="relative hidden lg:flex justify-end items-start" style={{ marginTop: '-150px' }}>
+
+              {/* Dashboard image */}
               <div
                 className="group relative transition-all duration-500 ease-out hover:scale-[1.04]"
                 style={{
@@ -272,12 +221,8 @@ export default function HomePage() {
                     'perspective(1800px) rotateY(-18deg) rotateX(4deg)';
                 }}
               >
-                <div
-                  className="absolute inset-0 rounded-[2rem] bg-brand/10 blur-3xl opacity-60 scale-90"
-                />
-                <div
-                  className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0f0f0f] shadow-2xl backdrop-blur-xl"
-                >
+                <div className="absolute inset-0 rounded-[2rem] bg-brand/10 blur-3xl opacity-60 scale-90" />
+                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0f0f0f] shadow-2xl backdrop-blur-xl">
                   <img
                     src="/hero_1.png"
                     alt="Atmos dashboard preview"
@@ -286,6 +231,67 @@ export default function HomePage() {
                   />
                 </div>
               </div>
+
+              {/* Video card — anchored to column, skewed to match */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '-14rem',
+                  right: '-1rem',
+                  zIndex: 2,
+                  width: 'clamp(200px, 28vh, 260px)',
+                  height: 'clamp(200px, 28vh, 260px)',
+                  borderRadius: '1rem',
+                  overflow: 'hidden',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(10,10,10,0.45)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+                  pointerEvents: 'auto',
+                  transition: 'transform 0.4s ease',
+                  transform: 'perspective(1800px) rotateY(-18deg) rotateX(4deg)',
+                  transformStyle: 'preserve-3d'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform =
+                    'perspective(1800px) rotateY(0deg) rotateX(0deg) scale(1.04)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform =
+                    'perspective(1800px) rotateY(-18deg) rotateX(4deg)';
+                }}
+              >
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                >
+                  <source src="/movie.mp4" type="video/mp4" />
+                </video>
+
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.15), transparent)',
+                  }}
+                />
+
+                <div style={{ position: 'absolute', left: '1.25rem', bottom: '1.25rem', zIndex: 1 }}>
+                  <div style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#4ADE80', marginBottom: '0.4rem' }}>
+                    ATMOS IN ACTION
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-syne)', fontSize: '0.8rem', fontWeight: 700, color: '#fff', marginBottom: '0.35rem' }}>
+                    DATA PROCESSING
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.72)' }}>
+                    From the hardware to the dashboard
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -1201,7 +1207,6 @@ export default function HomePage() {
       </RevealSection>
 
       <Footer />
-      <ScrollIndicator />
     </main>
   );
 }
