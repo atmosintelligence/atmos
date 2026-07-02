@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 
-export const metadata = { title: 'Auth Error — Atmos' };
+export const metadata = { title: 'Auth Error' };
 
 export default function AuthErrorPage() {
   return (

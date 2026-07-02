@@ -69,7 +69,7 @@ export default function LightingChart({ readings, idleBaseline, l1Events, l2Even
 
       <ChartWrapper
         title="Power draw over time"
-        subtitle="Last 60 readings. Dashed line marks the idle baseline — sustained power above it with an empty room triggers a recommendation."
+        subtitle="Last 60 readings. Dashed line marks the idle baseline. Sustained power above it with an empty room triggers a recommendation."
       >
         <ResponsiveContainer width="100%" height={CHART_H}>
           <AreaChart data={powerData} margin={CHART_MARGIN}>

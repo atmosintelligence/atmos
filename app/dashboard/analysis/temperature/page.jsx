@@ -77,7 +77,7 @@ export default function TemperaturePage() {
 
       {weatherError && weatherError !== 'No location set' && (
         <div style={{ fontSize: '0.75rem', color: '#ef4444', padding: '0.5rem 0.75rem', background: 'rgba(239,68,68,0.06)', borderRadius: '0.5rem', border: '1px solid rgba(239,68,68,0.15)' }}>
-          Weather data is temporarily unavailable — outdoor ventilation recommendations may be missing.
+          Weather data is temporarily unavailable! Outdoor ventilation recommendations may be missing.
         </div>
       )}
 

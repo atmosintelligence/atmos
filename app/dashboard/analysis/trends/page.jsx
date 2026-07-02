@@ -98,7 +98,7 @@ export default function TrendsPage() {
       </div>
 
       <div>
-        <div className="dash-section-title">Daily breakdown — last 7 days</div>
+        <div className="dash-section-title">Daily breakdown: Last 7 days</div>
         <TableWrapper headers={['Date', 'Avg power', 'Energy', 'Readings']}>
           {(() => {
             const powerStats   = getColStats(dailyBreakdown, 'avgPower');

@@ -202,10 +202,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* RIGHT COLUMN — image + video anchored together */}
             <div className="relative hidden lg:flex justify-end items-start" style={{ marginTop: '-150px' }}>
 
-              {/* Dashboard image */}
               <div
                 className="group relative transition-all duration-500 ease-out hover:scale-[1.04]"
                 style={{
@@ -232,7 +230,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Video card — anchored to column, skewed to match */}
               <div
                 style={{
                   position: 'absolute',
@@ -600,8 +597,7 @@ export default function HomePage() {
             className="text-neutral-500 dark:text-neutral-400 text-center mb-10 max-w-lg mx-auto leading-relaxed"
             style={{ fontSize: '1rem' }}
           >
-            Atmos picks up what's happening in your space, thinks about it,
-            and tells you exactly what to do — in seconds.
+            Atmos picks up what's happening in your space, thinks about it, and tells you exactly what to do in seconds.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'stretch' }}>

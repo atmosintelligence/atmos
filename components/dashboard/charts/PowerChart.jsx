@@ -71,7 +71,7 @@ export default function PowerChart({ readings, avgPower }) {
 
       <ChartWrapper
         title="Power consumption over time"
-        subtitle="Live power draw across last 72 readings. The dashed green line is your historical average — spikes significantly above it trigger anomaly alerts."
+        subtitle="Live power draw across last 72 readings. The dashed green line is your historical average. Spikes significantly above it trigger anomaly alerts."
       >
         <ResponsiveContainer width="100%" height={CHART_H}>
           <AreaChart data={powerTimeline} margin={CHART_MARGIN}>

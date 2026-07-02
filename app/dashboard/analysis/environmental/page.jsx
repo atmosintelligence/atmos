@@ -57,7 +57,7 @@ export default function EnvironmentalPage() {
       <div className="dash-greeting">
         <div className="dash-greeting-name">Environmental Savings</div>
         <div className="dash-greeting-sub">
-          CO₂ emissions prevented, money saved, and carbon equivalence — benchmarked against the BEE standard of {BEE_BENCHMARK_KWH_M2} kWh/m²/year.
+          CO₂ emissions prevented, money saved, and carbon equivalence, benchmarked against the BEE standard of {BEE_BENCHMARK_KWH_M2} kWh/m²/year.
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export default function EnvironmentalPage() {
             <span className="dash-opt-badge" style={{ background: 'rgba(74,222,128,0.15)', color: '#4ADE80' }}>Environmental</span>
           </div>
           <p className="dash-opt-message">
-            This device is performing below the BEE benchmark. Over the past month it consumed {env.actualKwh} kWh against a benchmark of {env.baselineKwh} kWh — saving {env.savedKwh} kWh, preventing {env.co2KgSaved} kg of CO₂, and saving ₹{env.moneySavedINR}. Equivalent to {env.treesEquiv} {env.treesEquiv === '1' ? 'tree' : 'trees'} absorbing carbon for a year.
+            This device is performing below the BEE benchmark. Over the past month it consumed {env.actualKwh} kWh against a benchmark of {env.baselineKwh} kWh, saving {env.savedKwh} kWh, preventing {env.co2KgSaved} kg of CO₂, and saving ₹{env.moneySavedINR}. Equivalent to {env.treesEquiv} {env.treesEquiv === '1' ? 'tree' : 'trees'} absorbing carbon for a year.
           </p>
         </div>
       ) : (
