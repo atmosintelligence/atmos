@@ -7,21 +7,16 @@ function createBubble(id) {
 
   return {
     id,
-
     left:
       side === 'left'
         ? Math.random() * 18
         : 82 + Math.random() * 18,
-
     size: 30 + Math.random() * 45,
-
     duration: 20 + Math.random() * 8,
-
     drift:
     side === 'left'
       ? -140 - Math.random() * 120
       : 60 + Math.random() * 90,
-
     opacity: 0.035 + Math.random() * 0.035,
   };
 }
