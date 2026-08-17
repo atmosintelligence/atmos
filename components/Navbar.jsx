@@ -1,11 +1,117 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Icon from './Icon';
 import { useNavbar } from './NavbarContext';
 import { createClient } from '@/utils/supabase/client';
+
+const NAV_ITEMS = [
+  { label: 'Home', href: '/' },
+  {
+    label: 'Pricing',
+    href: '/pricing'
+  },
+  {
+    label: 'Our Future',
+    href: '/future',
+    subTabs: [
+      { label: 'About our future', href: '/future', description: 'What we\u2019re building next' },
+      { label: 'AI and ML', href: '/future/ai', description: 'Using the tech of today' },
+      { label: 'Cybersecurity', href: '/future/cybersecurity', description: 'Security is important' }
+    ],
+  },
+  {
+    label: 'Dashboard',
+    href: '/dashboard'
+  },
+];
+
+const CLOSE_DELAY = 120;
+
+function NavItem({ item, pathname }) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef(null);
+
+  const hasSubTabs = Boolean(item.subTabs?.length);
+  const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+
+  function handleEnter() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpen(true);
+  }
+
+  function handleLeave() {
+    closeTimer.current = setTimeout(() => setOpen(false), CLOSE_DELAY);
+  }
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={hasSubTabs ? handleEnter : undefined}
+      onMouseLeave={hasSubTabs ? handleLeave : undefined}
+    >
+      <Link
+        href={item.href}
+        onFocus={hasSubTabs ? handleEnter : undefined}
+        onBlur={hasSubTabs ? handleLeave : undefined}
+        aria-expanded={hasSubTabs ? open : undefined}
+        className={`flex items-center gap-1 py-5 transition-colors ${
+          isActive
+            ? 'text-neutral-900 dark:text-neutral-100'
+            : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
+        }`}
+      >
+        {item.label}
+        {hasSubTabs && (
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
+            fill="none"
+            className={`mt-px transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          >
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </Link>
+
+      {hasSubTabs && (
+        <div
+          className={`absolute left-1/2 top-full w-56 -translate-x-1/2 transition-all duration-200 ease-out ${
+            open
+              ? 'pointer-events-auto translate-y-0 opacity-100'
+              : 'pointer-events-none -translate-y-1 opacity-0'
+          }`}
+        >
+          <div className="mt-2 overflow-hidden rounded-[14px] border border-black/10 bg-white/90 p-1.5 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)] backdrop-blur-md dark:border-white/10 dark:bg-[#161616]/90">
+            {item.subTabs.map((sub) => (
+              <Link
+                key={sub.href}
+                href={sub.href}
+                className="block rounded-lg px-3 py-2 transition-colors hover:bg-black/5 dark:hover:bg-white/8"
+              >
+                <div className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
+                  {sub.label}
+                </div>
+                {sub.description && (
+                  <div className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                    {sub.description}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const [theme, setTheme] = useState('dark');
@@ -110,10 +216,9 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-6 text-base">
-        <Link href="/" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Home</Link>
-        <Link href="/pricing" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Pricing</Link>
-        <Link href="/future" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Our Future</Link>
-        <Link href="/dashboard" className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Dashboard</Link>
+        {NAV_ITEMS.map((item) => (
+          <NavItem key={item.href} item={item} pathname={pathname} />
+        ))}
 
         {profile ? (
           <div className="flex items-center gap-2.5 text-sm px-2.5 py-1.5 rounded-[5px] bg-black/6 dark:bg-white/6 cursor-default">
