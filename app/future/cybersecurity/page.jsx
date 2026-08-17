@@ -18,7 +18,7 @@ export default function CybersecurityPage() {
             <span style={{ color: '#4ADE80' }}>Full stop.</span>
           </h1>
           <p style={{ fontSize: '1.05rem', color: '#737373', lineHeight: 1.8, maxWidth: '540px', margin: '0 auto 2.5rem' }}>
-            Atmos processes sensitive data — real-time energy consumption, occupancy patterns, geographical location, and building behaviour — at scale, across borders. Security is not a feature we add at the end. It is the foundation everything else is built on.
+            Atmos processes sensitive data, with real-time energy consumption, occupancy patterns, geographical location, and building behaviour at scale, across borders. Security is not a feature we add at the end. It is the foundation everything else is built on.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden', maxWidth: '540px', margin: '0 auto' }}>
@@ -47,7 +47,7 @@ export default function CybersecurityPage() {
                 IoT is the largest<br />attack surface<br />on the planet.
               </h2>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.25rem' }}>
-                By 2030, there will be more than 29 billion connected IoT devices globally. Building sensors — precisely the kind Atmos deploys — are amongst the most frequently targeted, because they are numerous, often unpatched, and connected to critical infrastructure.
+                By 2030, there will be more than 29 billion connected IoT devices globally. Building sensors, precisely the kind Atmos deploys, are amongst the most frequently targeted, because they are numerous, often unpatched, and connected to critical infrastructure.
               </p>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8 }}>
                 A compromised building sensor is not just a data leak. It is a window into occupancy patterns, a vector for lateral movement across a corporate network, and in an autonomous control future, a potential means of physical interference with electrical systems. We take this threat model seriously — because our customers' buildings depend on it.
@@ -89,31 +89,31 @@ export default function CybersecurityPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
             {[
               {
-                layer:   'Layer 1 — Hardware transmission',
+                layer:   'Layer 1: Hardware transmission',
                 icon:    '📡',
                 current: 'TLS 1.3 over Wi-Fi. All sensor readings are encrypted in transit the moment they leave the physical device.',
                 future:  'Device-level certificate pinning to prevent man-in-the-middle attacks even on compromised networks. Hardware attestation to verify the authenticity of each device before it is permitted to transmit data.',
                 color:   '#4ADE80',
               },
               {
-                layer:   'Layer 2 — Cloud storage',
+                layer:   'Layer 2: Cloud storage',
                 icon:    '🗄️',
                 current: 'AES-256 encryption at rest on Supabase-managed PostgreSQL infrastructure. Row-level security policies enforce that no user can access another user\'s data — even at the database layer.',
                 future:  'Field-level encryption for sensitive columns — location coordinates, device identifiers, and occupancy data encrypted with per-user keys. Key management via a dedicated HSM-backed key store.',
                 color:   '#60a5fa',
               },
               {
-                layer:   'Layer 3 — API and dashboard',
+                layer:   'Layer 3: API and dashboard',
                 icon:    '🔐',
                 current: 'HTTPS-only. API keys are hashed before storage. Session tokens are HTTP-only cookies, inaccessible to client-side JavaScript. Supabase session management with automatic token rotation.',
                 future:  'Mutual TLS for API key authentication. Rate-limiting and anomaly detection on API endpoints to detect credential stuffing and scripted abuse before damage occurs.',
                 color:   '#a78bfa',
               },
               {
-                layer:   'Layer 4 — ML training pipeline',
+                layer:   'Layer 4: ML training pipeline',
                 icon:    '🧠',
-                current: 'Training data is anonymised before any processing. Device identifiers are hashed. Building data is processed in isolation — no cross-account data is ever joined in identifiable form.',
-                future:  'Federated learning architecture: model weights are updated locally on each building\'s data and only gradients — never raw readings — are transmitted to the central model. Privacy-preserving machine learning as a first-class design constraint.',
+                current: 'Training data is anonymised before any processing. Device identifiers are hashed. Building data is processed in isolation, so no cross-account data is ever joined in identifiable form!',
+                future:  'Federated learning architecture: model weights are updated locally on each building\'s data and only gradients, notraw readings, are transmitted to the central model. Privacy-preserving machine learning as a first-class design constraint.',
                 color:   '#eab308',
               },
             ].map((item, i) => (
@@ -147,10 +147,10 @@ export default function CybersecurityPage() {
                 Geolocation is a<br />security surface too.
               </h2>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.25rem' }}>
-                Atmos uses your building's geographical coordinates to fetch outdoor weather data — enabling ventilation recommendations, HVAC efficiency comparisons, and climate-adjusted benchmarking. This is powerful. It is also sensitive.
+                Atmos uses your building's geographical coordinates to fetch outdoor weather data, enabling ventilation recommendations, HVAC efficiency comparisons, and climate-adjusted benchmarking. This is powerful. It is also sensitive.
               </p>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.25rem' }}>
-                A precise latitude and longitude tied to an occupancy pattern is not just a location — it is a schedule. It reveals when a building is occupied, when it is empty, and potentially, the routine of the people inside it. We treat this data accordingly.
+                A precise latitude and longitude tied to an occupancy pattern is not just a location, it is a schedule. It reveals when a building is occupied, when it is empty, and potentially, the routine of the people inside it. We treat this data accordingly.
               </p>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8 }}>
                 Location is stored with user consent only, encrypted at the field level, and used exclusively for weather API calls and localised energy benchmarking. It is never shared, never sold, and never used in any form of advertising or profiling.
@@ -161,9 +161,9 @@ export default function CybersecurityPage() {
               <div style={{ padding: '1.5rem', borderRadius: '0.875rem', border: '1px solid rgba(74,222,128,0.2)', background: 'rgba(74,222,128,0.04)' }}>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4ADE80', marginBottom: '0.75rem' }}>How location is used</div>
                 {[
-                  'Outdoor temperature and condition fetched from Open-Meteo — no API key, no account linkage',
-                  'Coordinates rounded to 4 decimal places (~11 metre precision) — sufficient for weather, insufficient for pinpoint tracking',
-                  'Weather requests are server-side only — coordinates never exposed to client-side JavaScript',
+                  'Outdoor temperature and condition fetched from Open-Meteo. No API key, no account linkage',
+                  'Coordinates rounded to 4 decimal places (~11 metre precision). This is sufficient for weather, insufficient for pinpoint tracking',
+                  'Weather requests are server-side only! Coordinates never exposed to client-side JavaScript',
                   'Location data is deletable instantly from the Settings page at any time',
                 ].map((pt, i) => (
                   <div key={i} style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-start', marginTop: i > 0 ? '0.625rem' : 0 }}>
@@ -190,8 +190,8 @@ export default function CybersecurityPage() {
               <div style={{ padding: '1.5rem', borderRadius: '0.875rem', border: '1px solid rgba(234,179,8,0.2)', background: 'rgba(234,179,8,0.04)' }}>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#eab308', marginBottom: '0.75rem' }}>Alert security</div>
                 {[
-                  'Alerts are stored per-user with row-level security — no alert from one account is ever readable by another',
-                  'Quiet hours enforcement is server-side — alert suppression cannot be bypassed by a compromised client',
+                  'Alerts are stored per-user with row-level security, so no alert from one account is ever readable by another',
+                  'Quiet hours enforcement is server-side, so alert suppression cannot be bypassed by a compromised client',
                   'Alert webhook endpoints (roadmap) will use HMAC signature verification on every delivery',
                 ].map((pt, i) => (
                   <div key={i} style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-start', marginTop: i > 0 ? '0.625rem' : 0 }}>
@@ -214,7 +214,7 @@ export default function CybersecurityPage() {
             The model is only as<br />trustworthy as its training.
           </h2>
           <p style={{ color: '#737373', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '580px', margin: '0 auto 4rem', textAlign: 'center' }}>
-            Machine learning introduces a new class of security risk that most IoT platforms do not yet account for. As Atmos transitions from rule-based to AI-driven intelligence, we are building security into the model layer from the ground up — not retrofitting it afterwards.
+            Machine learning introduces a new class of security risk that most IoT platforms do not yet account for. As Atmos transitions from rule-based to AI-driven intelligence, we are building security into the model layer from the ground up. We're not retrofitting it afterwards.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
@@ -235,7 +235,7 @@ export default function CybersecurityPage() {
                 title:   'Explainability as a security control',
                 icon:    '🔎',
                 color:   '#4ADE80',
-                body:    'Black-box AI systems are difficult to audit for bias or manipulation. Atmos maintains explainability as a first-class requirement: every AI recommendation links to the specific sensor readings and statistical reasoning that produced it. This is not just good UX — it is the mechanism by which a security auditor, or a customer, can verify that the system is behaving as intended.',
+                body:    'Black-box AI systems are difficult to audit for bias or manipulation. Atmos maintains explainability as a first-class requirement: every AI recommendation links to the specific sensor readings and statistical reasoning that produced it. This is not just good UX, it is the mechanism by which a security auditor, or a customer, can verify that the system is behaving as intended.',
               },
               {
                 title:   'Federated learning and privacy',
@@ -256,10 +256,10 @@ export default function CybersecurityPage() {
           <div style={{ padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(74,222,128,0.15)', background: 'rgba(74,222,128,0.03)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4ADE80', marginBottom: '0.5rem' }}>Context-aware AI — a security consideration</div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4ADE80', marginBottom: '0.5rem' }}>Context-aware AI: a security consideration</div>
                 <div className="font-heading" style={{ fontSize: '1.05rem', fontWeight: 700, color: '#e8e8e8', marginBottom: '0.625rem' }}>Personalised recommendations require personal data. We hold that tension deliberately.</div>
                 <p style={{ fontSize: '0.82rem', color: '#737373', lineHeight: 1.75, margin: 0 }}>
-                  Tailored, context-based energy optimisations — the kind AI makes possible — require the model to know things about your building: its occupancy rhythms, its geography, its equipment profile. The more context the model has, the better the suggestions. The more context it holds, the greater the responsibility. We resolve this tension through data minimisation: the model receives only the features it needs for each specific inference, and no inference result is stored in a form that could reconstruct the input data.
+                  Tailored, context-based energy optimisations, the kind AI makes possible, require the model to know things about your building: its occupancy rhythms, its geography, its equipment profile. The more context the model has, the better the suggestions. The more context it holds, the greater the responsibility. We resolve this tension through data minimisation: the model receives only the features it needs for each specific inference, and no inference result is stored in a form that could reconstruct the input data.
                 </p>
               </div>
               <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -280,7 +280,7 @@ export default function CybersecurityPage() {
             Security is not a setting.<br />It is the architecture.
           </h2>
           <p style={{ color: '#737373', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '560px', marginBottom: '3.5rem' }}>
-            Privacy by Design — the ISO 31700 standard — requires that privacy protections are embedded into systems from the outset, not bolted on as an afterthought. Every technical decision in Atmos is evaluated against this standard before it is shipped.
+            Privacy by Design. The ISO 31700 standard requires that privacy protections are embedded into systems from the outset, not bolted on as an afterthought. Every technical decision in Atmos is evaluated against this standard before it is shipped.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
@@ -361,7 +361,7 @@ export default function CybersecurityPage() {
                 standard: 'ISO 27001',
                 full:     'Information Security Management System',
                 region:   '🌍 International',
-                status:   'Roadmap — Year 2',
+                status:   'Roadmap: Year 2',
                 color:    '#4ADE80',
                 relevance: 'The international standard for information security management. Certification provides enterprise customers, institutional investors, and government procurement bodies with independently verified assurance that our security controls meet a recognised benchmark.',
               },
@@ -377,7 +377,7 @@ export default function CybersecurityPage() {
                 standard: 'NIST CSF 2.0',
                 full:     'Cybersecurity Framework',
                 region:   '🇺🇸 United States',
-                status:   'Roadmap — Year 3',
+                status:   'Roadmap: Year 3',
                 color:    '#a78bfa',
                 relevance: 'The NIST Cybersecurity Framework provides a structured approach to managing cybersecurity risk across Identify, Protect, Detect, Respond, and Recover functions. Alignment with CSF 2.0 is a prerequisite for enterprise sales in US-regulated industries and federal procurement.',
               },
@@ -385,7 +385,7 @@ export default function CybersecurityPage() {
                 standard: 'UK Cyber Essentials',
                 full:     'NCSC Cyber Essentials Scheme',
                 region:   '🇬🇧 United Kingdom',
-                status:   'Roadmap — Year 2',
+                status:   'Roadmap: Year 2',
                 color:    '#4ADE80',
                 relevance: 'The UK government\'s baseline cybersecurity certification scheme, required for all UK public sector contracts. Achieving Cyber Essentials Plus — the independently verified tier — signals to UK enterprise customers that our technical controls meet a government-endorsed minimum standard.',
               },
@@ -420,7 +420,7 @@ export default function CybersecurityPage() {
                 No system is immune to incidents. What distinguishes a trustworthy platform is not the absence of problems, but the speed and transparency with which they are identified, contained, and communicated.
               </p>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8 }}>
-                Our incident response plan, currently being formalised for our Year 2 ISO 27001 target, defines clear roles, escalation paths, customer notification timelines, and post-incident review processes. We will publish our security incident history publicly — because transparency is itself a security control.
+                Our incident response plan, currently being formalised for our Year 2 ISO 27001 target, defines clear roles, escalation paths, customer notification timelines, and post-incident review processes. We will publish our security incident history publicly, because transparency is itself a security control.
               </p>
             </div>
 
@@ -430,7 +430,7 @@ export default function CybersecurityPage() {
                 { time: '< 4 hrs', action: 'Containment and impact assessment',     desc: 'Affected systems are isolated. Scope of exposure is determined. Forensic logging begins.',                                             color: '#eab308' },
                 { time: '< 24 hrs', action: 'Customer notification',                desc: 'Affected users are notified with plain-language description of what happened, what data was affected, and what we are doing about it.',  color: '#60a5fa' },
                 { time: '< 72 hrs', action: 'Regulatory notification where required', desc: 'GDPR and DPDP Act require breach notification to the relevant supervisory authority within 72 hours. We meet this unconditionally.',  color: '#a78bfa' },
-                { time: '< 2 wks', action: 'Public post-mortem published',           desc: 'A full account of what happened, why, and what systemic changes prevent recurrence — published to our security changelog.',           color: '#4ADE80' },
+                { time: '< 2 wks', action: 'Public post-mortem published',           desc: 'A full account of what happened, why, and what systemic changes prevent recurrence, published to our security changelog.',           color: '#4ADE80' },
               ].map((step, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '0.75rem', border: '1px solid rgba(128,128,128,0.12)', background: 'rgba(255,255,255,0.01)', alignItems: 'flex-start' }}>
                   <div style={{ fontSize: '0.7rem', fontWeight: 700, color: step.color, lineHeight: 1.3 }}>{step.time}</div>

@@ -17,10 +17,10 @@ export default function AiMlPage() {
             Intelligence <span style={{ color: '#4ADE80' }}>decides.</span>
           </h1>
           <p style={{ fontSize: '1.05rem', color: '#737373', lineHeight: 1.75, maxWidth: '540px', margin: '0 auto 2.5rem' }}>
-            Every Atmos sensor already streams raw consumption data to our servers. The next phase is not about collecting more of it — it's about understanding it. We are building a machine learning core that finds the patterns a rule engine can't see, and an AI agent that turns those patterns into decisions a building can act on.
+            Every Atmos sensor already streams raw consumption data to our servers. The next phase is not about collecting more of it. It's about understanding it. We are building a machine learning core that finds the patterns a rule engine can't see, and an AI agent that turns those patterns into decisions a building can act on.
           </p>
           <div style={{ fontSize: '0.75rem', color: '#444', lineHeight: 1.7, padding: '1rem 1.5rem', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(74,222,128,0.03)', maxWidth: '460px', margin: '0 auto' }}>
-            This page describes our AI/ML roadmap. Nothing here changes how your data is handled today — every future model trains on the same anonymised, privacy-first pipeline Atmos already runs on.
+            This page describes our AI/ML roadmap. Nothing here changes how your data is handled today. Every future model trains on the same anonymised, privacy-first pipeline Atmos already runs on.
           </div>
         </div>
       </section>
@@ -86,7 +86,7 @@ export default function AiMlPage() {
                 From a pattern<br />to a suggestion.
               </h2>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.5rem' }}>
-                ML finds what's happening. The AI agent decides what to do about it. Instead of a generic threshold alert, the agent reads the full context of a building — its layout, its occupancy history, its equipment, the season, even the specific pattern ML just surfaced — and produces one tailored, explainable suggestion for that building, at that moment.
+                ML finds what's happening. The AI agent decides what to do about it. Instead of a generic threshold alert, the agent reads the full context of a building, including its layout, its occupancy history, its equipment, the season, even the specific pattern ML just surfaced. Then, it produces one tailored, explainable suggestion for that building, at that moment.
               </p>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '2rem' }}>
                 This agent becomes the engine behind Atmos Alerts. Every alert a customer sees will trace back to a specific ML-detected pattern and an AI-generated reason, not a static rule that fired the same way for every building on the platform.
@@ -163,21 +163,21 @@ export default function AiMlPage() {
                 statusColor: '#eab308',
                 label:  'Server capacity',
                 color:  '#4ADE80',
-                body:   'Our current server layer processes every reading centrally. As the sensor fleet grows, this is the first bottleneck — so scaling compute and throughput on the server side is already underway, ahead of any ML rollout, not after it.',
+                body:   'Our current server layer processes every reading centrally. As the sensor fleet grows, this is the first bottleneck, so scaling compute and throughput on the server side is already underway, ahead of any ML rollout, not after it.',
               },
               {
                 stage:  'Next',
                 statusColor: '#60a5fa',
                 label:  'Edge processing',
                 color:  '#60a5fa',
-                body:   'Not every decision needs a round trip to the server. Moving inference closer to the sensor — running lightweight models on-device — cuts latency, cuts bandwidth, and keeps a building responsive even if connectivity drops.',
+                body:   'Not every decision needs a round trip to the server. Moving inference closer to the sensor, running lightweight models on-device, cuts latency, cuts bandwidth, and keeps a building responsive even if connectivity drops.',
               },
               {
                 stage:  'In parallel',
                 statusColor: '#a78bfa',
                 label:  'Dynamic scaling',
                 color:  '#a78bfa',
-                body:   'Server load is not constant — it spikes with occupancy, weather, and time of day. Dynamic scaling grows and shrinks our compute allocation to match real demand automatically, instead of provisioning for peak load every hour of every day.',
+                body:   'Server load is not constant, rather it spikes with occupancy, weather, and time of day. Dynamic scaling grows and shrinks our compute allocation to match real demand automatically, instead of provisioning for peak load every hour of every day.',
               },
             ].map((s, i) => (
               <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '2.5rem', display: 'grid', gridTemplateColumns: '200px 1fr', gap: '3rem', alignItems: 'start' }}>

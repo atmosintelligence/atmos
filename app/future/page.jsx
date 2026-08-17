@@ -17,10 +17,10 @@ export default function FuturePage() {
             <span style={{ color: '#4ADE80' }}>started.</span>
           </h1>
           <p style={{ fontSize: '1.05rem', color: '#737373', lineHeight: 1.75, maxWidth: '520px', margin: '0 auto 2.5rem' }}>
-            Atmos today suggests. Atmos tomorrow acts. The global built environment wastes an estimated $1.2 trillion in energy every year. We are building the intelligence layer that stops it — one building at a time, on every continent.
+            Atmos today suggests. Atmos tomorrow acts. The global built environment wastes an estimated $1.2 trillion in energy every year. We are building the intelligence layer that stops it. One building at a time, on every continent.
           </p>
           <div style={{ fontSize: '0.75rem', color: '#444', lineHeight: 1.7, padding: '1rem 1.5rem', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(74,222,128,0.03)', maxWidth: '440px', margin: '0 auto' }}>
-            All of this happens whilst collecting data with full respect for user privacy. No personal data is ever used for model training. Buildings are anonymised at source. You own your data — entirely.
+            All of this happens whilst collecting data with full respect for user privacy. No personal data is ever used for model training. Buildings are anonymised at source. You own your data entirely!
           </div>
         </div>
       </section>
@@ -34,7 +34,7 @@ export default function FuturePage() {
             Local. National. Global.
           </h2>
           <p style={{ color: '#737373', fontSize: '0.95rem', lineHeight: 1.7, maxWidth: '540px', marginBottom: '4rem' }}>
-            Atmos is designed to scale in three explicit phases — each one funded by the margins of the one before it, and each one more defensible than the last.
+            Atmos is designed to scale in three explicit phases, each one funded by the margins of the one before it, and each one more defensible than the last.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
@@ -47,7 +47,7 @@ export default function FuturePage() {
                 heading: 'Prove the unit',
                 points: [
                   'Deploy across India\'s major metros: Delhi, Mumbai, Bengaluru, Hyderabad',
-                  'Hardware bill of materials at $32 per unit, sold at $42 — 31% gross margin',
+                  'Hardware bill of materials at $32 per unit, sold at $42—31% gross margin',
                   'Subscription from $4.20/unit/month across Basic and Premium tiers',
                   'BRSR compliance reports unlock enterprise accounts in listed companies',
                   'Regulatory tailwind: India mandates energy disclosure for 1,000+ listed firms',
@@ -81,7 +81,7 @@ export default function FuturePage() {
                   'API marketplace: third parties build products on our sensor and intelligence layer',
                   'Aggregated anonymised data sold to urban planners and national policy bodies',
                   'Addressable market: 5.6 million commercial buildings across target regions',
-                  'The data moat — not the hardware — becomes the primary valuation driver',
+                  'The data moat, not the hardware, becomes the primary valuation driver',
                 ],
               },
             ].map((p, i) => (
@@ -118,10 +118,10 @@ export default function FuturePage() {
                 From suggestions<br />to action.
               </h2>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.5rem' }}>
-                Today, Atmos tells you what to do. In the next phase, Atmos does it. We are building direct integration with building electrical management systems — HVAC controllers, smart circuit breakers, and lighting relays — so that the moment our engine detects a wasteful pattern, it corrects it automatically.
+                Today, Atmos tells you what to do. In the next phase, Atmos does it. We are building direct integration with building electrical management systems: HVAC controllers, smart circuit breakers, and lighting relays. Hence, the moment our engine detects a wasteful pattern, it corrects it automatically.
               </p>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '2rem' }}>
-                Human intervention becomes zero. The building governs itself. Energy is not saved when someone remembers to act — it is saved at the precise moment waste would otherwise have occurred.
+                Human intervention becomes zero. The building governs itself. Energy is not saved when someone remembers to act, it is saved at the precise moment waste would otherwise have occurred.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {[
@@ -198,7 +198,7 @@ export default function FuturePage() {
                 status:      'Live today',
                 statusColor: '#4ADE80',
                 color:       '#4ADE80',
-                description: 'Eight precision-engineered rules — developed alongside energy engineers and aligned with international benchmarking frameworks — run against every sensor reading. This is our current engine: fast, explainable, and auditable. When it flags a recommendation, we can tell you exactly which reading triggered it and precisely why. Judges can verify it. Regulators can audit it. Customers can trust it.',
+                description: 'Eight precision-engineered rules, developed alongside energy engineers and aligned with international benchmarking frameworks, run against every sensor reading. This is our current engine: fast, explainable, and auditable. When it flags a recommendation, we can tell you exactly which reading triggered it and precisely why. Judges can verify it. Regulators can audit it. Customers can trust it.',
                 capability:  'Detects known patterns. Cannot discover unknown ones.',
               },
               {
@@ -207,7 +207,7 @@ export default function FuturePage() {
                 status:      'In development',
                 statusColor: '#eab308',
                 color:       '#60a5fa',
-                description: 'An AI agent — built on TensorFlow — that trains continuously on anonymised, cross-building data gathered from every climate zone and construction type we operate in. It learns consumption histories it has never seen explicitly labelled: the HVAC that predictably degrades every summer in a particular building typology; the occupancy pattern that correlates with a 14% power spike on the third week of every month. The rule engine catches what we know. The learning layer surfaces what we did not know to look for.',
+                description: 'An AI agent, built on TensorFlow, that trains continuously on anonymised, cross-building data gathered from every climate zone and construction type we operate in. It learns consumption histories it has never seen explicitly labelled: the HVAC that predictably degrades every summer in a particular building typology; the occupancy pattern that correlates with a 14% power spike on the third week of every month. The rule engine catches what we know. The learning layer surfaces what we did not know to look for.',
                 capability:  'Learns consumption history. Surfaces unknown inefficiency patterns.',
               },
               {
@@ -216,7 +216,7 @@ export default function FuturePage() {
                 status:      'Vision',
                 statusColor: '#a78bfa',
                 color:       '#a78bfa',
-                description: 'The model runs on-device at the hardware layer — edge inference with sub-second latency, operating even when cloud connectivity is unavailable. Optimisation decisions are made at the sensor itself. The building thinks in real time, without round-tripping data to a server. This is where our data moat becomes a hardware moat: no competitor has the cross-climate, cross-continent training dataset required to run this accurately.',
+                description: 'The model runs on-device at the hardware layer, edge inference with sub-second latency, operating even when cloud connectivity is unavailable. Optimisation decisions are made at the sensor itself. The building thinks in real time, without round-tripping data to a server. This is where our data moat becomes a hardware moat: no competitor has the cross-climate, cross-continent training dataset required to run this accurately.',
                 capability:  'Acts autonomously at the edge. No cloud dependency.',
               },
             ].map((s, i) => (
@@ -253,7 +253,7 @@ export default function FuturePage() {
                 Three structural<br />reasons it scales.
               </h2>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8 }}>
-                Most hardware businesses break at scale because their cost of delivery grows with their customer count. Atmos does not — and the reasons are structural, not optimistic. They hold in London as well as they hold in Delhi.
+                Most hardware businesses break at scale because their cost of delivery grows with their customer count. Atmos does not and the reasons are structural, not optimistic. They hold in London as well as they hold in Delhi.
               </p>
             </div>
 
@@ -268,7 +268,7 @@ export default function FuturePage() {
                 {
                   number: '02',
                   title:  'No installation team required',
-                  body:   'The plug-in design is doing real strategic work. Every competitor in building energy management requires a certified engineer, a site survey, and a multi-day installation. We require none of that. A facilities manager receives the device, connects it to Wi-Fi, and is live within minutes. This is not a convenience feature — it is a global sales velocity multiplier. We can ship to São Paulo or Singapore with identical unit economics.',
+                  body:   'The plug-in design is doing real strategic work. Every competitor in building energy management requires a certified engineer, a site survey, and a multi-day installation. We require none of that. A facilities manager receives the device, connects it to Wi-Fi, and is live within minutes. This is not a convenience feature, rather a global sales velocity multiplier. We can ship to São Paulo or Singapore with identical unit economics.',
                   color:  '#60a5fa',
                 },
                 {
@@ -306,15 +306,15 @@ export default function FuturePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
             {[
               {
-                title: 'Macro advocacy — data to policy',
+                title: 'Macro advocacy: Data to policy',
                 color: '#4ADE80',
-                body:  'At scale, our anonymised aggregate dataset becomes one of the richest longitudinal pictures of global commercial energy consumption ever assembled across emerging and developed markets simultaneously. We intend to share this — in aggregated, privacy-preserving form — with national energy ministries, urban planning bodies, and international climate finance institutions. When policymakers design the next round of energy efficiency mandates, Atmos data should be informing the baseline.',
+                body:  'At scale, our anonymised aggregate dataset becomes one of the richest longitudinal pictures of global commercial energy consumption ever assembled across emerging and developed markets simultaneously. We intend to share this in aggregated, privacy-preserving form, with national energy ministries, urban planning bodies, and international climate finance institutions. When policymakers design the next round of energy efficiency mandates, Atmos data should be informing the baseline.',
                 tag:   'Policy impact',
               },
               {
-                title: 'Green finance access — carbon pipeline',
+                title: 'Green finance access: Carbon pipeline',
                 color: '#60a5fa',
-                body:  'Verified energy savings are monetisable under international carbon frameworks. Our Premium plan already estimates carbon credit revenue per building. By Year 3, we aggregate verified savings across our global portfolio, certify them under recognised schemes — including the Verified Carbon Standard and Gold Standard — and sell them into compliance and voluntary markets. We return 60% of proceeds to customers. They do not just save money. They earn it.',
+                body:  'Verified energy savings are monetisable under international carbon frameworks. Our Premium plan already estimates carbon credit revenue per building. By Year 3, we aggregate verified savings across our global portfolio, certify them under recognised schemes including the Verified Carbon Standard and Gold Standard, and sell them into compliance and voluntary markets. We return 60% of proceeds to customers. They do not just save money. They earn it.',
                 tag:   'Carbon monetisation',
               },
             ].map((item, i) => (
@@ -366,7 +366,7 @@ export default function FuturePage() {
             The world is legislating<br />in our direction.
           </h2>
           <p style={{ color: '#737373', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '560px', marginBottom: '3rem' }}>
-            We do not need to convince building owners that energy efficiency matters. Governments are doing that for us — and they are doing it across every market we intend to enter.
+            We do not need to convince building owners that energy efficiency matters. Governments are doing that for us, and they are doing it across every market we intend to enter.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
@@ -396,7 +396,7 @@ export default function FuturePage() {
                 region:  'Gulf Cooperation Council',
                 flag:    '🌍',
                 mandate: 'UAE Net Zero 2050 — Saudi Vision 2030 Green Initiatives',
-                detail:  'Both UAE and Saudi Arabia have committed to major energy intensity reductions across their built environments. Commercial building efficiency is a priority vertical, with government-backed incentive schemes for verifiable energy savings — a direct match for our carbon credit pipeline.',
+                detail:  'Both UAE and Saudi Arabia have committed to major energy intensity reductions across their built environments. Commercial building efficiency is a priority vertical, with government-backed incentive schemes for verifiable energy savings. This is a direct match for our carbon credit pipeline.',
                 color:   '#eab308',
               },
             ].map((item, i) => (
