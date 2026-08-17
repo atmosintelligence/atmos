@@ -17,7 +17,7 @@ const NAV_ITEMS = [
     label: 'Our Future',
     href: '/future',
     subTabs: [
-      { label: 'About our future', href: '/future', description: 'What we\u2019re building next' },
+      { label: 'Scalability', href: '/future', description: 'What we\u2019re building next' },
       { label: 'AI and ML', href: '/future/ai', description: 'Using the tech of today' },
       { label: 'Cybersecurity', href: '/future/cybersecurity', description: 'Security is important' }
     ],
