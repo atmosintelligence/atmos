@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer';
 
-export const metadata = { title: 'AI & ML — Atmos Intelligence' };
+export const metadata = { title: 'AI & ML • Atmos Intelligence' };
 
 export default function AiMlPage() {
   return (

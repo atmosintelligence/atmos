@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer';
 
-export const metadata = { title: 'The Future — Atmos Intelligence' };
+export const metadata = { title: 'The Future • Atmos Intelligence' };
 
 export default function FuturePage() {
   return (

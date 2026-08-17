@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer';
 
-export const metadata = { title: 'Privacy Policy — Atmos Intelligence' };
+export const metadata = { title: 'Privacy Policy • Atmos Intelligence' };
 
 const sections = [
   {

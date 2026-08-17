@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer';
 
-export const metadata = { title: 'Cybersecurity — Atmos Intelligence' };
+export const metadata = { title: 'Cybersecurity • Atmos Intelligence' };
 
 export default function CybersecurityPage() {
   return (
