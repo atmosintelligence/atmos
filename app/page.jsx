@@ -1,5 +1,6 @@
 'use client';
 
+import VideoSection from '@/components/VideoSection';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -163,6 +164,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <VideoSection />
 
       <RevealSection
         className="section-pad section-border overflow-hidden"
