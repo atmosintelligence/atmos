@@ -73,7 +73,7 @@ export default function VideoSection() {
           preload="auto"
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         >
-          <source src="/movie.mp4" type="video/mp4" />
+          <source src="https://atmosintelligence-video-hosting.netlify.app/movie.mp4" type="video/mp4" />
         </video>
 
         {/* Dark overlay */}
@@ -159,7 +159,7 @@ export default function VideoSection() {
               controls
               style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', display: 'block' }}
             >
-              <source src="/movie.mp4" type="video/mp4" />
+              <source src="https://atmosintelligence-video-hosting.netlify.app/movie.mp4" type="video/mp4" />
             </video>
 
             <button
