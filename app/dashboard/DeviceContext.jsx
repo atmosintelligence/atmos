@@ -20,14 +20,30 @@ export function DeviceProvider({ children }) {
   const [selectedId, setSelectedIdState]    = useState(null);
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [refreshKey, setRefreshKey]         = useState(0);
-  const [cache, setCache]                   = useState({});
   const [weatherError, setWeatherError]     = useState(null);
   const selectedIdRef                       = useRef(null);
 
+  const [cache, setCache] = useState({});
+  const cacheRef  = useRef({});
+  const inflight  = useRef(new Set());
+  const syncedRef = useRef(new Set());
+
+  function getCached(key) {
+    return cacheRef.current[key] ?? null;
+  }
+
+  function setCached(key, value) {
+    cacheRef.current = { ...cacheRef.current, [key]: value };
+    setCache(cacheRef.current);
+  }
+
   function triggerRefresh() {
+    cacheRef.current = {};
+    syncedRef.current.clear();
+    inflight.current.clear();
     setCache({});
-    setRefreshKey(k => k + 1);
     setSubCache(null);
+    setRefreshKey(k => k + 1);
   }
 
   function setSelectedId(id) {
@@ -36,14 +52,6 @@ export function DeviceProvider({ children }) {
     setSelectedIdState(id);
     if (id) localStorage.setItem('atmos:selectedDevice', id);
     setRefreshKey(k => k + 1);
-  }
-
-  function getCached(key) {
-    return cache[key] ?? null;
-  }
-
-  function setCached(key, value) {
-    setCache(prev => ({ ...prev, [key]: value }));
   }
 
   function getDemoReadingsForDevice(deviceId) {
@@ -86,6 +94,63 @@ export function DeviceProvider({ children }) {
       console.error(err);
     }
   }
+
+  async function syncAIOptimizations(deviceId) {
+    const key = `sync-${deviceId}`;
+    if (syncedRef.current.has(key)) return;
+    syncedRef.current.add(key);
+    const alertsKey = `alerts-${deviceId}`;
+
+    try {
+      if (isDemo) {
+        const readings = deviceId === DEMO_DEVICE_ID_2 ? demoReadings2 : demoReadings;
+        if (!readings?.length) {
+          syncedRef.current.delete(key);
+          return;
+        }
+        const res = await fetch('/api/ai/demo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            readings,
+            deviceId,
+            location: { lat: 28.6139, lon: 77.2090 },
+            roomAreaM2: 20,
+            tariff: 10,
+          }),
+        });
+        if (!res.ok) throw new Error('demo ai failed');
+        const { optimizations } = await res.json();
+        setCached(alertsKey, { alerts: optimizations ?? [] });
+        return;
+      }
+
+      await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId, roomAreaM2: 20 }),
+      });
+      const res = await fetch(`/api/alerts?deviceId=${deviceId}`);
+      if (!res.ok) throw new Error('alerts fetch failed');
+      const { alerts } = await res.json();
+      setCached(alertsKey, { alerts: alerts ?? [] });
+    } catch (err) {
+      console.error('[Atmos AI] sync failed:', err.message);
+      if (!getCached(alertsKey)) setCached(alertsKey, { alerts: [] });
+    }
+  }
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (isDemo && !demoReadings?.length) return;
+
+    // Small delay so the UI renders before the AI call goes out
+    const timer = setTimeout(() => {
+      syncAIOptimizations(selectedId);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [selectedId, isDemo, demoReadings]);
 
   useEffect(() => {
     if (isDemo) {
@@ -244,51 +309,17 @@ export function DeviceProvider({ children }) {
   }
 
   async function preloadAlerts(deviceId) {
-    if (getCached(`alerts-${deviceId}`)) return;
+    const key = `alerts-${deviceId}`;
+    if (isDemo || getCached(key) || inflight.current.has(key)) return;
+    inflight.current.add(key);
     try {
-      if (isDemo) {
-        const demoReadingsForDevice =
-          getDemoReadingsForDevice(deviceId);
-        const res = await fetch('/api/engine/demo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            readings: demoReadingsForDevice,
-            location: { lat: 28.6139, lon: 77.2090 },
-            roomAreaM2: 20,
-            tariff: 10,
-          }),
-        });
-        if (!res.ok) return;
-        const json = await res.json();
-        const demoAlerts = (json.optimizations ?? []).map((opt, i) => ({
-          id: `demo-${i}`,
-          device_id: deviceId,
-          group_name: opt.group,
-          severity: opt.severity,
-          title: opt.title,
-          message: opt.message,
-          saving_inr: opt.saving?.inr
-            ? parseFloat(opt.saving.inr)
-            : null,
-          acknowledged: false,
-          created_at: opt.timestamp ?? new Date().toISOString(),
-        }));
-        setCached(`alerts-${deviceId}`, {
-          alerts: demoAlerts
-        });
-        return;
-      }
-      const res = await fetch(
-        `/api/alerts?deviceId=${deviceId}`
-      );
+      const res = await fetch(`/api/alerts?deviceId=${deviceId}`);
       if (!res.ok) return;
       const { alerts } = await res.json();
-      setCached(`alerts-${deviceId}`, {
-        alerts: alerts ?? []
-      });
-    } catch (err) {
-      console.error(err);
+      if (!getCached(key)) setCached(key, { alerts: alerts ?? [] });
+    } catch (_) {
+    } finally {
+      inflight.current.delete(key);
     }
   }
 
@@ -341,7 +372,8 @@ export function DeviceProvider({ children }) {
         isDemo,
         demoReadings,
         demoReadings2,
-        weatherError
+        weatherError,
+        cache
       }}
     >
       {children}

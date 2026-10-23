@@ -52,7 +52,6 @@ export default function VideoSection() {
 
   return (
     <>
-      {/* Inline video — 30% viewport height */}
       <div
         onClick={openExpanded}
         style={{
@@ -76,7 +75,6 @@ export default function VideoSection() {
           <source src="https://atmosintelligence-video-hosting.netlify.app/movie.mp4" type="video/mp4" />
         </video>
 
-        {/* Dark overlay */}
         <div style={{
           position:   'absolute',
           inset:      0,
@@ -116,7 +114,6 @@ export default function VideoSection() {
           </div>
         </div>
 
-        {/* Bottom fade */}
         <div style={{
           position:      'absolute',
           bottom:        0,
@@ -128,7 +125,6 @@ export default function VideoSection() {
         }} />
       </div>
 
-      {/* Expanded modal */}
       {expanded && (
         <div
           onClick={handleBackdropClick}

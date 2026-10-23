@@ -72,55 +72,32 @@ function BarChart({ alerts }) {
 }
 
 export default function AlertsPage() {
-  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
+  const { selectedId, refreshKey, cache, getCached, setCached, isDemo, demoReadings } = useDevice();
 
   const [alerts, setAlerts]         = useState([]);
   const [prefs, setPrefs]           = useState(null);
   const [status, setStatus]         = useState('loading');
   const [severityFilter, setSeverityFilter] = useState('all');
   const [groupFilter, setGroupFilter]       = useState('all');
-  const [showAcknowledged, setShowAcknowledged] = useState(false);
+  const [showAcknowledged, setShowAcknowledged] = useState(true);
   const [selected, setSelected]     = useState(new Set());
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [prefsMsg, setPrefsMsg]       = useState('');
   const [showPrefs, setShowPrefs]     = useState(false);
   const [editPrefs, setEditPrefs]     = useState(null);
 
-  useEffect(() => {
-    if (!selectedId) return;
-    if (isDemo && !demoReadings?.length) return;
-
-    const cacheKey = `alerts-${selectedId}`;
-    const cached = getCached(cacheKey);
-    if (cached) {
-      setAlerts(cached.alerts);
-      setStatus('ready');
-      return;
-    }
-
-    if (isDemo) {
-      fetch('/api/engine/demo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }),
-      }).then(r => r.json()).then(json => {
-        const demoAlerts = (json.optimizations ?? []).map((opt, i) => ({
-          id: `demo-${i}`, device_id: 'ATM-DEMO',
-          group_name: opt.group, severity: opt.severity,
-          title: opt.title, message: opt.message,
-          saving_inr: opt.saving?.inr ? parseFloat(opt.saving.inr) : null,
-          acknowledged: false,
-          created_at: opt.timestamp ?? new Date().toISOString(),
-        }));
-        setAlerts(demoAlerts);
-        setCached(cacheKey, { alerts: demoAlerts });
-        setStatus('ready');
-      }).catch(() => setStatus('error'));
-      return;
-    }
-
+    useEffect(() => {
+    if (!selectedId || isDemo) return;
+    if (getCached(`alerts-${selectedId}`)) return;
     load();
-  }, [selectedId, refreshKey, isDemo, demoReadings]);
+  }, [selectedId, refreshKey]);
+
+  useEffect(() => {
+    const cached = cache?.[`alerts-${selectedId}`];
+    if (!cached) return;
+    setAlerts(cached.alerts ?? []);
+    setStatus('ready');
+  }, [cache, selectedId]);
 
   async function load() {
     setStatus('loading');

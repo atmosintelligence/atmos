@@ -14,100 +14,131 @@ function fmtLastContacted(str) {
   }).replace('am', 'AM').replace('pm', 'PM');
 }
 
+function alertsToOpts(alerts) {
+  return (alerts ?? []).slice(0, 5).map(a => ({
+    group:     a.group_name,
+    severity:  a.severity,
+    title:     a.title,
+    message:   a.message,
+    saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
+    timestamp: a.created_at,
+  }));
+}
+
 export default function OverviewPage() {
-  const { selectedId, devices, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
+    const { selectedId, devices, refreshKey, getCached, setCached, isDemo, demoReadings, cache } = useDevice();
   const selectedDevice = devices.find(d => d.device_id === selectedId);
 
   const [profile, setProfile]             = useState(null);
   const [optimizations, setOptimizations] = useState([]);
   const [environmental, setEnvironmental] = useState(null);
   const [latest, setLatest]               = useState(null);
-  const [status, setStatus]               = useState('loading');
+  const [status, setStatus]               = useState('idle');
 
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId) { setStatus('no-device'); return; }
+    if (isDemo && !demoReadings?.length) return;
+
     let cancelled = false;
     const cacheKey = `overview-${selectedId}`;
 
     async function load(force = false) {
-      if (!force) {
-        const cached = getCached(cacheKey);
-        if (cached) {
-          setLatest(cached.latest);
-          setOptimizations(cached.optimizations);
-          setEnvironmental(cached.environmental);
-          setStatus(cached.noData ? 'no-data' : 'ready');
-          if (!isDemo && cached.profile) setProfile(cached.profile);
-          else if (!isDemo && !cached.profile) {
-            const supabase = createClient();
-            supabase.auth.getUser().then(async ({ data: { user } }) => {
-              if (!user) return;
-              const { data } = await supabase
-                .from('profiles')
-                .select('display_name, username')
-                .eq('id', user.id)
-                .single();
-              setProfile(data);
-              setCached(cacheKey, { ...cached, profile: data });
-            });
+      try {
+        if (!force) {
+          const cached = getCached(cacheKey);
+          if (cached) {
+            setLatest(cached.latest ?? null);
+            setOptimizations(cached.optimizations ?? []);
+            setEnvironmental(cached.environmental ?? null);
+            setStatus(cached.noData ? 'no-data' : 'ready');
+            if (!isDemo && cached.profile) {
+              setProfile(cached.profile);
+            } else if (!isDemo && !cached.profile) {
+              const supabase = createClient();
+              supabase.auth.getUser().then(async ({ data: { user } }) => {
+                if (!user) return;
+                const { data } = await supabase
+                  .from('profiles')
+                  .select('display_name, username')
+                  .eq('id', user.id)
+                  .single();
+                setProfile(data);
+                setCached(cacheKey, { ...cached, profile: data });
+              });
+            }
+            return;
           }
+        }
+
+        setStatus('loading');
+
+        if (!isDemo) {
+          const supabase = createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user || cancelled) return;
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, username')
+            .eq('id', user.id)
+            .single();
+          if (cancelled) return;
+          setProfile(prof);
+        }
+
+        const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
+        const body     = isDemo
+          ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
+          : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId };
+
+        const res = await fetch(endpoint, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(body),
+        });
+
+        if (cancelled) return;
+        if (!res.ok) { setStatus('error'); return; }
+
+        const json = await res.json();
+        if (cancelled) return;
+
+        const { optimizations: jsOpts, environmental: env, readings } = json;
+
+        if (!readings?.length) {
+          setLatest(null);
+          setOptimizations([]);
+          setEnvironmental(null);
+          setStatus('no-data');
+          setCached(cacheKey, { profile: null, latest: null, optimizations: [], environmental: null, noData: true });
           return;
         }
+
+        const l = readings.at(-1);
+
+        let finalOptimizations = (jsOpts ?? []).slice(0, 5);
+        const alertsCache = getCached(`alerts-${selectedId}`);
+        if (alertsCache?.alerts?.length) {
+          finalOptimizations = alertsToOpts(alertsCache.alerts);
+        }
+
+        setLatest(l);
+        setOptimizations(finalOptimizations);
+        setEnvironmental(env ?? null);
+        setStatus('ready');
+        setCached(cacheKey, {
+          profile:       isDemo ? null : undefined,
+          latest:        l,
+          optimizations: finalOptimizations,
+          environmental: env ?? null,
+          noData:        false,
+        });
+
+      } catch (err) {
+        if (!cancelled) {
+          console.error('[Overview] load() threw:', err);
+          setStatus('error');
+        }
       }
-
-      setStatus('loading');
-
-      if (!isDemo) {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user || cancelled) return;
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('display_name, username')
-          .eq('id', user.id)
-          .single();
-        if (cancelled) return;
-        setProfile(prof);
-      }
-
-      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
-      const body     = isDemo
-        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
-        : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId };
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (cancelled) return;
-      if (!res.ok) { setStatus('error'); return; }
-
-      const { optimizations: opts, environmental: env, readings } = await res.json();
-      if (cancelled) return;
-
-      if (!readings?.length) {
-        setLatest(null);
-        setOptimizations([]);
-        setEnvironmental(null);
-        setStatus('no-data');
-        setCached(cacheKey, { profile: null, latest: null, optimizations: [], environmental: null, noData: true });
-        return;
-      }
-
-      const l = readings.at(-1);
-      setLatest(l);
-      setOptimizations(opts ?? []);
-      setEnvironmental(env ?? null);
-      setStatus('ready');
-      setCached(cacheKey, {
-        profile: isDemo ? null : undefined,
-        latest: l,
-        optimizations: opts ?? [],
-        environmental: env ?? null,
-        noData: false,
-      });
     }
 
     load();
@@ -115,8 +146,42 @@ export default function OverviewPage() {
     return () => { cancelled = true; clearInterval(interval); };
   }, [selectedId, refreshKey, isDemo, demoReadings]);
 
-  if (status === 'loading') return (
-    <div className="dash-empty" style={{ border: 'none' }}>Loading your data...</div>
+  useEffect(() => {
+    const alerts = cache?.[`alerts-${selectedId}`]?.alerts;
+    if (!alerts?.length || status !== 'ready') return;
+    setOptimizations(alertsToOpts(alerts));
+  }, [cache, selectedId, status]);
+
+  if (status === 'loading' || status === 'idle') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div className="skeleton" style={{ height: '2rem', width: '220px', borderRadius: '0.5rem' }} />
+        <div className="skeleton" style={{ height: '1rem', width: '340px', borderRadius: '0.375rem' }} />
+      </div>
+      <div className="dash-grid">
+        {[1,2,3,4].map(i => (
+          <div key={i} className="dash-stat">
+            <div className="skeleton" style={{ height: '1.75rem', width: '80px', borderRadius: '0.375rem', marginBottom: '0.5rem' }} />
+            <div className="skeleton" style={{ height: '0.75rem', width: '100px', borderRadius: '0.25rem' }} />
+          </div>
+        ))}
+      </div>
+      <div>
+        <div className="skeleton" style={{ height: '0.75rem', width: '140px', borderRadius: '0.25rem', marginBottom: '1rem' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+          {[1,2,3].map(i => (
+            <div key={i} className="dash-device-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className="skeleton" style={{ height: '1rem', width: '70px', borderRadius: '9999px' }} />
+                <div className="skeleton" style={{ height: '1rem', width: '120px', borderRadius: '0.25rem' }} />
+              </div>
+              <div className="skeleton" style={{ height: '0.8rem', width: '100%', borderRadius: '0.25rem' }} />
+              <div className="skeleton" style={{ height: '0.8rem', width: '80%', borderRadius: '0.25rem' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 
   if (status === 'error') return (

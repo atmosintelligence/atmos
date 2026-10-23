@@ -548,3 +548,19 @@ button,
 .dark .atmos-weather-hint {
   color: rgba(255,255,255,0.14);
 }
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(128,128,128,0.08) 25%,
+    rgba(128,128,128,0.15) 50%,
+    rgba(128,128,128,0.08) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

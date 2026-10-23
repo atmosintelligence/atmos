@@ -1,24 +1,16 @@
-import { createClient } from '@/utils/supabase/server';
-import { runEngine } from '@/lib/engine/index.js';
-import { fetchUserReadings } from '@/lib/sheets';
-import { resolveApiUser } from '@/lib/apiAuth';
+import { runEngine }               from '@/lib/engine/index.js';
+import { fetchUserReadings }       from '@/lib/sheets';
+import { resolveApiUser }          from '@/lib/apiAuth';
+import { generateAIOptimizations } from '@/lib/ai/groq';
+import { GENERATION_COOLDOWN_SECONDS } from '@/lib/engine/constants.js';
 
 export async function GET(request) {
   const resolved = await resolveApiUser(request);
+  if (!resolved) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!resolved) {
-    return Response.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
-
-  const { user } = resolved;
-
-  const supabase = await createClient();
-
-  const { searchParams } = new URL(request.url);
-  const deviceId = searchParams.get('deviceId');
+  const { user, supabase } = resolved;
+  const { searchParams }   = new URL(request.url);
+  const deviceId           = searchParams.get('deviceId');
 
   let query = supabase
     .from('alerts')
@@ -26,44 +18,53 @@ export async function GET(request) {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
-  if (deviceId) {
-    query = query.eq('device_id', deviceId);
-  }
+  if (deviceId) query = query.eq('device_id', deviceId);
 
   const { data, error } = await query;
-
-  if (error) {
-    return Response.json(
-      { error: error.message },
-      { status: 500 }
-    );
-  }
+  if (error) return Response.json({ error: error.message }, { status: 500 });
 
   return Response.json({ alerts: data });
 }
+
 
 export async function POST(request) {
   const resolved = await resolveApiUser(request);
 
   if (!resolved) {
-    return Response.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const {
-    user,
-    profile,
-    supabase
-  } = resolved;
+  const { user, profile, supabase } = resolved;
+    const body = await request.json();
+    const deviceId = body.deviceId;
 
-  const body     = await request.json();
-  const deviceId = body.deviceId;
+    const { data: lastAlert } = await supabase
+      .from('alerts')
+      .select('created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  const raw      = await fetchUserReadings(profile.username);
-  const filtered = deviceId ? raw.filter(r => r.device_id === deviceId) : raw;
-  if (!filtered.length) return Response.json({ synced: 0 });
+    if (lastAlert?.created_at) {
+      const elapsed = (Date.now() - new Date(lastAlert.created_at).getTime()) / 1000;
+      if (elapsed < GENERATION_COOLDOWN_SECONDS) {
+        return Response.json({
+          synced: 0,
+          reason: 'cooldown',
+          retryAfter: Math.ceil(GENERATION_COOLDOWN_SECONDS - elapsed),
+        });
+      }
+    }
+
+  const raw = await fetchUserReadings(profile.username);
+  const filtered = deviceId
+    ? raw.filter(r => r.device_id === deviceId)
+    : raw;
+
+  if (!filtered.length) {
+    return Response.json({ synced: 0 });
+  }
 
   const { data: prefs } = await supabase
     .from('alert_preferences')
@@ -71,61 +72,219 @@ export async function POST(request) {
     .eq('user_id', user.id)
     .single();
 
-  const result = await runEngine({
-    readings:   filtered,
-    location:   {
+  const now = new Date();
+  const hour = now.getHours();
+
+  if (prefs?.quiet_hours_enabled) {
+    const { quiet_hours_start: start, quiet_hours_end: end } = prefs;
+
+    const inQuiet = start > end
+      ? hour >= start || hour < end
+      : hour >= start && hour < end;
+
+    if (inQuiet) {
+      return Response.json({
+        synced: 0,
+        reason: 'quiet_hours',
+      });
+    }
+  }
+
+  const engineResult = await runEngine({
+    readings: filtered,
+    location: {
       lat: profile.latitude,
-      lon: profile.longitude
+      lon: profile.longitude,
     },
     roomAreaM2: body.roomAreaM2 ?? 20,
-    tariff:     profile.tariff_rate ?? 10,
+    tariff: profile.tariff_rate ?? 10,
     thresholdOverrides: {
-      consecutiveEmpty:
-        prefs?.min_consecutive_empty ?? 3,
-      phantomLoadHours:
-        prefs?.phantom_load_hours ?? 4,
-      spikeZScore:
-        prefs?.spike_zscore ?? 2.5,
-      weekOverWeekPct:
-        prefs?.week_over_week_pct ?? 8,
+      consecutiveEmpty: prefs?.min_consecutive_empty ?? 3,
+      phantomLoadHours: prefs?.phantom_load_hours ?? 4,
+      spikeZScore: prefs?.spike_zscore ?? 2.5,
+      weekOverWeekPct: prefs?.week_over_week_pct ?? 8,
     },
   });
 
-  const now  = new Date();
-  const hour = now.getHours();
-  if (prefs?.quiet_hours_enabled) {
-    const { quiet_hours_start: start, quiet_hours_end: end } = prefs;
-    const inQuiet = start > end
-      ? (hour >= start || hour < end)
-      : (hour >= start && hour < end);
-    if (inQuiet) return Response.json({ synced: 0, reason: 'quiet_hours' });
-  }
-
-  const { data: existing } = await supabase
+  const { data: priorAlerts } = await supabase
     .from('alerts')
-    .select('title, device_id, created_at')
+    .select('title, severity, explanation, message, created_at')
     .eq('user_id', user.id)
     .eq('device_id', deviceId)
-    .gte('created_at', new Date(Date.now() - 3600000).toISOString());
+    .order('created_at', { ascending: false })
+    .limit(20);
 
-  const existingTitles = new Set((existing ?? []).map(a => a.title));
+  const { data: recentAlerts } = await supabase
+    .from('alerts')
+    .select('title')
+    .eq('user_id', user.id)
+    .eq('device_id', deviceId)
+    .gte(
+      'created_at',
+      new Date(Date.now() - 3600000).toISOString()
+    );
 
-  const toInsert = result.optimizations
-    .filter(opt => !existingTitles.has(opt.title))
-    .map(opt => ({
-      user_id:    user.id,
-      device_id:  deviceId,
-      group_name: opt.group,
-      severity:   opt.severity,
-      title:      opt.title,
-      message:    opt.message,
-      saving_inr: opt.saving?.inr ? parseFloat(opt.saving.inr) : null,
-    }));
+  const existingTitles = new Set(
+    (recentAlerts ?? []).map(a => a.title)
+  );
 
-  if (!toInsert.length) return Response.json({ synced: 0 });
+  // Convert both AI strings and JS engine objects into a
+  // consistent database-compatible alert structure.
+  function prepareAlerts(optimizations, source) {
+    return (optimizations ?? [])
+      .map(opt => {
+        if (typeof opt === 'string') {
+          const message = opt.trim();
 
-  const { error } = await supabase.from('alerts').insert(toInsert);
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+          if (!message) return null;
 
-  return Response.json({ synced: toInsert.length });
+          const title = message.length > 80
+            ? `${message.slice(0, 77).trimEnd()}...`
+            : message;
+
+          return {
+            user_id: user.id,
+            device_id: deviceId,
+            group_name: 'General',
+            severity: 'info',
+            title,
+            message,
+            explanation: null,
+            saving_inr: null,
+          };
+        }
+
+        if (!opt || typeof opt !== 'object' || !opt.title) {
+          return null;
+        }
+
+        return {
+          user_id: user.id,
+          device_id: deviceId,
+          group_name: opt.group ?? opt.group_name ?? 'General',
+          severity: opt.severity ?? 'info',
+          title: opt.title,
+          message: opt.message ?? opt.title,
+          explanation: opt.explanation ?? null,
+          saving_inr: opt.saving_inr ??
+            (opt.saving?.inr != null
+              ? Number.parseFloat(opt.saving.inr)
+              : null),
+        };
+      })
+      .filter(Boolean)
+      .filter(opt => !existingTitles.has(opt.title));
+  }
+
+  let optimizationsToInsert = [];
+  let source = 'ai';
+
+  // Try AI generation first.
+  try {
+    const interval =
+      profile.plan === 'premium' || profile.plan === 'enterprise'
+        ? '30 seconds'
+        : '10 minutes';
+
+    const aiOptimizations = await generateAIOptimizations({
+      profile: {
+        ...profile,
+        plan: profile.plan ?? 'spark',
+      },
+      readings: filtered,
+      engineResult,
+      priorAlerts: priorAlerts ?? [],
+      interval,
+    });
+
+    optimizationsToInsert = prepareAlerts(
+      aiOptimizations,
+      'ai'
+    );
+
+    // Empty or entirely filtered AI output triggers JS fallback.
+    if (!optimizationsToInsert.length) {
+      source = 'js_fallback_ai_empty';
+    }
+  } catch (aiError) {
+    console.error(
+      '[Atmos AI] Generation failed; using JS fallback:',
+      aiError
+    );
+
+    source = 'js_fallback_ai_error';
+  }
+
+  // Use JS-generated recommendations if AI failed or returned
+  // no usable recommendations.
+  if (source !== 'ai') {
+    optimizationsToInsert = prepareAlerts(
+      engineResult.optimizations,
+      'js'
+    );
+  }
+
+  // Nothing new to insert is not a server error.
+  if (!optimizationsToInsert.length) {
+    return Response.json({
+      synced: 0,
+      source,
+      reason: 'no_new_optimizations',
+    });
+  }
+
+  // Attempt the selected recommendations.
+  let { error } = await supabase
+    .from('alerts')
+    .insert(optimizationsToInsert);
+
+  // If AI-generated alerts fail at the database stage, retry
+  // with JS-generated recommendations instead.
+  if (error && source === 'ai') {
+    console.error(
+      '[Atmos Alerts] AI alert insertion failed; retrying with JS fallback:',
+      error
+    );
+
+    source = 'js_fallback_ai_insert_error';
+
+    optimizationsToInsert = prepareAlerts(
+      engineResult.optimizations,
+      'js'
+    );
+
+    if (!optimizationsToInsert.length) {
+      return Response.json({
+        synced: 0,
+        source,
+        reason: 'no_new_optimizations',
+      });
+    }
+
+    const fallbackInsert = await supabase
+      .from('alerts')
+      .insert(optimizationsToInsert);
+
+    error = fallbackInsert.error;
+  }
+
+  if (error) {
+    console.error(
+      '[Atmos Alerts] JS fallback insertion failed:',
+      error
+    );
+
+    return Response.json(
+      {
+        error: error.message,
+        source,
+      },
+      { status: 500 }
+    );
+  }
+
+  return Response.json({
+    synced: optimizationsToInsert.length,
+    source,
+  });
 }
