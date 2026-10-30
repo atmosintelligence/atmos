@@ -203,7 +203,7 @@ export default function PricingPage() {
     {
       name: 'Spark',
       price: '₹0',
-      period: 'forever',
+      period: 'trial',
       description: 'Enjoy basic monitoring with simple features',
       features: ['Enough data refresh rate', '1 or 2 devices', 'All the essentials', 'Savings'],
       cta: 'Get started',
@@ -590,7 +590,7 @@ export default function PricingPage() {
               },
               {
                 q: 'Does the Spark plan expire?',
-                a: 'No, Spark is free forever, with no credit card required. However, it is limited to 2 units and 10-minute refresh intervals, among other small features.',
+                a: 'Yes, Spark is a free trial, with credit card required. However, it is limited to 2 units and 10-minute refresh intervals, among other small features.',
               },
             ].map((item, i) => (
               <div key={i} className="py-5">

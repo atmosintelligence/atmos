@@ -1,5 +1,5 @@
 import { runEngine }               from '@/lib/engine/index.js';
-import { fetchUserReadings }       from '@/lib/sheets';
+import { fetchUserReadings }       from '@/lib/supabase-readings';
 import { resolveApiUser }          from '@/lib/apiAuth';
 import { generateAIOptimizations } from '@/lib/ai/groq';
 import { GENERATION_COOLDOWN_SECONDS } from '@/lib/engine/constants.js';
@@ -128,8 +128,6 @@ export async function POST(request) {
     (recentAlerts ?? []).map(a => a.title)
   );
 
-  // Convert both AI strings and JS engine objects into a
-  // consistent database-compatible alert structure.
   function prepareAlerts(optimizations, source) {
     return (optimizations ?? [])
       .map(opt => {
@@ -139,7 +137,7 @@ export async function POST(request) {
           if (!message) return null;
 
           const title = message.length > 80
-            ? `${message.slice(0, 77).trimEnd()}...`
+            ? `${message.slice(0, 77).trimEnd()}…`
             : message;
 
           return {
@@ -179,7 +177,6 @@ export async function POST(request) {
   let optimizationsToInsert = [];
   let source = 'ai';
 
-  // Try AI generation first.
   try {
     const interval =
       profile.plan === 'premium' || profile.plan === 'enterprise'
@@ -202,7 +199,6 @@ export async function POST(request) {
       'ai'
     );
 
-    // Empty or entirely filtered AI output triggers JS fallback.
     if (!optimizationsToInsert.length) {
       source = 'js_fallback_ai_empty';
     }
@@ -215,8 +211,6 @@ export async function POST(request) {
     source = 'js_fallback_ai_error';
   }
 
-  // Use JS-generated recommendations if AI failed or returned
-  // no usable recommendations.
   if (source !== 'ai') {
     optimizationsToInsert = prepareAlerts(
       engineResult.optimizations,
@@ -224,7 +218,6 @@ export async function POST(request) {
     );
   }
 
-  // Nothing new to insert is not a server error.
   if (!optimizationsToInsert.length) {
     return Response.json({
       synced: 0,
@@ -233,13 +226,10 @@ export async function POST(request) {
     });
   }
 
-  // Attempt the selected recommendations.
   let { error } = await supabase
     .from('alerts')
     .insert(optimizationsToInsert);
 
-  // If AI-generated alerts fail at the database stage, retry
-  // with JS-generated recommendations instead.
   if (error && source === 'ai') {
     console.error(
       '[Atmos Alerts] AI alert insertion failed; retrying with JS fallback:',

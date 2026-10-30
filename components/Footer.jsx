@@ -33,14 +33,11 @@ export default function Footer() {
               >
                 Dashboard
               </Link>
-              <a
-                href="https://github.com/atmosintelligence/atmos"
-                target="_blank"
-                rel="noopener noreferrer"
+              <span
                 className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
               >
                 GitHub
-              </a>
+              </span>
             </div>
             <div className="flex flex-col gap-2">
               <span className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1">
@@ -82,14 +79,11 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-black/8 dark:border-white/8 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-neutral-400">
-          <a
-            href="https://github.com/atmosintelligence/atmos/blob/main/LICENSE"
-            target="_blank"
-            rel="noopener noreferrer"
+          <span
             className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
           >
             © 2026 Atmos Intelligence.
-          </a>
+          </span>
           <span>Made with 💖 in India</span>
         </div>
       </div>

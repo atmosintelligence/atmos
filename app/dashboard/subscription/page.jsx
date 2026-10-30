@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import Link from 'next/link';
 import { useDevice } from '../DeviceContext';
 
 const PLANS = {
@@ -10,7 +9,7 @@ const PLANS = {
     label: 'Spark',
     price: '₹0',
     color: '#737373',
-    description: 'Enjoy basic monitoring with simple features; free forever',
+    description: 'Enjoy basic monitoring with simple features; free trial',
     features: ['10-min refresh', 'Up to 2 devices', 'All the essentials', 'Savings'],
   },
   basic: {

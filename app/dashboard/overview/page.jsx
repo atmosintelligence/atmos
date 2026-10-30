@@ -15,14 +15,18 @@ function fmtLastContacted(str) {
 }
 
 function alertsToOpts(alerts) {
-  return (alerts ?? []).slice(0, 5).map(a => ({
-    group:     a.group_name,
-    severity:  a.severity,
-    title:     a.title,
-    message:   a.message,
-    saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
-    timestamp: a.created_at,
-  }));
+  return (alerts ?? [])
+    .slice()
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5)
+    .map(a => ({
+      group:     a.group_name,
+      severity:  a.severity,
+      title:     a.title,
+      message:   a.message,
+      saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
+      timestamp: a.created_at,
+    }));
 }
 
 export default function OverviewPage() {

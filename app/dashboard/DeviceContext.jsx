@@ -27,6 +27,7 @@ export function DeviceProvider({ children }) {
   const cacheRef  = useRef({});
   const inflight  = useRef(new Set());
   const syncedRef = useRef(new Set());
+  const devicesFetchRef = useRef(false);
 
   function getCached(key) {
     return cacheRef.current[key] ?? null;
@@ -109,48 +110,72 @@ export function DeviceProvider({ children }) {
           return;
         }
         const res = await fetch('/api/ai/demo', {
-          method: 'POST',
+          method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body:    JSON.stringify({
             readings,
             deviceId,
-            location: { lat: 28.6139, lon: 77.2090 },
+            location:   { lat: 28.6139, lon: 77.2090 },
             roomAreaM2: 20,
-            tariff: 10,
+            tariff:     10,
           }),
         });
         if (!res.ok) throw new Error('demo ai failed');
         const { optimizations } = await res.json();
         setCached(alertsKey, { alerts: optimizations ?? [] });
+        const existingOverview = getCached(`overview-${deviceId}`);
+        if (existingOverview && !existingOverview.noData) {
+          setCached(`overview-${deviceId}`, {
+            ...existingOverview,
+            optimizations: (optimizations ?? [])
+            .slice()
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 5)
+            .map(a => ({
+              group:     a.group_name,
+              severity:  a.severity,
+              title:     a.title,
+              message:   a.message,
+              saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
+              timestamp: a.created_at,
+            })),
+          });
+        }
         return;
       }
 
       await fetch('/api/alerts', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId, roomAreaM2: 20 }),
+        body:    JSON.stringify({ deviceId, roomAreaM2: 20 }),
       });
       const res = await fetch(`/api/alerts?deviceId=${deviceId}`);
       if (!res.ok) throw new Error('alerts fetch failed');
       const { alerts } = await res.json();
       setCached(alertsKey, { alerts: alerts ?? [] });
+      const existingOverview = getCached(`overview-${deviceId}`);
+      if (existingOverview && !existingOverview.noData) {
+        setCached(`overview-${deviceId}`, {
+          ...existingOverview,
+          optimizations: (alerts ?? [])
+          .slice()
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 5)
+          .map(a => ({
+            group:     a.group_name,
+            severity:  a.severity,
+            title:     a.title,
+            message:   a.message,
+            saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
+            timestamp: a.created_at,
+          })),
+        });
+      }
     } catch (err) {
       console.error('[Atmos AI] sync failed:', err.message);
       if (!getCached(alertsKey)) setCached(alertsKey, { alerts: [] });
     }
   }
-
-  useEffect(() => {
-    if (!selectedId) return;
-    if (isDemo && !demoReadings?.length) return;
-
-    // Small delay so the UI renders before the AI call goes out
-    const timer = setTimeout(() => {
-      syncAIOptimizations(selectedId);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [selectedId, isDemo, demoReadings]);
 
   useEffect(() => {
     if (isDemo) {
@@ -164,18 +189,14 @@ export function DeviceProvider({ children }) {
       setLoadingDevices(false);
       return;
     }
+    if (devicesFetchRef.current) return;
+  devicesFetchRef.current = true;
     const supabase = createClient();
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoadingDevices(false);
-        return;
-      }
-      const res = await fetch('/api/devices');
-      if (!res.ok) {
-        setLoadingDevices(false);
-        return;
-      }
+      if (!user) { setLoadingDevices(false); return; }
+      const res  = await fetch('/api/devices');
+      if (!res.ok) { setLoadingDevices(false); return; }
       const { devices: devs } = await res.json();
       setDevices(devs ?? []);
       if (devs?.length) {
@@ -306,6 +327,7 @@ export function DeviceProvider({ children }) {
     } catch (err) {
       console.error(err);
     }
+    await syncAIOptimizations(deviceId);
   }
 
   async function preloadAlerts(deviceId) {
@@ -324,31 +346,14 @@ export function DeviceProvider({ children }) {
   }
 
   useEffect(() => {
-  if (loadingDevices || !selectedId) return;
-  if (refreshKey === 0) return;
-
-  const timer = setTimeout(async () => {
-      await preloadSubscription();
-
+    if (!selectedId || loadingDevices) return;
+    const timer = setTimeout(async () => {
       await preloadDevice(selectedId);
-      await preloadAlerts(selectedId);
-
-      const others = devices.filter(
-        d => d.device_id !== selectedId
-      );
-
-      for (const device of others) {
-        await preloadDevice(device.device_id);
-        await preloadAlerts(device.device_id);
-      }
-    }, 300);
-
+      const others = devices.filter(d => d.device_id !== selectedId);
+      for (const d of others) await preloadDevice(d.device_id);
+    }, 500);
     return () => clearTimeout(timer);
-  }, [
-    loadingDevices,
-    selectedId,
-    refreshKey
-  ]);
+  }, [selectedId, loadingDevices, isDemo, demoReady]);
 
   const selectedDevice =
     devices.find(d => d.device_id === selectedId) ?? null;
