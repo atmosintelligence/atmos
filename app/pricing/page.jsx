@@ -203,7 +203,7 @@ export default function PricingPage() {
     {
       name: 'Spark',
       price: '₹0',
-      period: 'trial',
+      period: 'forever',
       description: 'Enjoy basic monitoring with simple features',
       features: ['Enough data refresh rate', '1 or 2 devices', 'All the essentials', 'Savings'],
       cta: 'Get started',
@@ -216,7 +216,7 @@ export default function PricingPage() {
       period: 'per unit / month',
       description: 'An awesome and scalable choice to begin with',
       features: ['Everything in Spark', 'Unlimited devices', 'Alerts', 'Simple export'],
-      cta: 'Start free trial',
+      cta: 'Start free forever',
       href: '/signup',
       highlight: false,
     },
@@ -226,7 +226,7 @@ export default function PricingPage() {
       period: 'per unit / month',
       description: 'Small businesses and growing teams can turn eco-friendly',
       features: ['Everything in Basic', 'Fast data refresh rate', 'Advanced export', 'Simple API access'],
-      cta: 'Start free trial',
+      cta: 'Start free forever',
       href: '/signup',
       highlight: true,
     },
@@ -364,7 +364,7 @@ export default function PricingPage() {
               ))}
             </ul>
             <Link href={featured.href} className="btn mt-auto text-center text-sm font-medium py-2.5 rounded-xl bg-white text-[var(--color-primary-dark)]" style={{ backgroundColor: 'white' }}>
-              Start free trial
+              Start free
             </Link>
           </div>
         </div>
@@ -590,7 +590,7 @@ export default function PricingPage() {
               },
               {
                 q: 'Does the Spark plan expire?',
-                a: 'Yes, Spark is a free trial, with credit card required. However, it is limited to 2 units and 10-minute refresh intervals, among other small features.',
+                a: 'No, Spark stays with you permanently, with no credit card required. However, it is limited to 2 units and 10-minute refresh intervals, among other small features.',
               },
             ].map((item, i) => (
               <div key={i} className="py-5">

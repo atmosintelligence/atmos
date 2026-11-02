@@ -9,7 +9,7 @@ const PLANS = {
     label: 'Spark',
     price: '₹0',
     color: '#737373',
-    description: 'Enjoy basic monitoring with simple features; free trial',
+    description: 'Enjoy basic monitoring with simple features; free forever',
     features: ['10-min refresh', 'Up to 2 devices', 'All the essentials', 'Savings'],
   },
   basic: {
