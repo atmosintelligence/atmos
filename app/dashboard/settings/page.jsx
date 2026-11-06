@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { getProfile, updateProfile, changePassword, deleteAccount } from '@/lib/supabase';
+import { fetchEngine } from '@/lib/engineFetch';
 import { exportPDF, exportJSON } from '@/lib/pdf/export';
 import { useDevice } from '../DeviceContext';
 import Link from 'next/link';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { selectedId, isDemo, demoReadings } = useDevice();
+  const { selectedId, isDemo, getDemoReadings } = useDevice();
 
   const [theme, setTheme]               = useState('dark');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -31,32 +32,18 @@ export default function SettingsPage() {
   const [locationMsg, setLocationMsg]     = useState('');
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('display_name, latitude, longitude')
-        .eq('id', user.id)
-        .single();
-      if (data) {
-        setDisplayName(data.display_name ?? '');
-        if (data.latitude  != null) setLat(String(data.latitude));
-        if (data.longitude != null) setLon(String(data.longitude));
-      }
+    getProfile('display_name, latitude, longitude').then(data => {
+      if (!data) return;
+      setDisplayName(data.display_name ?? '');
+      if (data.latitude  != null) setLat(String(data.latitude));
+      if (data.longitude != null) setLon(String(data.longitude));
     });
   }, []);
 
   async function handleSaveDisplayName() {
     setDisplayNameSaving(true);
     setDisplayNameMsg('');
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setDisplayNameSaving(false); return; }
-    const { error } = await supabase
-      .from('profiles')
-      .update({ display_name: displayName })
-      .eq('id', user.id);
+    const { error } = await updateProfile({ display_name: displayName });
     if (!error) {
       window.dispatchEvent(new CustomEvent('atmos:profileChanged', { detail: { display_name: displayName } }));
     }
@@ -67,19 +54,7 @@ export default function SettingsPage() {
   async function handleChangePassword() {
     setPasswordSaving(true);
     setPasswordMsg('');
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setPasswordSaving(false); return; }
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password: currentPassword,
-    });
-    if (signInError) {
-      setPasswordMsg('Current password is incorrect.');
-      setPasswordSaving(false);
-      return;
-    }
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await changePassword(currentPassword, newPassword);
     setPasswordMsg(error ? error.message : 'Password updated successfully.');
     setCurrentPassword('');
     setNewPassword('');
@@ -124,13 +99,7 @@ export default function SettingsPage() {
       setLocationMsg('Please enter valid coordinates.');
       return;
     }
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { error } = await supabase
-      .from('profiles')
-      .update({ latitude: parsedLat, longitude: parsedLon })
-      .eq('id', user.id);
+    const { error } = await updateProfile({ latitude: parsedLat, longitude: parsedLon });
     setLocationMsg(error ? error.message : 'Location updated.');
     if (!error) {
       setLocationSaved(true);
@@ -150,35 +119,26 @@ export default function SettingsPage() {
     );
   }
 
+  async function loadExportData() {
+    return fetchEngine({
+      isDemo,
+      readings: isDemo ? getDemoReadings(selectedId) : null,
+      deviceId: selectedId,
+    });
+  }
+
   async function handleExportPDF() {
     setExporting(true);
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      let prof = null;
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('display_name, username')
-          .eq('id', user.id)
-          .single();
-        prof = data;
-      }
-
-      const { fetchEngine } = await import('@/lib/engineFetch');
-      const res = await fetchEngine({
-        isDemo, demoReadings, deviceId: selectedId,
-        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
-      });
-      const { readings, optimizations, environmental, analysis } = await res.json();
+      const [prof, json] = await Promise.all([getProfile('display_name, username'), loadExportData()]);
 
       await exportPDF({
-        deviceId: selectedId,
-        profile: prof,
-        readings:      readings      ?? [],
-        optimizations: optimizations ?? [],
-        environmental: environmental ?? null,
-        analysis:      analysis      ?? null,
+        deviceId:      selectedId,
+        profile:       prof,
+        readings:      json.readings      ?? [],
+        optimizations: json.optimizations ?? [],
+        environmental: json.environmental ?? null,
+        analysis:      json.analysis      ?? null,
       });
     } catch (e) {
       console.error(e);
@@ -189,13 +149,8 @@ export default function SettingsPage() {
   async function handleExportJSON() {
     setExportingJSON(true);
     try {
-      const { fetchEngine } = await import('@/lib/engineFetch');
-      const res = await fetchEngine({
-        isDemo, demoReadings, deviceId: selectedId,
-        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
-      });
-      const { readings, optimizations } = await res.json();
-      exportJSON({ deviceId: selectedId, readings: readings ?? [], optimizations: optimizations ?? [] });
+      const json = await loadExportData();
+      exportJSON({ deviceId: selectedId, readings: json.readings ?? [], optimizations: json.optimizations ?? [] });
     } catch (e) {
       console.error(e);
     }
@@ -205,13 +160,11 @@ export default function SettingsPage() {
   async function handleDeleteAccount() {
     setDeleting(true);
     setDeleteError('');
-    const supabase = createClient();
-    const { error } = await supabase.rpc('delete_user');
+    const { error } = await deleteAccount();
     if (error) {
       setDeleteError(error.message);
       setDeleting(false);
     } else {
-      await supabase.auth.signOut();
       router.replace('/');
     }
   }

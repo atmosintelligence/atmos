@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Icon from './Icon';
 import { useNavbar } from './NavbarContext';
-import { createClient } from '@/utils/supabase/client';
+import { getProfile, onAuthChange } from '@/lib/supabase';
 
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
@@ -137,40 +137,26 @@ export default function Navbar() {
     };
     window.addEventListener('atmos:profileChanged', onProfileChange);
 
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('display_name, username')
-        .eq('id', user.id)
-        .single();
-      setProfile(data);
-    });
+    getProfile('display_name, username').then(data => { if (data) setProfile(data); });
 
     setIsDemoMode(
       localStorage.getItem('atmos:demoMode') === 'true'
     );
 
-    const { data: { subscription } } =
-      supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          if (session) {
-            localStorage.removeItem('atmos:demoMode');
-            setIsDemoMode(false);
-          }
-
-          if (!session) {
-            setProfile(null);
-          }
-        }
-      );
+    const stopAuthListener = onAuthChange(session => {
+      if (session) {
+        localStorage.removeItem('atmos:demoMode');
+        setIsDemoMode(false);
+      } else {
+        setProfile(null);
+      }
+    });
 
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('atmos:themeChanged', onThemeChange);
       window.removeEventListener('atmos:profileChanged', onProfileChange);
-      subscription.unsubscribe();
+      stopAuthListener();
     };
   }, []);
 

@@ -12,7 +12,17 @@ const SEVERITY_BORDER = {
   info:     'text-blue-400 bg-blue-400/8 border-blue-400/20',
 };
 
-export default function OptCard({ opt, lastContacted }) {
+function formatReadingTime(value) {
+  if (!value) return null;
+  return new Date(value)
+    .toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })
+    .replace('am', 'AM')
+    .replace('pm', 'PM');
+}
+
+export default function OptCard({ opt }) {
+  const readingTime = formatReadingTime(opt.timestamp);
+
   return (
     <div className={`dash-opt-card ${opt.severity} ${SEVERITY_BORDER[opt.group]}`}>
       <div className="dash-opt-meta">
@@ -20,7 +30,7 @@ export default function OptCard({ opt, lastContacted }) {
           {opt.group}
         </span>
         <span className="dash-opt-rule">{opt.title}</span>
-        <span className="dash-opt-time">{lastContacted ?? 'Never'}</span>
+        {readingTime && <span className="dash-opt-time" title="Time of the sensor reading">Reading: {readingTime}</span>}
       </div>
       <p className="dash-opt-message">{opt.message}</p>
       {opt.saving && (

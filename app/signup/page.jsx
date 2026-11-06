@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
-import { createClient } from '@/utils/supabase/client';
+import { signUp } from '@/lib/supabase';
 
 const firstNames = [
   'Aryan', 'Rohan', 'Vikram', 'Aditya', 'Rahul',
@@ -80,17 +80,14 @@ export default function SignupPage() {
     const usernameErr = validateUsername(username);
     if (usernameErr) { setUsernameError(usernameErr); return; }
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email: form.get('email'),
+    const { error } = await signUp({
+      email:    form.get('email'),
       password: form.get('password'),
-      options: {
-        data: {
-          display_name: form.get('display_name'),
-          username,
-          latitude:  location.lat,
-          longitude: location.lon,
-        },
+      metadata: {
+        display_name: form.get('display_name'),
+        username,
+        latitude:  location.lat,
+        longitude: location.lon,
       },
     });
     if (error) {

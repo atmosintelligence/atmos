@@ -1,7 +1,9 @@
 'use client';
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getCurrentUser, getSubscription } from '@/lib/supabase';
+import { fetchEngine } from '@/lib/engineFetch';
+import { SECTIONS, SECTION_NAMES } from './sections';
 import { useDemo } from './DemoContext';
 import { DEMO_DEVICE_ID, DEMO_DEVICE_ID_2 } from '@/lib/demo';
 
@@ -84,13 +86,8 @@ export function DeviceProvider({ children }) {
     }
 
     try {
-      const res = await fetch('/api/subscription');
-
-      if (!res.ok) return;
-
-      const json = await res.json();
-
-      setSubCache(json);
+      const sub = await getSubscription();
+      if (sub) setSubCache(sub);
     } catch (err) {
       console.error(err);
     }
@@ -191,9 +188,8 @@ export function DeviceProvider({ children }) {
     }
     if (devicesFetchRef.current) return;
   devicesFetchRef.current = true;
-    const supabase = createClient();
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) { setLoadingDevices(false); return; }
       const res  = await fetch('/api/devices');
       if (!res.ok) { setLoadingDevices(false); return; }
@@ -223,106 +219,40 @@ export function DeviceProvider({ children }) {
 
   async function preloadDevice(deviceId) {
     try {
-      const endpoint = isDemo
-        ? '/api/engine/demo'
-        : '/api/engine';
-      const demoReadingsForDevice = getDemoReadingsForDevice(deviceId);
-      const body = isDemo
-        ? {
-            readings: demoReadingsForDevice,
-            location: { lat: 28.6139, lon: 77.2090 },
-            roomAreaM2: 20,
-            tariff: 10
-          }
-        : {
-            location: { lat: 28.6139, lon: 77.2090 },
-            roomAreaM2: 20,
-            deviceId
-          };
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+      const json = await fetchEngine({
+        isDemo,
+        readings: isDemo ? getDemoReadingsForDevice(deviceId) : null,
+        deviceId,
       });
-      if (!res.ok) {
-        console.error(await res.text());
-        return;
-      }
-      const json = await res.json();
+
       const raw     = json.readings ?? [];
       const hasData = raw.length > 0;
-      if (json.weatherError) {
-        setWeatherError(json.weatherError);
-      }
+      if (json.weatherError) setWeatherError(json.weatherError);
+
       if (!getCached(`overview-${deviceId}`)) {
-        setCached(
-          `overview-${deviceId}`,
-          hasData
-            ? {
-                profile: null,
-                latest: raw.at(-1),
-                optimizations: json.optimizations ?? [],
-                environmental: json.environmental ?? null,
-                noData: false,
-              }
-            : {
-                profile: null,
-                latest: null,
-                optimizations: [],
-                environmental: null,
-                noData: true
-              }
-        );
-      }
-      if (!getCached(`history-${deviceId}`) && hasData) {
-        setCached(`history-${deviceId}`, {
-          rows: [...raw].sort(
-            (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-          )
+        setCached(`overview-${deviceId}`, {
+          profile:       null,
+          latest:        hasData ? raw.at(-1) : null,
+          optimizations: hasData ? json.optimizations ?? [] : [],
+          environmental: hasData ? json.environmental ?? null : null,
+          noData:        !hasData,
         });
       }
-      if (json.analysis && hasData) {
-        if (!getCached(`lighting-${deviceId}`)) {
-          setCached(`lighting-${deviceId}`, {
-            ...json.analysis.lighting,
-            optimizations: json.optimizations.filter(
-              o => o.group === 'Lighting'
-            )
-          });
-        }
-        if (!getCached(`temperature-${deviceId}`)) {
-          setCached(`temperature-${deviceId}`, {
-            ...json.analysis.hvac,
-            optimizations: json.optimizations.filter(
-              o => o.group === 'HVAC' || o.group === 'Humidity'
-            ),
-            weatherError: json.weatherError,
-            readings: raw
-          });
-        }
-        if (!getCached(`power-${deviceId}`)) {
-          setCached(`power-${deviceId}`, {
-            ...json.analysis.power,
-            optimizations: json.optimizations.filter(
-              o => o.group === 'Power'
-            )
-          });
-        }
-        if (!getCached(`trends-${deviceId}`)) {
-          setCached(`trends-${deviceId}`, {
-            ...json.analysis.trends,
-            optimizations: json.optimizations.filter(
-              o => o.group === 'Trends'
-            )
-          });
-        }
-        if (!getCached(`environmental-${deviceId}`)) {
-          setCached(
-            `environmental-${deviceId}`,
-            json.analysis.environmental
-          );
+
+      if (hasData && !getCached(`history-${deviceId}`)) {
+        setCached(`history-${deviceId}`, {
+          rows: [...raw].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
+        });
+      }
+
+      // Analysis tabs: lighting, temperature, power, trends, environmental (see sections.js)
+      if (hasData && json.analysis) {
+        for (const name of SECTION_NAMES) {
+          const key = `${name}-${deviceId}`;
+          if (!getCached(key)) setCached(key, SECTIONS[name](json));
         }
       }
+
       await preloadAlerts(deviceId);
     } catch (err) {
       console.error(err);
@@ -377,6 +307,7 @@ export function DeviceProvider({ children }) {
         isDemo,
         demoReadings,
         demoReadings2,
+        getDemoReadings: getDemoReadingsForDevice,
         weatherError,
         cache
       }}

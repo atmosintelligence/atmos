@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDevice } from '../DeviceContext';
-import { createClient } from '@/utils/supabase/client';
+import { hasApiKey, setApiKey as saveApiKey } from '@/lib/supabase';
 import Link from 'next/link';
 
 function CodeBlock({ code, label }) {
@@ -71,39 +71,31 @@ function EndpointCard({ method, path, description, children }) {
   );
 }
 
+function Note({ children }) {
+  return <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, margin: 0 }}>{children}</p>;
+}
+
 export default function ApiPage() {
   const { selectedId, isDemo } = useDevice();
+  const deviceId = selectedId ?? 'ATM-D001';
   const [hasKey, setHasKey] = useState(false);
   const [apiKey, setApiKey] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [revoking, setRevoking] = useState(false);
   const [copied, setCopied]     = useState(false);
-  const [userId, setUserId]     = useState(null);
 
   const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com';
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      setUserId(user.id);
-      const { data } = await supabase
-        .from('profiles')
-        .select('api_key')
-        .eq('id', user.id)
-        .single();
-      if (data?.api_key) setHasKey(true);
-    });
+    hasApiKey().then(setHasKey);
   }, []);
 
   async function generateApiKey() {
     setGenerating(true);
     const key = 'atmos_' + Array.from(crypto.getRandomValues(new Uint8Array(24)))
       .map(b => b.toString(16).padStart(2, '0')).join('');
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('profiles').update({ api_key: key }).eq('id', user.id);
+    const { error } = await saveApiKey(key);
+    if (!error) {
       setApiKey(key);
       setHasKey(true);
     }
@@ -112,13 +104,8 @@ export default function ApiPage() {
 
   async function revokeApiKey() {
     setRevoking(true);
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ api_key: null })
-        .eq('id', user.id);
+    const { error } = await saveApiKey(null);
+    if (!error) {
       setApiKey(null);
       setHasKey(false);
     }
@@ -142,14 +129,14 @@ export default function ApiPage() {
       <div className="dash-greeting">
         <div className="dash-greeting-name">API</div>
         <div className="dash-greeting-sub">
-          Programmatic access to your sensor data and optimisation engine. Use the REST API to integrate Atmos data into your own applications, dashboards, or automations.
+          Read your devices, run the analysis and manage alerts from your own code. Everything the dashboard does goes through these endpoints.
         </div>
       </div>
 
       <div className="dash-device-card">
         <div className="dash-section-title" style={{ marginBottom: '0.75rem' }}>Your API key</div>
         <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, marginBottom: '1rem' }}>
-          All API requests must include your key in the <code style={{ fontSize: '0.75rem', background: 'rgba(128,128,128,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem' }}>Authorization</code> header. You may integrate this API wherever you deem fit. Keep this key secret!
+          Send your key in the <code style={{ fontSize: '0.75rem', background: 'rgba(128,128,128,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem' }}>Authorization</code> header as a Bearer token. Generating a new key replaces the old one. Keep it secret.
         </p>
 
         {apiKey ? (
@@ -166,7 +153,7 @@ export default function ApiPage() {
               </button>
             </div>
             <p style={{ fontSize: '0.72rem', color: '#ef4444' }}>
-              Store this key securely. It will not be shown again after you leave this page.
+              Copy this key now. It is only shown on this page, until you leave it.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: '100%' }}>
               <button
@@ -230,14 +217,30 @@ export default function ApiPage() {
 
       <div>
         <div className="dash-section-title">Endpoints</div>
+        <p style={{ fontSize: '0.78rem', color: '#737373', lineHeight: 1.65, margin: '0 0 0.75rem' }}>
+          Every endpoint below needs the Bearer key. Errors return <code>{`{ "error": "message" }`}</code> with status 400 (bad input), 401 (missing or wrong key) or 500.
+        </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
 
-          <EndpointCard method="POST" path="/api/engine" description="Run the optimisation engine for a device">
-            <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65 }}>
-              Returns all optimisations, environmental counters, and full analysis data for the specified device. Reads your Supabase profile for tariff rate and location automatically.
-            </p>
-            <CodeBlock label="Request body" code={JSON.stringify({ deviceId: selectedId ?? 'ATM-D001', roomAreaM2: 20 }, null, 2)} />
-            <CodeBlock label="Response shape" code={`{
+          <EndpointCard method="GET" path="/api/devices" description="List your devices">
+            <CodeBlock label="Response" code={`{
+  "devices": [
+    {
+      "device_id": "${deviceId}",
+      "owner_username": "your-username",
+      "installed_at": "2026-01-10T09:00:00Z",
+      "last_contacted_at": "2026-05-14T23:30:00Z"
+    }
+  ]
+}`} />
+          </EndpointCard>
+
+          <EndpointCard method="POST" path="/api/engine" description="Run the analysis on the last 30 days of readings">
+            <Note>
+              Runs the rule engine for one device (omit <code>deviceId</code> for all). Tariff and location come from your profile. <code>roomAreaM2</code> defaults to 20 and sets the energy benchmark. Results are cached for 60 seconds. Numbers inside <code>environmental</code> are strings.
+            </Note>
+            <CodeBlock label="Request body" code={JSON.stringify({ deviceId, roomAreaM2: 20 }, null, 2)} />
+            <CodeBlock label="Response" code={`{
   "optimizations": [
     {
       "group": "Lighting",
@@ -245,104 +248,154 @@ export default function ApiPage() {
       "title": "Lights on in empty room",
       "message": "...",
       "saving": { "inr": "2.40" },
-      "timestamp": "2025-05-14T13:00:00.000Z"
+      "timestamp": "2026-05-14T13:00:00.000Z"   // sensor reading time
     }
   ],
   "environmental": {
     "actualKwh": "1.23",
-    "savedKwh": "0.45",
-    "co2KgSaved": "0.33",
-    "moneySavedINR": "4.50",
-    "treesEquiv": "0",
-    "weeklyData": [...]
+    "baselineKwh": "1.80",
+    "savedKwh": "0.57",
+    "co2KgSaved": "0.47",
+    "moneySavedINR": "5.70",
+    "periodDays": "12.5",
+    "weeklyBaselineKwh": "3.015",
+    "weeklyData": [{ "week": "...", "kwh": "0.512", "baseline": "3.015", "saved": "0.000", "hasData": true }]
   },
   "analysis": {
-    "lighting": { "l1Events": [...], "l2Events": [...] },
-    "hvac":     { "t1Events": [...], "t2Events": [...], "t3Events": [...] },
-    "power":    { "p1Events": [...], "p2Events": [...], "p3Events": [...] },
-    "trends":   { "trend1": {...}, "trend2": {...}, "dailyBreakdown": [...] }
+    "lighting": { "l1Events": [], "l2Events": [] },
+    "hvac":     { "t1Events": [], "t2Events": [], "t3Events": [] },
+    "power":    { "p1Events": [], "p2Events": [], "p3Events": [], "totalEnergy": 1.23 },
+    "trends":   { "trend1": {}, "trend2": {}, "dailyBreakdown": [] }
   },
-  "readings": [...],
+  "readings": [],
   "outdoorWeather": { "temp": 28.4, "condition": "Clear" },
   "weatherError": null
 }`} />
           </EndpointCard>
 
-          <EndpointCard method="GET" path="/api/devices" description="List all devices linked to your account">
-            <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65 }}>Returns all devices registered under your username in the Devices sheet.</p>
-            <CodeBlock label="Response shape" code={`{
-  "devices": [
-    {
-      "device_id": "ATM-D001",
-      "owner_username": "arnadal",
-      "installed_at": "2025-01-10T09:00:00",
-      "last_contacted_at": "2025-05-14T23:30:00"
-    }
-  ]
-}`} />
-          </EndpointCard>
-
-          <EndpointCard method="GET" path="/api/alerts?deviceId=ATM-D001" description="Fetch the alert log for a device">
-            <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65 }}>Returns all stored alerts for the specified device, ordered by timestamp descending.</p>
-            <CodeBlock label="Response shape" code={`{
+          <EndpointCard method="GET" path={`/api/alerts?deviceId=${deviceId}`} description="Alert log, newest sensor reading first">
+            <Note>
+              <code>deviceId</code> is optional. <code>created_at</code> is the time of the sensor reading the alert is about; <code>generated_at</code> is when Atmos wrote it.
+            </Note>
+            <CodeBlock label="Response" code={`{
   "alerts": [
     {
       "id": "uuid",
-      "device_id": "ATM-D001",
+      "device_id": "${deviceId}",
       "group_name": "Power",
       "severity": "warning",
       "title": "Phantom load whilst room is empty",
       "message": "...",
+      "explanation": "...",
       "saving_inr": 3.2,
       "acknowledged": false,
-      "created_at": "2025-05-14T22:30:00Z"
+      "created_at": "2026-05-14T22:30:00Z",
+      "generated_at": "2026-05-14T22:41:12Z"
     }
   ]
 }`} />
           </EndpointCard>
 
-          <EndpointCard method="POST" path="/api/alerts" description="Sync latest optimisations as new alerts">
-            <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65 }}>Runs the engine and persists any new optimisations as alert records. Respects quiet hours and deduplicates alerts within the last hour.</p>
-            <CodeBlock label="Request body" code={JSON.stringify({ deviceId: selectedId ?? 'ATM-D001', roomAreaM2: 20 }, null, 2)} />
-            <CodeBlock label="Response shape" code={`{ "synced": 2 }`} />
+          <EndpointCard method="POST" path="/api/alerts" description="Generate alerts from the latest analysis">
+            <Note>
+              Runs the engine, asks the AI layer to write the recommendations (falls back to the engine's own text), skips titles already raised in the last hour, and stores the rest. One run per 30 seconds per account, and nothing is generated during your quiet hours.
+            </Note>
+            <CodeBlock label="Request body" code={JSON.stringify({ deviceId, roomAreaM2: 20 }, null, 2)} />
+            <CodeBlock label="Response" code={`{ "synced": 2, "source": "ai" }
+
+// nothing new
+{ "synced": 0, "reason": "cooldown" | "quiet_hours" | "no_new_optimizations" }`} />
           </EndpointCard>
 
-          <EndpointCard method="POST" path="/api/alerts/acknowledge" description="Acknowledge one or more alerts">
-            <CodeBlock label="Acknowledge specific IDs" code={`{ "ids": ["uuid-1", "uuid-2"] }`} />
-            <CodeBlock label="Acknowledge all for a device" code={`{ "all": true, "deviceId": "ATM-D001" }`} />
+          <EndpointCard method="POST" path="/api/alerts/acknowledge" description="Mark alerts as read">
+            <CodeBlock label="Specific alerts" code={`{ "ids": ["uuid-1", "uuid-2"] }`} />
+            <CodeBlock label="All alerts, optionally for one device" code={`{ "all": true, "deviceId": "${deviceId}" }`} />
+            <CodeBlock label="Response" code={`{ "ok": true }`} />
+          </EndpointCard>
+
+          <EndpointCard method="GET" path="/api/alerts/preferences" description="Read your alert settings">
+            <CodeBlock label="Response" code={`{
+  "preferences": {
+    "quiet_hours_enabled": true,
+    "quiet_hours_start": 22,
+    "quiet_hours_end": 6
+  }
+}`} />
+          </EndpointCard>
+
+          <EndpointCard method="POST" path="/api/alerts/preferences" description="Save your alert settings">
+            <CodeBlock label="Request body" code={`{ "quiet_hours_enabled": true, "quiet_hours_start": 22, "quiet_hours_end": 6 }`} />
+            <CodeBlock label="Response" code={`{ "ok": true }`} />
+          </EndpointCard>
+
+          <EndpointCard method="POST" path="/api/devices/clear-history" description="Delete all stored readings of a device">
+            <Note>Permanent. Only works on devices you own.</Note>
+            <CodeBlock label="Request body" code={JSON.stringify({ deviceId }, null, 2)} />
+            <CodeBlock label="Response" code={`{ "success": true }`} />
+          </EndpointCard>
+
+          <EndpointCard method="POST" path="/api/devices/unlink" description="Remove a device from your account">
+            <CodeBlock label="Request body" code={JSON.stringify({ deviceId }, null, 2)} />
+            <CodeBlock label="Response" code={`{ "success": true }`} />
           </EndpointCard>
 
         </div>
       </div>
 
       <div>
-        <div className="dash-section-title">Example: Fetch optimisations with CURL</div>
+        <div className="dash-section-title">Sensor endpoint</div>
+        <EndpointCard method="POST" path="/api/device/reading" description="Used by the Atmos sensor unit">
+          <Note>
+            The hardware posts here every few minutes. It does <strong>not</strong> use your API key. It signs in with its own <code>device_id</code> and <code>private_key</code> (printed on the unit). All measurement fields are optional; <code>timestamp</code> defaults to the server time. <code>auto_actions</code> reports what the unit switched on its own.
+          </Note>
+          <CodeBlock label="Request body" code={`{
+  "device_id": "${deviceId}",
+  "private_key": "DEVICE_PRIVATE_KEY",
+  "timestamp": "2026-05-14T13:00:00Z",
+  "power": 62.4, "current": 0.28, "energy": 1.21, "voltage": 231,
+  "temperature": 27.1, "humidity": 54, "light": 120, "occupancy": 0,
+  "auto_actions": [{ "device": "light", "action": "off", "reason": "empty", "ago_s": 12 }]
+}`} />
+          <CodeBlock label="Response" code={`{
+  "ok": true,
+  "config": {
+    "enabled": true, "light_min": 30, "light_bright_min": 10,
+    "fan_min": 60, "ac_min": 60, "bright_lux": 300
+  }
+}`} />
+        </EndpointCard>
+      </div>
+
+      <div>
+        <div className="dash-section-title">Example: curl</div>
         <CodeBlock
           label="curl"
           code={`curl -X POST ${BASE_URL}/api/engine \\
+  -H "Authorization: Bearer ${apiKey ?? 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
-  -d '{"deviceId":"${selectedId ?? 'ATM-D001'}","roomAreaM2":20}'`}
+  -d '{"deviceId":"${deviceId}","roomAreaM2":20}'`}
         />
       </div>
 
       <div>
-        <div className="dash-section-title">Example: Fetch optimisations with JavaScript</div>
+        <div className="dash-section-title">Example: JavaScript</div>
         <CodeBlock
           label="JavaScript (fetch)"
           code={`const res = await fetch('${BASE_URL}/api/engine', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    deviceId: '${selectedId ?? 'ATM-D001'}',
-    roomAreaM2: 20,
-  }),
+  headers: {
+    Authorization: 'Bearer ${apiKey ?? 'YOUR_API_KEY'}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ deviceId: '${deviceId}', roomAreaM2: 20 }),
 });
-const { optimizations, environmental, readings } = await res.json();`}
+if (!res.ok) throw new Error((await res.json()).error);
+const { optimizations, environmental } = await res.json();`}
         />
       </div>
 
       <div style={{ fontSize: '0.75rem', color: '#737373', lineHeight: 1.7, padding: '1rem', background: 'rgba(128,128,128,0.04)', borderRadius: '0.75rem', border: '1px solid rgba(128,128,128,0.1)' }}>
-        <strong style={{ color: 'inherit' }}>Security Note:</strong> By using the API, you agree that you will make use of it fairly. Please don't abuse or encourage any abuse to the API. Always keep your API key a secret to others, and only share it to people or apps you trust. Anyone or anything with your key can view your account and device details.
+        <strong style={{ color: 'inherit' }}>Security note:</strong> Anyone with your key can read your devices, alerts and readings, and can clear history or unlink devices. Share it only with apps you trust, revoke it if it leaks, and please use the API fairly.
       </div>
     </div>
   );

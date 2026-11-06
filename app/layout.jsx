@@ -5,6 +5,7 @@ import Script from 'next/script';
 import Navbar from '@/components/Navbar';
 import { NavbarProvider } from '@/components/NavbarContext';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const syne = localFont({
   src: './fonts/Syne.ttf',
@@ -78,6 +79,7 @@ export default function RootLayout({ children }) {
         </NavbarProvider>
 
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

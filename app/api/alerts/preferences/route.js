@@ -1,34 +1,25 @@
-import { resolveApiUser } from '@/lib/apiAuth';
+import { resolveApiUser, getAlertPreferences, saveAlertPreferences } from '@/lib/supabase';
 
 export async function GET(request) {
-  const resolved = await resolveApiUser(request);
-  if (!resolved) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const resolved = await resolveApiUser(request);
+    if (!resolved) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { user, supabase } = resolved;
-
-  const { data, error } = await supabase
-    .from('alert_preferences')
-    .select('*')
-    .eq('user_id', user.id)
-    .single();
-
-  if (error) return Response.json({ error: error.message }, { status: 500 });
-
-  return Response.json({ preferences: data });
+    const preferences = await getAlertPreferences(resolved.user.id);
+    return Response.json({ preferences });
+  } catch (err) {
+    return Response.json({ error: err.message }, { status: 500 });
+  }
 }
 
 export async function POST(request) {
-  const resolved = await resolveApiUser(request);
-  if (!resolved) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const resolved = await resolveApiUser(request);
+    if (!resolved) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { user, supabase } = resolved;
-  const body = await request.json();
-
-  const { error } = await supabase
-    .from('alert_preferences')
-    .upsert({ user_id: user.id, ...body });
-
-  if (error) return Response.json({ error: error.message }, { status: 500 });
-
-  return Response.json({ ok: true });
+    await saveAlertPreferences(resolved.user.id, await request.json());
+    return Response.json({ ok: true });
+  } catch (err) {
+    return Response.json({ error: err.message }, { status: 500 });
+  }
 }

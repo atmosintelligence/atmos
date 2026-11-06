@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Icon from '@/components/Icon';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
-import { createClient } from '@/utils/supabase/client';
+import { getCurrentUser, signOut } from '@/lib/supabase';
 import { DeviceProvider, useDevice } from './DeviceContext';
 import { DemoProvider, useDemo } from './DemoContext';
 import DemoGate from './DemoGate';
@@ -14,6 +14,7 @@ import DemoGate from './DemoGate';
 const pages = [
   { name: 'Overview',     href: '/dashboard/overview',     icon: 'overview'     },
   { name: 'Alerts',       href: '/dashboard/alerts',       icon: 'alerts'       },
+  { name: 'Automation',   href: '/dashboard/automation',   icon: 'automation'   },
   { name: 'Analysis',     href: '/dashboard/analysis',     icon: 'analysis'     },
   { name: 'History',      href: '/dashboard/history',      icon: 'history'      },
   { name: 'Devices',      href: '/dashboard/devices',      icon: 'devices'      },
@@ -30,6 +31,10 @@ const analysisSubs = [
   { name: 'Trends & Predictions',  href: '/dashboard/analysis/trends',        icon: 'trendsAnalysis'        },
 ];
 
+function navClass(active, sub = false) {
+  return `dash-nav-link${sub ? ' sub' : ''}${active ? ' active' : ''}`;
+}
+
 function formatDate(str) {
   if (!str) return '—';
   return new Date(str).toLocaleString('en-IN', {
@@ -41,14 +46,10 @@ function formatDate(str) {
 function Sidebar({ refreshing }) {
   const pathname   = usePathname();
   const router     = useRouter();
-  const { devices, selectedId, setSelectedId, selectedDevice, loadingDevices, triggerRefresh, refreshKey, weatherError } = useDevice();
+  const { devices, selectedId, setSelectedId, selectedDevice, loadingDevices, triggerRefresh, weatherError } = useDevice();
   const { isDemo } = useDemo();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [localTime, setLocalTime]       = useState('');
-
-  useEffect(() => {
-    if (refreshKey === 0) return;
-  }, [refreshKey]);
 
   useEffect(() => {
     function tick() {
@@ -70,14 +71,13 @@ function Sidebar({ refreshing }) {
   }, []);
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut();
     router.replace('/');
   }
 
   return (
-    <aside className="fixed top-16 left-0 w-64 h-[calc(100dvh-4rem)] flex flex-col border-r border-black/8 dark:border-white/8">
-      <div className="p-4 pb-3 border-b border-black/8 dark:border-white/8">
+    <aside className="dash-sidebar fixed top-16 left-0 w-64 h-[calc(100dvh-4rem)] flex flex-col border-r border-black/8 dark:border-white/8">
+      <div className="dash-side-top">
         <div className="flex items-center gap-2">
           <div className="dash-dropdown">
             <button
@@ -141,26 +141,18 @@ function Sidebar({ refreshing }) {
         )}
       </div>
 
-      <nav className="flex-1 p-4 pt-2 flex flex-col gap-0.5 text-sm overflow-y-auto">
+      <nav className="dash-nav">
         {pages.map((p) => {
           if (p.name === 'Analysis') {
             return (
               <div key="analysis-group">
-                <Link href="/dashboard/analysis" className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors select-none ${
-                  pathname === '/dashboard/analysis'
-                    ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-black/4 dark:hover:bg-white/4'
-                }`}>
+                <Link href="/dashboard/analysis" className={navClass(pathname === '/dashboard/analysis')}>
                   <Icon name="analysis" />
                   Analysis
                 </Link>
-                <div style={{ paddingLeft: '0.75rem', marginTop: '0.125rem', display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
+                <div className="dash-nav-subgroup">
                   {analysisSubs.map(c => (
-                    <Link key={c.name} href={c.href} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-xs select-none ${
-                      pathname === c.href
-                        ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
-                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-black/4 dark:hover:bg-white/4'
-                    }`}>
+                    <Link key={c.name} href={c.href} className={navClass(pathname === c.href, true)}>
                       <Icon name={c.icon} />
                       {c.name}
                     </Link>
@@ -172,11 +164,7 @@ function Sidebar({ refreshing }) {
 
           const active = pathname === p.href || (pathname === '/dashboard' && p.href === '/dashboard/overview');
           return (
-            <Link key={p.name} href={p.href} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors select-none ${
-              active
-                ? 'bg-black/6 dark:bg-white/6 text-neutral-900 dark:text-neutral-100'
-                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-black/4 dark:hover:bg-white/4'
-            }`}>
+            <Link key={p.name} href={p.href} className={navClass(active)}>
               <Icon name={p.icon} />
               {p.name}
             </Link>
@@ -184,37 +172,27 @@ function Sidebar({ refreshing }) {
         })}
       </nav>
 
-      <div className="border-t border-black/8 dark:border-white/8 bg-transparent p-4 flex flex-col gap-3">
-        {localTime && (
-          <div style={{ paddingLeft: '0.75rem', paddingBottom: '0.25rem' }}>
-            <div style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '-0.02em', fontFamily: 'var(--font-syne)' }}>
-              {localTime}
-            </div>
-            <div style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: '#a3a3a3', marginTop: '0.1rem' }}>
-              Your local time
-            </div>
-          </div>
-        )}
-
+      <div className="dash-side-footer">
         {isDemo ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 600, paddingLeft: '0.75rem' }}>
-              Premium Demo
+          <>
+            <div className="dash-side-row">
+              <span className="dash-side-demo">Premium demo</span>
+              {localTime && <span className="dash-side-time">{localTime}</span>}
             </div>
-            <Link href="/signup" className="btn bg-brand text-brand-on-bg text-center text-xs font-semibold py-2 rounded-xl select-none">
+            <Link href="/signup" className="btn bg-brand text-brand-on-bg text-center text-xs font-semibold py-1.5 rounded-lg select-none">
               Create free account
             </Link>
-          </div>
+          </>
         ) : (
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-neutral-500 hover:text-red-500 hover:bg-red-500/6 transition-colors w-full text-left cursor-pointer select-none"
-          >
-            <Icon name="logout" />
-            Log out
-          </button>
+          <div className="dash-side-row">
+            {localTime && <span className="dash-side-time">{localTime}</span>}
+            <button onClick={handleLogout} className="dash-side-logout select-none" title="Log out">
+              <Icon name="logout" />
+              Log out
+            </button>
+          </div>
         )}
-        <Link href="/privacy" className="link text-xs px-3 select-none">Privacy Policy</Link>
+        <Link href="/privacy" className="dash-side-link select-none">Privacy Policy</Link>
       </div>
     </aside>
   );
@@ -242,7 +220,7 @@ function DashboardShell({ children, checking, isDemo }) {
       <NavbarBorderOverride />
       <div className="w-64 shrink-0" />
       <Sidebar refreshing={refreshing} />
-      <main className="flex-1 min-w-0 p-8">{children}</main>
+      <main className="flex-1 min-w-0 p-6 lg:p-8"><div className="dash-page">{children}</div></main>
     </div>
   );
 }
@@ -257,11 +235,7 @@ export default function DashboardLayout({ children }) {
   }, [authState]);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setAuthState('authed');
-      else setAuthState('guest');
-    });
+    getCurrentUser().then(user => setAuthState(user ? 'authed' : 'guest'));
   }, []);
 
   if (authState === 'checking') return (

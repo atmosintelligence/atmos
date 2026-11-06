@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
-import { createClient } from '@/utils/supabase/client';
+import { getEmailForUsername, signIn, getProfile } from '@/lib/supabase';
 
 const firstNames = [
   'Aryan', 'Rohan', 'Vikram', 'Aditya', 'Rahul',
@@ -50,24 +50,15 @@ export default function LoginPage() {
     const form = new FormData(e.target);
     const username = form.get('username');
     const password = form.get('password');
-    const supabase = createClient();
 
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('username', username)
-      .single();
-
-    if (profileError || !profile) {
+    const email = await getEmailForUsername(username);
+    if (!email) {
       setError('No account found with that username.');
       setLoading(false);
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: profile.email,
-      password,
-    });
+    const { error: signInError } = await signIn(email, password);
 
     if (signInError) {
       if (signInError.message.toLowerCase().includes('email not confirmed')) {
@@ -77,16 +68,9 @@ export default function LoginPage() {
       }
       setLoading(false);
     } else {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('display_name, username')
-          .eq('id', user.id)
-          .single();
-        if (prof) {
-          window.dispatchEvent(new CustomEvent('atmos:profileChanged', { detail: prof }));
-        }
+      const prof = await getProfile('display_name, username');
+      if (prof) {
+        window.dispatchEvent(new CustomEvent('atmos:profileChanged', { detail: prof }));
       }
       router.refresh();
       router.push('/dashboard');

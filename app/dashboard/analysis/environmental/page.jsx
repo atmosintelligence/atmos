@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useDevice }           from '../../DeviceContext';
+import { useAnalysis, analysisGate } from '../../useAnalysis';
 import { getColStats, scaleColor, tdBase } from '../tableUtils';
 import Stat               from '@/components/dashboard/Stat';
 import TableWrapper        from '@/components/dashboard/TableWrapper';
@@ -11,43 +10,9 @@ import { BEE_BENCHMARK_KWH_M2 } from '@/lib/engine/constants.js';
 const ROOM_AREA = 20;
 
 export default function EnvironmentalPage() {
-  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
-  const [data, setData]     = useState(null);
-  const [status, setStatus] = useState('loading');
-
-  useEffect(() => {
-    if (!selectedId) return;
-    if (isDemo && !demoReadings?.length) return;
-    let cancelled = false;
-    const cacheKey = `environmental-${selectedId}`;
-    const cached   = getCached(cacheKey);
-    if (cached) { setData(cached); setStatus('ready'); }
-
-    async function load() {
-      setStatus('loading');
-      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
-      const body     = isDemo
-        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: ROOM_AREA, tariff: 10 }
-        : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: ROOM_AREA, deviceId: selectedId };
-
-      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (cancelled) return;
-      if (!res.ok) { setStatus('error'); return; }
-      const json = await res.json();
-      if (cancelled) return;
-      if (!json.analysis) { setStatus('no-data'); return; }
-      setData(json.analysis.environmental);
-      setCached(cacheKey, json.analysis.environmental);
-      setStatus('ready');
-    }
-
-    load();
-    return () => { cancelled = true; };
-  }, [selectedId, refreshKey, isDemo, demoReadings]);
-
-  if (status === 'loading') return <div className="dash-empty" style={{ border: 'none' }}>Loading...</div>;
-  if (status === 'error')   return <div className="dash-empty" style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}>Failed to load data.</div>;
-  if (status === 'no-data' || !data) return <div className="dash-empty">No data available for this device.</div>;
+  const { data, status, selectedId, refreshKey } = useAnalysis('environmental');
+  const gate = analysisGate(status, data);
+  if (gate) return gate;
 
   const env      = data;
   const isSaving = parseFloat(env.savedKwh) > 0;
@@ -67,17 +32,17 @@ export default function EnvironmentalPage() {
             <span className="dash-opt-badge" style={{ background: 'rgba(74,222,128,0.15)', color: '#4ADE80' }}>Environmental</span>
           </div>
           <p className="dash-opt-message">
-            This device is performing below the BEE benchmark. Over the past month it consumed {env.actualKwh} kWh against a benchmark of {env.baselineKwh} kWh, saving {env.savedKwh} kWh, preventing {env.co2KgSaved} kg of CO₂, and saving ₹{env.moneySavedINR}. Equivalent to {env.treesEquiv} {env.treesEquiv === '1' ? 'tree' : 'trees'} absorbing carbon for a year.
+            This device is performing below the BEE benchmark. Over the last {env.periodDays} days it consumed {env.actualKwh} kWh against a pro-rated benchmark of {env.baselineKwh} kWh, saving {env.savedKwh} kWh, preventing {env.co2KgSaved} kg of CO₂, and saving ₹{env.moneySavedINR}. Equivalent to {env.treesEquiv} {env.treesEquiv === '1' ? 'tree' : 'trees'} absorbing carbon for a year.
           </p>
         </div>
       ) : (
         <div className="dash-empty">
-          Consumption this month exceeds the BEE benchmark. Implementing the recommendations across other tabs should help.
+          Consumption over the last {env.periodDays} days is at or above the BEE benchmark. Implementing the recommendations across other tabs should help.
         </div>
       )}
 
       <div>
-        <div className="dash-section-title">This month's impact</div>
+        <div className="dash-section-title">Impact (last {env.periodDays} days)</div>
         <div className="dash-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
           <Stat label="Energy consumed"  value={`${env.actualKwh} kWh`}     sub={`Benchmark: ${env.baselineKwh} kWh`} />
           <Stat label="Energy saved"     value={`${env.savedKwh} kWh`}       accent={isSaving} />
@@ -93,7 +58,7 @@ export default function EnvironmentalPage() {
         <EnvironmentalChart
           key={`${selectedId}-${refreshKey}`}
           weeklyData={env.weeklyData}
-          baselineKwh={env.baselineKwh}
+          weeklyBaselineKwh={env.weeklyBaselineKwh}
         />
       </div>
 
@@ -117,7 +82,7 @@ export default function EnvironmentalPage() {
           })()}
         </TableWrapper>
         <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: '#a3a3a3' }}>
-          Baseline derived from BEE benchmark of {BEE_BENCHMARK_KWH_M2} kWh/m²/year for a {ROOM_AREA} m² room. Tariff rate applied from your account settings.
+          Benchmark: {BEE_BENCHMARK_KWH_M2} kWh/m²/year for an assumed {ROOM_AREA} m² room, pro-rated to the days your readings cover. Tariff comes from your account settings.
         </div>
       </div>
     </div>

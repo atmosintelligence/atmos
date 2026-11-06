@@ -10,7 +10,7 @@ import { C, CHART_H, CHART_MARGIN } from './ChartConfig';
 import ChartTooltip from './ChartTooltip';
 import ChartWrapper from './ChartWrapper';
 
-export default function EnvironmentalChart({ weeklyData, baselineKwh }) {
+export default function EnvironmentalChart({ weeklyData, weeklyBaselineKwh }) {
   const grid = C.gridDark;
   const tick = C.tickDark;
   const axis = C.axisDark;
@@ -21,7 +21,7 @@ export default function EnvironmentalChart({ weeklyData, baselineKwh }) {
     tickLine: false,
   };
 
-  const perWeekBaseline = parseFloat(baselineKwh) / 4;
+  const perWeekBaseline = parseFloat(weeklyBaselineKwh);
 
   const chartData = useMemo(() => {
     if (!weeklyData?.length) return [];
@@ -31,9 +31,9 @@ export default function EnvironmentalChart({ weeklyData, baselineKwh }) {
       saved:    parseFloat(w.saved),
       co2:      parseFloat(w.co2),
       money:    parseFloat(w.money),
-      baseline: parseFloat(perWeekBaseline.toFixed(3)),
+      baseline: parseFloat(w.baseline),
     }));
-  }, [weeklyData, perWeekBaseline]);
+  }, [weeklyData]);
 
   if (!chartData.length) return null;
 

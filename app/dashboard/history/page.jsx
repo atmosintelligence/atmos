@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDevice } from '../DeviceContext';
+import { fetchEngine } from '@/lib/engineFetch';
 import { getColStats, scaleColor, fmtDate } from '../analysis/tableUtils';
 
 const COLS = [
@@ -22,8 +23,7 @@ export default function HistoryPage() {
     getCached,
     setCached,
     isDemo,
-    demoReadings,
-    demoReadings2
+    getDemoReadings,
   } = useDevice();
   const [rows, setRows]                 = useState([]);
   const [status, setStatus]             = useState('loading');
@@ -33,10 +33,7 @@ export default function HistoryPage() {
   useEffect(() => {
     if (!selectedId) return;
     if (isDemo) {
-      const source =
-        selectedId === 'ATM-DEMO2'
-          ? demoReadings2
-          : demoReadings;
+      const source = getDemoReadings(selectedId) ?? [];
 
       const sorted = [...source].sort(
         (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
@@ -59,14 +56,13 @@ export default function HistoryPage() {
 
     async function load() {
       setStatus('loading');
-      const { fetchEngine } = await import('@/lib/engineFetch');
-      const res = await fetchEngine({
-        isDemo, demoReadings, deviceId: selectedId,
-        location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20,
-      });
-      if (cancelled) return;
-      if (!res.ok) { setStatus('error'); return; }
-      const { readings } = await res.json();
+      let readings;
+      try {
+        ({ readings } = await fetchEngine({ isDemo, deviceId: selectedId }));
+      } catch {
+        if (!cancelled) setStatus('error');
+        return;
+      }
       if (cancelled) return;
       if (!readings?.length) { setRows([]); setStatus('no-data'); return; }
       const sorted = [...readings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));

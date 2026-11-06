@@ -435,8 +435,8 @@ export default function AlertsPage() {
                   <span style={{ fontSize: '0.7rem', fontWeight: 600, color: SEVERITY_COLOR[a.severity], textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {a.severity}
                   </span>
-                  <span style={{ fontSize: '0.7rem', color: '#737373', marginLeft: 'auto' }}>
-                    {fmtDate(a.created_at)}
+                  <span style={{ fontSize: '0.7rem', color: '#737373', marginLeft: 'auto' }} title="Time of the sensor reading">
+                    Reading: {fmtDate(a.created_at)}
                   </span>
                   <span style={{ fontSize: '0.7rem', color: '#a3a3a3' }}>
                     {timeAgo(a.created_at)}

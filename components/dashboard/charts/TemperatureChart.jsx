@@ -70,7 +70,7 @@ export default function TemperatureChart({ readings }) {
             <ReferenceLine y={22} stroke={C.brand} strokeDasharray="4 3" strokeWidth={0.8}
               label={{ value: '22°C', fill: C.brand, fontSize: 8, position: 'insideBottomRight' }}
             />
-            <ReferenceLine y={30} stroke={C.brand} strokeDasharray="4 3" strokeWidth={0.8}
+            <ReferenceLine y={28} stroke={C.brand} strokeDasharray="4 3" strokeWidth={0.8}
               label={{ value: '30°C', fill: C.brand, fontSize: 8, position: 'insideTopRight' }}
             />
             <Area
@@ -89,7 +89,7 @@ export default function TemperatureChart({ readings }) {
 
       <ChartWrapper
         title="Humidity over time"
-        subtitle="Green shaded band marks the 30–70% comfortable range. Outside this range increases discomfort and raises energy load."
+        subtitle="Green shaded band marks the 28–72% comfortable range. Outside this range increases discomfort and raises energy load."
       >
         <ResponsiveContainer width="100%" height={CHART_H}>
           <AreaChart data={chartData} margin={CHART_MARGIN}>
@@ -106,12 +106,12 @@ export default function TemperatureChart({ readings }) {
               content={<ChartTooltip fmt={v => `${v}%`} />}
               cursor={{ stroke: 'rgba(255,255,255,0.07)', strokeWidth: 1 }}
             />
-            <ReferenceArea y1={30} y2={70} fill="rgba(74,222,128,0.07)" stroke="none" />
-            <ReferenceLine y={30} stroke={C.brand} strokeDasharray="4 3" strokeWidth={0.8}
-              label={{ value: '30%', fill: C.brand, fontSize: 8, position: 'insideBottomRight' }}
+            <ReferenceArea y1={28} y2={72} fill="rgba(74,222,128,0.07)" stroke="none" />
+            <ReferenceLine y={28} stroke={C.brand} strokeDasharray="4 3" strokeWidth={0.8}
+              label={{ value: '28%', fill: C.brand, fontSize: 8, position: 'insideBottomRight' }}
             />
-            <ReferenceLine y={70} stroke={C.brand} strokeDasharray="4 3" strokeWidth={0.8}
-              label={{ value: '70%', fill: C.brand, fontSize: 8, position: 'insideTopRight' }}
+            <ReferenceLine y={72} stroke={C.brand} strokeDasharray="4 3" strokeWidth={0.8}
+              label={{ value: '72%', fill: C.brand, fontSize: 8, position: 'insideTopRight' }}
             />
             <Area
               type="monotone"

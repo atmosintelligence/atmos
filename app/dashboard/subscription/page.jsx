@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getSubscription, updateSubscription } from '@/lib/supabase';
 import { useDevice } from '../DeviceContext';
 
 const PLANS = {
@@ -72,15 +72,8 @@ export default function SubscriptionPage() {
     }
     const cached = getSubCache();
     if (cached) { setSub(cached); setStatus('ready'); return; }
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      if (error || !data) { setStatus('error'); return; }
+    getSubscription().then(data => {
+      if (!data) { setStatus('error'); return; }
       setSub(data);
       setSubCacheData(data);
       setStatus('ready');
@@ -93,22 +86,15 @@ export default function SubscriptionPage() {
     if (confirmKey !== plan) { setConfirmPlan(plan); return; }
     setUpgrading(true);
     setMsg('');
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setUpgrading(false); return; }
-
     const now = new Date();
     const nextPayment = new Date(now);
     nextPayment.setMonth(nextPayment.getMonth() + 1);
 
-    const { error } = await supabase
-      .from('subscriptions')
-      .update({
-        plan: cleanPlan,
-        last_payment_at: cleanPlan === 'spark' ? null : now.toISOString(),
-        next_payment_at: cleanPlan === 'spark' ? null : nextPayment.toISOString(),
-      })
-      .eq('user_id', user.id);
+    const { error } = await updateSubscription({
+      plan: cleanPlan,
+      last_payment_at: cleanPlan === 'spark' ? null : now.toISOString(),
+      next_payment_at: cleanPlan === 'spark' ? null : nextPayment.toISOString(),
+    });
 
     if (!error) {
       const updated = { ...sub, plan: cleanPlan, last_payment_at: cleanPlan === 'spark' ? null : now.toISOString(), next_payment_at: cleanPlan === 'spark' ? null : nextPayment.toISOString() };

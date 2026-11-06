@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDevice } from '../DeviceContext';
+import { fetchEngine } from '@/lib/engineFetch';
 import Icon from '@/components/Icon';
 
 const SUB_TABS = [
@@ -45,7 +46,8 @@ const SUB_TABS = [
 
 export default function AnalysisPage() {
   const router = useRouter();
-  const { selectedId, refreshKey, getCached, setCached, isDemo, demoReadings } = useDevice();
+  const { selectedId, refreshKey, getCached, isDemo, getDemoReadings } = useDevice();
+  const demoReadings = isDemo ? getDemoReadings(selectedId) : null;
   const [optimizations, setOptimizations] = useState([]);
   const [status, setStatus] = useState('loading');
 
@@ -63,21 +65,13 @@ export default function AnalysisPage() {
       return;
     }
 
-    async function load() {
-      const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
-      const body = isDemo
-        ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
-        : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId };
-
-      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (cancelled || !res.ok) return;
-      const { optimizations: opts } = await res.json();
-      if (cancelled) return;
-      setOptimizations(opts ?? []);
-      setStatus('ready');
-    }
-
-    load();
+    fetchEngine({ isDemo, readings: demoReadings, deviceId: selectedId })
+      .then(({ optimizations: opts }) => {
+        if (cancelled) return;
+        setOptimizations(opts ?? []);
+        setStatus('ready');
+      })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [selectedId, refreshKey, isDemo, demoReadings]);
 

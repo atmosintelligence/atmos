@@ -1,18 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getProfile } from '@/lib/supabase';
+import { fetchEngine } from '@/lib/engineFetch';
 import { useDevice } from '../DeviceContext';
 import Icon from '@/components/Icon';
 import OptCard from '@/components/dashboard/OptCard';
-
-function fmtLastContacted(str) {
-  if (!str) return null;
-  return new Date(str).toLocaleString('en-IN', {
-    day: 'numeric', month: 'short',
-    hour: '2-digit', minute: '2-digit', hour12: true,
-  }).replace('am', 'AM').replace('pm', 'PM');
-}
 
 function alertsToOpts(alerts) {
   return (alerts ?? [])
@@ -30,8 +23,8 @@ function alertsToOpts(alerts) {
 }
 
 export default function OverviewPage() {
-    const { selectedId, devices, refreshKey, getCached, setCached, isDemo, demoReadings, cache } = useDevice();
-  const selectedDevice = devices.find(d => d.device_id === selectedId);
+  const { selectedId, devices, refreshKey, getCached, setCached, isDemo, getDemoReadings, cache } = useDevice();
+  const demoReadings = isDemo ? getDemoReadings(selectedId) : null;
 
   const [profile, setProfile]             = useState(null);
   const [optimizations, setOptimizations] = useState([]);
@@ -58,14 +51,8 @@ export default function OverviewPage() {
             if (!isDemo && cached.profile) {
               setProfile(cached.profile);
             } else if (!isDemo && !cached.profile) {
-              const supabase = createClient();
-              supabase.auth.getUser().then(async ({ data: { user } }) => {
-                if (!user) return;
-                const { data } = await supabase
-                  .from('profiles')
-                  .select('display_name, username')
-                  .eq('id', user.id)
-                  .single();
+              getProfile('display_name, username').then(data => {
+                if (!data) return;
                 setProfile(data);
                 setCached(cacheKey, { ...cached, profile: data });
               });
@@ -74,36 +61,15 @@ export default function OverviewPage() {
           }
         }
 
-        setStatus('loading');
+        if (!force) setStatus('loading');
 
         if (!isDemo) {
-          const supabase = createClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user || cancelled) return;
-          const { data: prof } = await supabase
-            .from('profiles')
-            .select('display_name, username')
-            .eq('id', user.id)
-            .single();
+          const prof = await getProfile('display_name, username');
           if (cancelled) return;
-          setProfile(prof);
+          if (prof) setProfile(prof);
         }
 
-        const endpoint = isDemo ? '/api/engine/demo' : '/api/engine';
-        const body     = isDemo
-          ? { readings: demoReadings, location: { lat: 28.6139, lon: 77.2090 }, roomAreaM2: 20, tariff: 10 }
-          : { location: { lat: 28.6, lon: 77.2 }, roomAreaM2: 20, deviceId: selectedId };
-
-        const res = await fetch(endpoint, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(body),
-        });
-
-        if (cancelled) return;
-        if (!res.ok) { setStatus('error'); return; }
-
-        const json = await res.json();
+        const json = await fetchEngine({ isDemo, readings: demoReadings, deviceId: selectedId });
         if (cancelled) return;
 
         const { optimizations: jsOpts, environmental: env, readings } = json;
@@ -140,7 +106,7 @@ export default function OverviewPage() {
       } catch (err) {
         if (!cancelled) {
           console.error('[Overview] load() threw:', err);
-          setStatus('error');
+          if (!force) setStatus('error');
         }
       }
     }
@@ -220,7 +186,7 @@ export default function OverviewPage() {
                 fontSize: '1rem',
               }}
             >
-              <span style={{ color: '#fff', fontWeight: 600 }}>
+              <span style={{ fontWeight: 600 }}>
                 {devices.length}
               </span>
 
@@ -263,7 +229,7 @@ export default function OverviewPage() {
 
       {environmental && (
         <div>
-          <div className="dash-section-title">Savings this month</div>
+          <div className="dash-section-title">Savings vs benchmark{environmental.periodDays ? ` (last ${environmental.periodDays} days)` : ''}</div>
           <div className="dash-grid">
             {[
               { label: 'kWh saved',   value: environmental.kwhSaved,            icon: 'zap'      },
@@ -286,7 +252,7 @@ export default function OverviewPage() {
           <div className="dash-section-title">Recommendations</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {optimizations.map((opt, i) => (
-              <OptCard key={i} opt={opt} lastContacted={fmtLastContacted(selectedDevice?.last_contacted_at)} />
+              <OptCard key={i} opt={opt} />
             ))}
           </div>
         </div>
