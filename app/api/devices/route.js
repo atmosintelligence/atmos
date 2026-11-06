@@ -1,4 +1,4 @@
-import { fetchUserDevices } from '@/lib/supabase-readings';
+import { fetchUserDevices } from '@/lib/readings';
 import { resolveApiUser } from '@/lib/apiAuth';
 
 export async function GET(request) {

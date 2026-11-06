@@ -48,6 +48,7 @@ export async function POST(request) {
     }
 
     const stamp = Date.now();
+    const latest = readings.reduce((m, r) => (new Date(r.timestamp) > new Date(m) ? r.timestamp : m), readings[0].timestamp);
     const optimizations = ai.map((o, i) => ({
       id:           `demo-${stamp}-${i}`,
       device_id:    deviceId ?? 'ATM-DEMO',
@@ -57,7 +58,7 @@ export async function POST(request) {
       message:      o.message,
       saving_inr:   o.saving_inr ?? null,
       acknowledged: false,
-      created_at:   new Date(stamp - i * 1000).toISOString(),
+      created_at:   new Date(latest).toISOString(),
     }));
 
     return Response.json({ optimizations, source });

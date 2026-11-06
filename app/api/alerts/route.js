@@ -1,5 +1,4 @@
-import { runEngine }               from '@/lib/engine/index.js';
-import { fetchUserReadings }       from '@/lib/supabase-readings';
+import { getEngine }               from '@/lib/server/engine';
 import { resolveApiUser }          from '@/lib/apiAuth';
 import { generateAIOptimizations } from '@/lib/ai/groq';
 import { GENERATION_COOLDOWN_SECONDS } from '@/lib/engine/constants.js';
@@ -35,35 +34,26 @@ export async function POST(request) {
   }
 
   const { user, profile, supabase } = resolved;
-    const body = await request.json();
-    const deviceId = body.deviceId;
+  const body = await request.json();
+  const deviceId = body.deviceId;
 
-    const { data: lastAlert } = await supabase
-      .from('alerts')
-      .select('created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  const { data: lastAlert } = await supabase
+    .from('alerts')
+    .select('generated_at')
+    .eq('user_id', user.id)
+    .order('generated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-    if (lastAlert?.created_at) {
-      const elapsed = (Date.now() - new Date(lastAlert.created_at).getTime()) / 1000;
-      if (elapsed < GENERATION_COOLDOWN_SECONDS) {
-        return Response.json({
-          synced: 0,
-          reason: 'cooldown',
-          retryAfter: Math.ceil(GENERATION_COOLDOWN_SECONDS - elapsed),
-        });
-      }
+  if (lastAlert?.generated_at) {
+    const elapsed = (Date.now() - new Date(lastAlert.generated_at).getTime()) / 1000;
+    if (elapsed < GENERATION_COOLDOWN_SECONDS) {
+      return Response.json({
+        synced: 0,
+        reason: 'cooldown',
+        retryAfter: Math.ceil(GENERATION_COOLDOWN_SECONDS - elapsed),
+      });
     }
-
-  const raw = await fetchUserReadings(profile.username);
-  const filtered = deviceId
-    ? raw.filter(r => r.device_id === deviceId)
-    : raw;
-
-  if (!filtered.length) {
-    return Response.json({ synced: 0 });
   }
 
   const { data: prefs } = await supabase
@@ -90,14 +80,10 @@ export async function POST(request) {
     }
   }
 
-  const engineResult = await runEngine({
-    readings: filtered,
-    location: {
-      lat: profile.latitude,
-      lon: profile.longitude,
-    },
-    roomAreaM2: body.roomAreaM2 ?? 20,
-    tariff: profile.tariff_rate ?? 10,
+  const engineResult = await getEngine({
+    profile,
+    deviceId,
+    roomAreaM2: body.roomAreaM2,
     thresholdOverrides: {
       consecutiveEmpty: prefs?.min_consecutive_empty ?? 3,
       phantomLoadHours: prefs?.phantom_load_hours ?? 4,
@@ -105,6 +91,9 @@ export async function POST(request) {
       weekOverWeekPct: prefs?.week_over_week_pct ?? 8,
     },
   });
+
+  const filtered = engineResult.readings;
+  if (!filtered.length) return Response.json({ synced: 0 });
 
   const { data: priorAlerts } = await supabase
     .from('alerts')
@@ -120,7 +109,7 @@ export async function POST(request) {
     .eq('user_id', user.id)
     .eq('device_id', deviceId)
     .gte(
-      'created_at',
+      'generated_at',
       new Date(Date.now() - 3600000).toISOString()
     );
 
@@ -149,6 +138,7 @@ export async function POST(request) {
             message,
             explanation: null,
             saving_inr: null,
+            created_at: (opt.timestamp ? toIso(opt.timestamp) : null) ?? latestIso,
           };
         }
 
