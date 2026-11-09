@@ -228,8 +228,8 @@ export default function ApiPage() {
     {
       "device_id": "${deviceId}",
       "owner_username": "your-username",
-      "installed_at": "2026-01-10T09:00:00Z",
-      "last_contacted_at": "2026-05-14T23:30:00Z"
+      "installed_at": "2026-10-05T10:00:00Z",
+      "last_contacted_at": "2026-10-05T22:30:00Z"
     }
   ]
 }`} />
@@ -248,7 +248,7 @@ export default function ApiPage() {
       "title": "Lights on in empty room",
       "message": "...",
       "saving": { "inr": "2.40" },
-      "timestamp": "2026-05-14T13:00:00.000Z"   // sensor reading time
+      "timestamp": "2026-10-05T10:30:00Z"   // sensor reading time
     }
   ],
   "environmental": {
@@ -275,7 +275,7 @@ export default function ApiPage() {
 
           <EndpointCard method="GET" path={`/api/alerts?deviceId=${deviceId}`} description="Alert log, newest sensor reading first">
             <Note>
-              <code>deviceId</code> is optional. <code>created_at</code> is the time of the sensor reading the alert is about; <code>generated_at</code> is when Atmos wrote it.
+              <code>deviceId</code> is optional. <code>when</code> is the time of the sensor reading the alert is about; <code>created_at</code> is when Atmos wrote it.
             </Note>
             <CodeBlock label="Response" code={`{
   "alerts": [
@@ -286,11 +286,10 @@ export default function ApiPage() {
       "severity": "warning",
       "title": "Phantom load whilst room is empty",
       "message": "...",
-      "explanation": "...",
       "saving_inr": 3.2,
       "acknowledged": false,
-      "created_at": "2026-05-14T22:30:00Z",
-      "generated_at": "2026-05-14T22:41:12Z"
+      "created_at": "2026-10-05T22:30:00Z",
+      "when": "2026-10-05T10:30:00Z"
     }
   ]
 }`} />
@@ -351,7 +350,7 @@ export default function ApiPage() {
           <CodeBlock label="Request body" code={`{
   "device_id": "${deviceId}",
   "private_key": "DEVICE_PRIVATE_KEY",
-  "timestamp": "2026-05-14T13:00:00Z",
+  "timestamp": "2026-10-05T22:30:00Z",
   "power": 62.4, "current": 0.28, "energy": 1.21, "voltage": 231,
   "temperature": 27.1, "humidity": 54, "light": 120, "occupancy": 0,
   "auto_actions": [{ "device": "light", "action": "off", "reason": "empty", "ago_s": 12 }]

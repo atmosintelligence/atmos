@@ -86,7 +86,7 @@ export default function AiMlPage() {
                 From a finding<br />to a suggestion.
               </h2>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.5rem' }}>
-                The rule engine finds what is happening, such as lights left on in an empty room. The AI step then writes what to do about it, using that finding, the last 48 readings, your tariff and your plan, so the advice fits your room rather than reading like a template.
+                The rule engine finds what is happening, such as lights left on in an empty room. The AI step then writes what to do about it, using that finding, the last 24 readings, your tariff and your plan, so the advice fits your room rather than reading like a template.
               </p>
               <p style={{ color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '2rem' }}>
                 This is how Atmos Alerts are made today. Alerts are saved with the time of the sensor reading they describe, skip anything already raised in the last hour, and stay quiet during your quiet hours.

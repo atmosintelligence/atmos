@@ -1,4 +1,5 @@
-import { resolveApiUser, fetchUserReadings, getSchedules, replaceAiSchedules } from '@/lib/supabase';
+import { resolveApiUser, getSchedules, replaceAiSchedules } from '@/lib/supabase';
+import { getEngine } from '@/lib/server/engine';
 import { generateAISchedule } from '@/lib/ai/schedule';
 import { isValidTimeZone, overlaps, MAX_SCHEDULES_PER_DEVICE } from '@/lib/schedules';
 
@@ -28,8 +29,14 @@ export async function POST(request) {
     const all    = await getSchedules(userId, username, deviceId);
     const manual = all.filter(r => r.source === 'manual');
 
-    const readings = (await fetchUserReadings(username)).filter(r => r.device_id === deviceId);
-    const planned  = await generateAISchedule({ readings, timeZone, existingRules: manual });
+    const engineResult = await getEngine({ profile: resolved.profile, deviceId });
+    const planned = await generateAISchedule({
+      readings: engineResult.readings,
+      timeZone,
+      existingRules: manual,
+      profile: resolved.profile,
+      engineResult
+    });
 
     const room = Math.max(0, MAX_SCHEDULES_PER_DEVICE - manual.length);
     const rows = [];

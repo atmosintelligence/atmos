@@ -58,7 +58,7 @@ const sections = [
       },
       {
         subtitle: 'Hardware data',
-        body: 'Sensor readings are processed through Google Apps Script and stored on Google Sheets infrastructure. Data is associated to your account via your username and retained for the duration of your active subscription. If your plan ends or is cancelled, your hardware data is permanently deleted 14 days thereafter unless you renew.',
+        body: 'Sensor readings are processed through our own API infrastructure and reaches a database hosted on Supabase. Data is associated to your account via your username and retained for the duration of your active subscription. If your plan ends or is cancelled, your hardware data is permanently deleted 14 days thereafter unless you renew.',
       },
       {
         subtitle: 'Exporting data',

@@ -16,7 +16,14 @@ export async function POST(request) {
       tariff:     tariff     ?? 10,
     });
 
-    let ai = [];
+    let ai = (engineResult.optimizations ?? []).map(o => ({
+      group:      o.group,
+      severity:   o.severity,
+      title:      o.title,
+      message:    o.message,
+      saving_inr: o.saving?.inr ? parseFloat(o.saving.inr) : null,
+      timestamp:  o.timestamp,
+    }));
     let source = 'ai';
 
     try {
@@ -58,7 +65,8 @@ export async function POST(request) {
       message:      o.message,
       saving_inr:   o.saving_inr ?? null,
       acknowledged: false,
-      created_at:   new Date(latest).toISOString(),
+      created_at:   new Date().toISOString(),
+      when:         o.timestamp ?? new Date(latest).toISOString(),
     }));
 
     return Response.json({ optimizations, source });

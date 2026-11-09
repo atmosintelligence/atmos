@@ -53,7 +53,7 @@ const layers = [
     icon:    '🧠',
     color:   '#eab308',
     current: 'Our rule engine runs on our own server. Only the short text-writing step goes to a hosted AI model (Groq), and it receives a limited set of data, listed below. Nothing is trained on your readings.',
-    future:  'Send only the country instead of coordinates, and add a per-account switch to turn the AI step off.',
+    future:  'Add a per-account switch to turn the AI step off.',
   },
 ];
 
@@ -62,7 +62,7 @@ const aiCards = [
     title: 'What the AI receives',
     icon:  '📨',
     color: '#60a5fa',
-    body:  'The latest 48 readings (power, energy, voltage, temperature, humidity, light, occupancy), the rule engine\'s findings, your tariff, your plan, your approximate coordinates with the country they fall in, and recent alert titles. It does not receive your name, email, username or device ID.',
+    body:  'The latest 24 readings (power, energy, voltage, temperature, humidity, light, occupancy), the rule engine\'s findings, your tariff, the country your coordinates fall in, and recent alert titles. It does not receive your name, email, username or device ID.',
   },
   {
     title: 'What Groq does with it',
@@ -74,7 +74,7 @@ const aiCards = [
     title: 'Rules decide, AI words it',
     icon:  '🔎',
     color: '#a78bfa',
-    body:  'Every finding starts as a deterministic rule on your readings, such as lights on in an empty room. The AI only rewrites it as a short recommendation in a fixed format. Anything that does not parse is discarded, and if the AI is down the engine\'s own text is shown. Alerts keep their explanation so you can see why they were raised.',
+    body:  'Every finding starts as a deterministic rule on your readings, such as lights on in an empty room. The AI only rewrites it as a short recommendation in a fixed format. Anything that does not parse is discarded, and if the AI is down the engine\'s own text is shown.',
   },
   {
     title: 'Guarded generation',
@@ -250,17 +250,12 @@ export default function CybersecurityPage() {
                 'Our database, in your profile, as you entered or shared them',
                 'Open-Meteo, from our server, to get current outdoor weather. The request carries coordinates only, with no account details',
                 'BigDataCloud, from our server, to turn the coordinates into a country name',
-                'Groq, inside the AI prompt, together with that country',
+                'Groq, inside the AI prompt, as a country name only',
               ]} />
               <Panel color="#60a5fa" rgb="96,165,250" title="Your control" items={[
                 'Your browser asks permission before sharing location, or you can type it in yourself',
                 'Change or replace the coordinates any time in Settings',
                 'Enter a nearby point instead of your exact address. Weather does not need more',
-              ]} />
-              <Panel color="#eab308" rgb="234,179,8" title="Planned hardening" items={[
-                'Round coordinates before they leave our server',
-                'Send only the country to the AI, not coordinates',
-                'Field-level encryption of the stored location',
               ]} />
             </div>
           </div>

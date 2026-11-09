@@ -18,7 +18,7 @@ function alertsToOpts(alerts) {
       title:     a.title,
       message:   a.message,
       saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
-      timestamp: a.created_at,
+      timestamp: a.when,
     }));
 }
 
