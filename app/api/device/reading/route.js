@@ -2,7 +2,6 @@ import { getDeviceByCredentials, insertReading, touchDevice, logAutomationAction
 import { buildConfig, normalizeActions } from '@/lib/automation';
 import { toDevicePayload } from '@/lib/schedules';
 
-// The sensor posts here. Replies with its automation settings and schedule.
 export async function POST(request) {
   try {
     const body = await request.json();

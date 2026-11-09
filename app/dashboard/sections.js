@@ -1,9 +1,3 @@
-// What each Analysis tab shows, taken from the engine result.
-// To change a tab's data, edit its line here. To add a tab, add a line and
-// a page that calls useAnalysis('<name>').
-//
-// Each function receives the engine result and returns what the page gets as `data`.
-
 const byGroup = (json, ...groups) =>
   (json.optimizations ?? []).filter(o => groups.includes(o.group));
 

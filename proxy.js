@@ -1,6 +1,5 @@
 import { updateSession } from '@/lib/supabase';
 
-// Runs on every page request and keeps the Supabase login cookie fresh.
 export async function proxy(request) {
   return updateSession(request);
 }

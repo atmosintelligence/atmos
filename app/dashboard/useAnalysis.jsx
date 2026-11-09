@@ -5,13 +5,6 @@ import { useDevice } from './DeviceContext';
 import { fetchEngine } from '@/lib/engineFetch';
 import { SECTIONS } from './sections';
 
-// Loads one Analysis tab (see sections.js) for the selected device.
-//
-//   const { data, status, selectedId, refreshKey } = useAnalysis('lighting');
-//   const gate = analysisGate(status, data);
-//   if (gate) return gate;
-//
-// status: 'loading' | 'ready' | 'error' | 'no-data'
 export function useAnalysis(section) {
   const { selectedId, refreshKey, getCached, setCached, isDemo, getDemoReadings } = useDevice();
   const [data, setData]     = useState(null);
