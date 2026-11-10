@@ -3,18 +3,24 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useDevice } from '../DeviceContext';
 
-const SEVERITY_ORDER  = { critical: 0, warning: 1, info: 2 };
 const SEVERITY_COLOR  = { critical: '#ef4444', warning: '#eab308', info: '#60a5fa' };
 const SEVERITY_BG     = { critical: 'rgba(239,68,68,0.06)', warning: 'rgba(234,179,8,0.06)', info: 'rgba(96,165,250,0.06)' };
 const SEVERITY_BORDER = { critical: 'rgba(239,68,68,0.2)', warning: 'rgba(234,179,8,0.2)', info: 'rgba(96,165,250,0.2)' };
 
 const GROUP_COLOR = {
+  General:  '#4ADE80',
   Lighting: '#eab308',
   HVAC:     '#60a5fa',
   Humidity: '#60a5fa',
   Power:    '#ef4444',
-  Trends:   '#a78bfa',
+  Trends:   '#a78bfa'
 };
+
+const CheckIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
 
 function fmtDate(str) {
   return new Date(str).toLocaleString('en-IN', {
@@ -329,65 +335,48 @@ export default function AlertsPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             {selected.size > 0 && (
-              <button
-                onClick={() => handleAcknowledge([...selected])}
-                style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.3rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(74,222,128,0.1)', color: 'var(--color-primary-dark)', border: '1px solid rgba(74,222,128,0.2)', cursor: 'pointer' }}
-                className="dark:text-[var(--color-primary)]"
-              >
+              <button onClick={() => handleAcknowledge([...selected])} className="alert-btn primary alert-pop">
+                <CheckIcon />
                 Acknowledge {selected.size} selected
               </button>
             )}
             {unacknowledged.length > 0 && (
-              <button
-                onClick={handleAcknowledgeAll}
-                style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.3rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(128,128,128,0.08)', color: '#737373', border: '1px solid rgba(128,128,128,0.15)', cursor: 'pointer' }}
-              >
+              <button onClick={handleAcknowledgeAll} className="alert-btn">
+                <CheckIcon />
                 Acknowledge all
+                <span className="alert-chip-count">{unacknowledged.length}</span>
               </button>
             )}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
           {['all', 'critical', 'warning', 'info'].map(s => (
             <button
               key={s}
               onClick={() => setSeverityFilter(s)}
-              style={{
-                fontSize: '0.72rem', fontWeight: 600, padding: '0.25rem 0.75rem', borderRadius: '9999px', cursor: 'pointer', border: '1px solid',
-                borderColor: severityFilter === s ? (SEVERITY_COLOR[s] ?? 'var(--color-primary-dark)') : 'rgba(128,128,128,0.2)',
-                background:  severityFilter === s ? ((SEVERITY_BG[s] ?? 'rgba(74,222,128,0.1)')) : 'transparent',
-                color:       severityFilter === s ? (SEVERITY_COLOR[s] ?? 'var(--color-primary-dark)') : '#737373',
-              }}
+              className={`alert-chip ${severityFilter === s ? 'active' : ''}`}
+              style={SEVERITY_COLOR[s] ? { '--chip': SEVERITY_COLOR[s] } : undefined}
             >
               {s === 'all' ? 'All severities' : s.charAt(0).toUpperCase() + s.slice(1)}
-              {s !== 'all' && ` (${counts[s] ?? 0})`}
+              {s !== 'all' && <span className="alert-chip-count">{counts[s] ?? 0}</span>}
             </button>
           ))}
-          <div style={{ width: '1px', background: 'rgba(128,128,128,0.2)', margin: '0 0.125rem' }} />
+          <div className="alert-divider" />
           {['all', ...groups].map(g => (
             <button
               key={g}
               onClick={() => setGroupFilter(g)}
-              style={{
-                fontSize: '0.72rem', fontWeight: 600, padding: '0.25rem 0.75rem', borderRadius: '9999px', cursor: 'pointer', border: '1px solid',
-                borderColor: groupFilter === g ? (GROUP_COLOR[g] ?? 'rgba(128,128,128,0.4)') : 'rgba(128,128,128,0.2)',
-                background:  groupFilter === g ? ((GROUP_COLOR[g] ? GROUP_COLOR[g] + '18' : 'rgba(128,128,128,0.08)')) : 'transparent',
-                color:       groupFilter === g ? (GROUP_COLOR[g] ?? '#737373') : '#737373',
-              }}
+              className={`alert-chip ${groupFilter === g ? 'active' : ''}`}
+              style={GROUP_COLOR[g] ? { '--chip': GROUP_COLOR[g] } : undefined}
             >
               {g === 'all' ? 'All categories' : g}
             </button>
           ))}
-          <div style={{ width: '1px', background: 'rgba(128,128,128,0.2)', margin: '0 0.125rem' }} />
+          <div className="alert-divider" />
           <button
             onClick={() => setShowAcknowledged(p => !p)}
-            style={{
-              fontSize: '0.72rem', fontWeight: 600, padding: '0.25rem 0.75rem', borderRadius: '9999px', cursor: 'pointer', border: '1px solid',
-              borderColor: showAcknowledged ? 'rgba(128,128,128,0.4)' : 'rgba(128,128,128,0.2)',
-              background:  showAcknowledged ? 'rgba(128,128,128,0.1)' : 'transparent',
-              color: '#737373',
-            }}
+            className={`alert-chip ${showAcknowledged ? '' : 'active'}`}
           >
             {showAcknowledged ? 'Hide acknowledged' : 'Show acknowledged'}
           </button>
@@ -405,6 +394,7 @@ export default function AlertsPage() {
               <div
                 key={a.id}
                 onClick={() => toggleSelect(a.id)}
+                className="alert-card"
                 style={{
                   padding: '1rem 1.25rem',
                   borderRadius: '0.875rem',
@@ -420,14 +410,14 @@ export default function AlertsPage() {
                 }}
               >
                 {!a.acknowledged && (
-                  <div style={{ position: 'absolute', top: '1rem', right: '1.25rem', width: '7px', height: '7px', borderRadius: '9999px', background: SEVERITY_COLOR[a.severity] }} />
+                  <div className="alert-dot" style={{ position: 'absolute', top: '1rem', right: '1.25rem', width: '7px', height: '7px', borderRadius: '9999px', background: SEVERITY_COLOR[a.severity], color: SEVERITY_COLOR[a.severity] }} />
                 )}
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', paddingRight: '1rem' }}>
                   <span style={{
                     fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em',
                     padding: '0.15rem 0.5rem', borderRadius: '9999px',
-                    background: GROUP_COLOR[a.group_name] + '18',
+                    background: (GROUP_COLOR[a.group_name] ?? '#737373') + '18',
                     color: GROUP_COLOR[a.group_name] ?? '#737373',
                   }}>
                     {a.group_name}
