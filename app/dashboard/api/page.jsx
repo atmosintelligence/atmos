@@ -237,7 +237,7 @@ export default function ApiPage() {
 
           <EndpointCard method="POST" path="/api/engine" description="Run the analysis on the last 30 days of readings">
             <Note>
-              Runs the rule engine for one device (omit <code>deviceId</code> for all). Tariff and location come from your profile. <code>roomAreaM2</code> defaults to 20 and sets the energy benchmark. Results are cached for 60 seconds. Numbers inside <code>environmental</code> are strings.
+              Runs the rule engine for one device (omit <code>deviceId</code> for all). Rate per kWh, location and monthly usage come from the device's own settings. Atmos sensors do not measure power, so energy figures are estimates from assumed appliance loads. <code>roomAreaM2</code> defaults to 20 and sets the benchmark. Results are cached for 60 seconds.
             </Note>
             <CodeBlock label="Request body" code={JSON.stringify({ deviceId, roomAreaM2: 20 }, null, 2)} />
             <CodeBlock label="Response" code={`{
@@ -252,19 +252,19 @@ export default function ApiPage() {
     }
   ],
   "environmental": {
-    "actualKwh": "1.23",
-    "baselineKwh": "1.80",
-    "savedKwh": "0.57",
-    "co2KgSaved": "0.47",
-    "moneySavedINR": "5.70",
-    "periodDays": "12.5",
-    "weeklyBaselineKwh": "3.015",
-    "weeklyData": [{ "week": "...", "kwh": "0.512", "baseline": "3.015", "saved": "0.000", "hasData": true }]
+    "monthlyKwh": 300,
+    "monthlyKwhKnown": false,       // true once you enter it in Devices
+    "benchmarkMonthlyKwh": 300,
+    "periodDays": 28,
+    "estimatedKwh": 280.4,
+    "benchmarkKwh": 280,
+    "avoidableKwh": 41.2,
+    "weeklyData": [{ "week": "...", "kwh": "70.1", "baseline": "70.0", "avoidable": "9.8", "hasData": true }]
   },
   "analysis": {
     "lighting": { "l1Events": [], "l2Events": [] },
     "hvac":     { "t1Events": [], "t2Events": [], "t3Events": [] },
-    "power":    { "p1Events": [], "p2Events": [], "p3Events": [], "totalEnergy": 1.23 },
+    "standby":  { "s1Events": [] },
     "trends":   { "trend1": {}, "trend2": {}, "dailyBreakdown": [] }
   },
   "readings": [],
@@ -282,9 +282,9 @@ export default function ApiPage() {
     {
       "id": "uuid",
       "device_id": "${deviceId}",
-      "group_name": "Power",
+      "group_name": "Standby",
       "severity": "warning",
-      "title": "Phantom load whilst room is empty",
+      "title": "Idle devices in an empty room",
       "message": "...",
       "saving_inr": 3.2,
       "acknowledged": false,
@@ -297,7 +297,7 @@ export default function ApiPage() {
 
           <EndpointCard method="POST" path="/api/alerts" description="Generate alerts from the latest analysis">
             <Note>
-              Runs the engine, asks the AI layer to write the recommendations (falls back to the engine's own text), skips titles already raised in the last hour, and stores the rest. One run per 30 seconds per account, and nothing is generated during your quiet hours.
+              Runs the engine, asks the AI layer to write the recommendations (falls back to the engine's own text), skips titles already raised in the last six hours, and stores the rest. One run per 30 seconds per account, and nothing is generated during your quiet hours.
             </Note>
             <CodeBlock label="Request body" code={JSON.stringify({ deviceId, roomAreaM2: 20 }, null, 2)} />
             <CodeBlock label="Response" code={`{ "synced": 2, "source": "ai" }
@@ -333,6 +333,19 @@ export default function ApiPage() {
             <CodeBlock label="Response" code={`{ "success": true }`} />
           </EndpointCard>
 
+          <EndpointCard method="PATCH" path="/api/devices/settings" description="Change one device's name, rate, location or monthly usage">
+            <Note>
+              Send only the fields you want to change. An empty value goes back to the default. The device ID itself never changes.
+            </Note>
+            <CodeBlock label="Request body" code={JSON.stringify({ deviceId, display_name: 'Meeting room', tariff_rate: 8.5, monthly_kwh: 320, latitude: 28.61, longitude: 77.21 }, null, 2)} />
+            <CodeBlock label="Response" code={`{ "device": { "device_id": "${deviceId}", "display_name": "Meeting room" } }`} />
+          </EndpointCard>
+
+          <EndpointCard method="POST" path="/api/devices/link" description="Link a device to your account with its private key">
+            <CodeBlock label="Request body" code={JSON.stringify({ privateKey: 'DEVICE_PRIVATE_KEY' }, null, 2)} />
+            <CodeBlock label="Response" code={`{ "device": { "device_id": "${deviceId}" }, "already": false }`} />
+          </EndpointCard>
+
           <EndpointCard method="POST" path="/api/devices/unlink" description="Remove a device from your account">
             <CodeBlock label="Request body" code={JSON.stringify({ deviceId }, null, 2)} />
             <CodeBlock label="Response" code={`{ "success": true }`} />
@@ -345,13 +358,12 @@ export default function ApiPage() {
         <div className="dash-section-title">Sensor endpoint</div>
         <EndpointCard method="POST" path="/api/device/reading" description="Used by the Atmos sensor unit">
           <Note>
-            The hardware posts here every few minutes. It does <strong>not</strong> use your API key. It signs in with its own <code>device_id</code> and <code>private_key</code> (printed on the unit). All measurement fields are optional; <code>timestamp</code> defaults to the server time. <code>auto_actions</code> reports what the unit switched on its own.
+            The hardware posts here every few minutes. It does <strong>not</strong> use your API key. It signs in with its own <code>device_id</code> and <code>private_key</code> (printed on the unit). The unit reports temperature, humidity, light and occupancy, and all are optional; <code>timestamp</code> defaults to the server time. <code>auto_actions</code> reports what the unit switched on its own.
           </Note>
           <CodeBlock label="Request body" code={`{
   "device_id": "${deviceId}",
   "private_key": "DEVICE_PRIVATE_KEY",
   "timestamp": "2026-10-05T22:30:00Z",
-  "power": 62.4, "current": 0.28, "energy": 1.21, "voltage": 231,
   "temperature": 27.1, "humidity": 54, "light": 120, "occupancy": 0,
   "auto_actions": [{ "device": "light", "action": "off", "reason": "empty", "ago_s": 12 }]
 }`} />

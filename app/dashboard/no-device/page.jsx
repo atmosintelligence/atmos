@@ -1,23 +1,29 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import Icon from '@/components/Icon';
+import LinkDeviceModal from '@/components/dashboard/LinkDeviceModal';
 
 export default function NoDevicePage() {
+  const [linking, setLinking] = useState(false);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', maxWidth: '480px', margin: '4rem auto', alignItems: 'center', textAlign: 'center' }}>
-      <div style={{ fontSize: '2.5rem' }}>📡</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', maxWidth: '30rem', margin: '4rem auto', alignItems: 'center', textAlign: 'center' }}>
+      <div className="dash-stat-icon text-brand" style={{ position: 'static' }}><Icon name="devices" size={44} strokeWidth={1.5} /></div>
       <div>
-        <div className="dash-greeting-name" style={{ marginBottom: '0.5rem' }}>No device linked</div>
-        <div className="dash-greeting-sub">
-          You don't have any hardware devices linked to your account yet. Once you set up your Atmos device, it will appear here automatically.
-        </div>
+        <h1 className="dash-greeting-name" style={{ marginBottom: '0.5rem' }}>No device linked yet</h1>
+        <p className="dash-greeting-sub" style={{ margin: '0 auto' }}>
+          Enter the private key printed on your Atmos unit to link it to your account. Its readings will start showing up here.
+        </p>
       </div>
-      <div className="dash-empty" style={{ width: '100%' }}>
-        Contact your administrator or refer to the setup guide to register your device.
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <button type="button" className="dash-btn primary" onClick={() => setLinking(true)}>
+          <Icon name="link" size={16} /> Link new device
+        </button>
+        <Link href="/" className="dash-btn ghost">Back to home</Link>
       </div>
-      <Link href="/" className="btn bg-brand text-brand-on-bg px-6 py-2.5 rounded-full font-medium text-sm inline-flex">
-        Back to home
-      </Link>
+      {linking && <LinkDeviceModal onClose={() => setLinking(false)} />}
     </div>
   );
 }

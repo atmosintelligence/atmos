@@ -25,19 +25,6 @@ export default function DemoGate({ onEnterDemo }) {
       opacity:         visible ? 1 : 0,
       transition:      'opacity 0.4s ease',
     }}>
-      <div style={{
-        position:     'absolute',
-        top:          '30%',
-        left:         '50%',
-        translate:    '-50% -50%',
-        width:        '600px',
-        height:       '600px',
-        borderRadius: '9999px',
-        background:   'rgba(74,222,128,0.06)',
-        filter:       'blur(100px)',
-        pointerEvents: 'none',
-      }} />
-
       <div style={{ textAlign: 'center', maxWidth: '440px', position: 'relative' }}>
         <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#4ADE80', marginBottom: '1.5rem' }}>
           TRY DEMO MODE

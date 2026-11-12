@@ -3,7 +3,7 @@ import { runEngine } from '@/lib/engine/index.js';
 export async function POST(request) {
   try {
     const body     = await request.json();
-    const { readings, location, roomAreaM2, tariff } = body;
+    const { readings, location, roomAreaM2, tariff, monthlyKwh } = body;
 
     if (!readings?.length) {
       return Response.json({ optimizations: [], environmental: null, readings: [], analysis: null });
@@ -14,6 +14,7 @@ export async function POST(request) {
       location:   location   ?? { lat: 28.6139, lon: 77.2090 },
       roomAreaM2: roomAreaM2 ?? 20,
       tariff:     tariff     ?? 10,
+      monthlyKwh: monthlyKwh ?? null,
     });
 
     return Response.json({ ...result, readings });

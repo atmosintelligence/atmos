@@ -1,39 +1,36 @@
 'use client';
 
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { getCurrentUser, getSubscription } from '@/lib/supabase';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { getCurrentUser, getProfile, getSubscription } from '@/lib/supabase';
 import { fetchEngine } from '@/lib/engineFetch';
+import { resolveDeviceSettings, deviceLabel } from '@/lib/deviceSettings';
 import { SECTIONS, SECTION_NAMES } from './sections';
 import { useDemo } from './DemoContext';
 import { DEMO_DEVICE_ID, DEMO_DEVICE_ID_2 } from '@/lib/demo';
 
 const DeviceContext = createContext(null);
 
+// Keeps the signed-in user's devices, their settings, and everything fetched for them in
+// one place, so moving between dashboard pages never refetches what is already here.
 export function DeviceProvider({ children }) {
-  const {
-    isDemo,
-    demoDevices,
-    demoReadings,
-    demoReadings2,
-    demoReady
-  } = useDemo();
+  const { isDemo, demoDevices, demoProfile, demoReadings, demoReadings2, demoReady } = useDemo();
 
   const [devices, setDevices]               = useState([]);
+  const [profile, setProfile]               = useState(null);
   const [selectedId, setSelectedIdState]    = useState(null);
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [refreshKey, setRefreshKey]         = useState(0);
   const [weatherError, setWeatherError]     = useState(null);
-  const selectedIdRef                       = useRef(null);
+  const [subCache, setSubCache]             = useState(null);
+  const [cache, setCache]                   = useState({});
 
-  const [cache, setCache] = useState({});
-  const cacheRef  = useRef({});
-  const inflight  = useRef(new Set());
-  const syncedRef = useRef(new Set());
+  const selectedIdRef   = useRef(null);
+  const cacheRef        = useRef({});
+  const inflight        = useRef(new Map());
+  const syncedRef       = useRef(new Set());
   const devicesFetchRef = useRef(false);
 
-  function getCached(key) {
-    return cacheRef.current[key] ?? null;
-  }
+  const getCached = key => cacheRef.current[key] ?? null;
 
   function setCached(key, value) {
     cacheRef.current = { ...cacheRef.current, [key]: value };
@@ -57,34 +54,50 @@ export function DeviceProvider({ children }) {
     setRefreshKey(k => k + 1);
   }
 
-  function getDemoReadingsForDevice(deviceId) {
-    return deviceId === DEMO_DEVICE_ID_2
-      ? demoReadings2
-      : demoReadings;
+  const getDemoReadings = deviceId => (deviceId === DEMO_DEVICE_ID_2 ? demoReadings2 : demoReadings);
+
+  // Settings a device really uses: its own, then the account's, then the defaults.
+  function settingsFor(deviceId) {
+    return resolveDeviceSettings(devices.find(d => d.device_id === deviceId), profile);
   }
 
-  const [subCache, setSubCache] = useState(null);
-
-  function getSubCache() {
-    return subCache;
+  // Replaces one device's row after its settings change, then recomputes everything.
+  function updateDevice(row) {
+    setDevices(list => list.map(d => (d.device_id === row.device_id ? { ...d, ...row } : d)));
+    triggerRefresh();
   }
 
-  function setSubCacheData(data) {
-    setSubCache(data);
+  function nameOf(deviceId) {
+    return deviceLabel(devices.find(d => d.device_id === deviceId)) || deviceId;
+  }
+
+  // The engine result for a device. One request is shared by every page that asks.
+  function loadEngine(deviceId) {
+    const key = `engine-${deviceId}`;
+    const hit = getCached(key);
+    if (hit) return Promise.resolve(hit);
+    if (inflight.current.has(key)) return inflight.current.get(key);
+
+    const promise = fetchEngine({
+      isDemo,
+      readings: isDemo ? getDemoReadings(deviceId) : null,
+      deviceId,
+      settings: settingsFor(deviceId),
+    })
+      .then(json => {
+        if (json.weatherError) setWeatherError(json.weatherError);
+        setCached(key, json);
+        return json;
+      })
+      .finally(() => inflight.current.delete(key));
+
+    inflight.current.set(key, promise);
+    return promise;
   }
 
   async function preloadSubscription() {
     if (subCache) return;
-
-    if (isDemo) {
-      setSubCache({
-        subscription: {
-          plan: 'enterprise'
-        }
-      });
-      return;
-    }
-
+    if (isDemo) { setSubCache({ plan: 'premium' }); return; }
     try {
       const sub = await getSubscription();
       if (sub) setSubCache(sub);
@@ -93,7 +106,8 @@ export function DeviceProvider({ children }) {
     }
   }
 
-  async function syncAIOptimizations(deviceId) {
+  // Generates alerts (AI, with the engine as the fallback) and caches the alert list.
+  async function syncAlerts(deviceId) {
     const key = `sync-${deviceId}`;
     if (syncedRef.current.has(key)) return;
     syncedRef.current.add(key);
@@ -101,43 +115,23 @@ export function DeviceProvider({ children }) {
 
     try {
       if (isDemo) {
-        const readings = deviceId === DEMO_DEVICE_ID_2 ? demoReadings2 : demoReadings;
-        if (!readings?.length) {
-          syncedRef.current.delete(key);
-          return;
-        }
+        const readings = getDemoReadings(deviceId);
+        if (!readings?.length) { syncedRef.current.delete(key); return; }
+        const s = settingsFor(deviceId);
         const res = await fetch('/api/ai/demo', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({
-            readings,
-            deviceId,
-            location:   { lat: 28.6139, lon: 77.2090 },
+            readings, deviceId,
+            location:   s.latitude != null ? { lat: s.latitude, lon: s.longitude } : undefined,
             roomAreaM2: 20,
-            tariff:     10,
+            tariff:     s.tariff,
+            monthlyKwh: s.monthlyKwh,
           }),
         });
         if (!res.ok) throw new Error('demo ai failed');
         const { optimizations } = await res.json();
         setCached(alertsKey, { alerts: optimizations ?? [] });
-        const existingOverview = getCached(`overview-${deviceId}`);
-        if (existingOverview && !existingOverview.noData) {
-          setCached(`overview-${deviceId}`, {
-            ...existingOverview,
-            optimizations: (optimizations ?? [])
-            .slice()
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, 5)
-            .map(a => ({
-              group:     a.group_name,
-              severity:  a.severity,
-              title:     a.title,
-              message:   a.message,
-              saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
-              timestamp: a.when,
-            })),
-          });
-        }
         return;
       }
 
@@ -150,35 +144,51 @@ export function DeviceProvider({ children }) {
       if (!res.ok) throw new Error('alerts fetch failed');
       const { alerts } = await res.json();
       setCached(alertsKey, { alerts: alerts ?? [] });
-      const existingOverview = getCached(`overview-${deviceId}`);
-      if (existingOverview && !existingOverview.noData) {
-        setCached(`overview-${deviceId}`, {
-          ...existingOverview,
-          optimizations: (alerts ?? [])
-          .slice()
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 5)
-          .map(a => ({
-            group:     a.group_name,
-            severity:  a.severity,
-            title:     a.title,
-            message:   a.message,
-            saving:    a.saving_inr ? { inr: String(a.saving_inr) } : null,
-            timestamp: a.when,
-          })),
-        });
-      }
     } catch (err) {
-      console.error('[Atmos AI] sync failed:', err.message);
+      console.error('[Atmos] alert sync failed:', err.message);
       if (!getCached(alertsKey)) setCached(alertsKey, { alerts: [] });
     }
   }
 
+  // Marks alerts as done. Acknowledged alerts are what the Overview counts as savings.
+  async function acknowledgeAlerts(deviceId, ids) {
+    const alertsKey = `alerts-${deviceId}`;
+    const apply = all => (all ?? []).map(a => (ids === 'all' || ids.includes(a.id) ? { ...a, acknowledged: true } : a));
+
+    if (!isDemo) {
+      const res = await fetch('/api/alerts/acknowledge', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(ids === 'all' ? { all: true, deviceId } : { ids }),
+      });
+      if (!res.ok) return false;
+    }
+    setCached(alertsKey, { alerts: apply(getCached(alertsKey)?.alerts) });
+    return true;
+  }
+
+  async function preloadDevice(deviceId) {
+    try {
+      const json = await loadEngine(deviceId);
+      if (json.analysis) {
+        for (const name of SECTION_NAMES) {
+          const key = `${name}-${deviceId}`;
+          if (!getCached(key)) setCached(key, SECTIONS[name](json));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    await syncAlerts(deviceId);
+  }
+
+  // Devices and profile
   useEffect(() => {
     if (isDemo) {
       if (!demoReady) return;
       const devs = demoDevices ?? [];
       setDevices(devs);
+      setProfile(demoProfile);
       if (devs.length) {
         selectedIdRef.current = DEMO_DEVICE_ID;
         setSelectedIdState(DEMO_DEVICE_ID);
@@ -187,12 +197,19 @@ export function DeviceProvider({ children }) {
       return;
     }
     if (devicesFetchRef.current) return;
-  devicesFetchRef.current = true;
+    devicesFetchRef.current = true;
+
     async function load() {
       const user = await getCurrentUser();
       if (!user) { setLoadingDevices(false); return; }
-      const res  = await fetch('/api/devices');
+
+      const [res, prof] = await Promise.all([
+        fetch('/api/devices'),
+        getProfile('display_name, username, latitude, longitude, tariff_rate').catch(() => null),
+      ]);
+      setProfile(prof);
       if (!res.ok) { setLoadingDevices(false); return; }
+
       const { devices: devs } = await res.json();
       setDevices(devs ?? []);
       if (devs?.length) {
@@ -207,109 +224,34 @@ export function DeviceProvider({ children }) {
     load();
   }, [isDemo, demoReady]);
 
-  useEffect(() => {
-    if (!isDemo || !demoReady) return;
-    if (demoReadings?.length) {
-      preloadDevice(DEMO_DEVICE_ID);
-    }
-    if (demoReadings2?.length) {
-      preloadDevice(DEMO_DEVICE_ID_2);
-    }
-  }, [isDemo, demoReady, demoReadings, demoReadings2]);
-
-  async function preloadDevice(deviceId) {
-    try {
-      const json = await fetchEngine({
-        isDemo,
-        readings: isDemo ? getDemoReadingsForDevice(deviceId) : null,
-        deviceId,
-      });
-
-      const raw     = json.readings ?? [];
-      const hasData = raw.length > 0;
-      if (json.weatherError) setWeatherError(json.weatherError);
-
-      if (!getCached(`overview-${deviceId}`)) {
-        setCached(`overview-${deviceId}`, {
-          profile:       null,
-          latest:        hasData ? raw.at(-1) : null,
-          optimizations: hasData ? json.optimizations ?? [] : [],
-          environmental: hasData ? json.environmental ?? null : null,
-          noData:        !hasData,
-        });
-      }
-
-      if (hasData && !getCached(`history-${deviceId}`)) {
-        setCached(`history-${deviceId}`, {
-          rows: [...raw].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
-        });
-      }
-
-      // Analysis tabs: lighting, temperature, power, trends, environmental (see sections.js)
-      if (hasData && json.analysis) {
-        for (const name of SECTION_NAMES) {
-          const key = `${name}-${deviceId}`;
-          if (!getCached(key)) setCached(key, SECTIONS[name](json));
-        }
-      }
-
-      await preloadAlerts(deviceId);
-    } catch (err) {
-      console.error(err);
-    }
-    await syncAIOptimizations(deviceId);
-  }
-
-  async function preloadAlerts(deviceId) {
-    const key = `alerts-${deviceId}`;
-    if (isDemo || getCached(key) || inflight.current.has(key)) return;
-    inflight.current.add(key);
-    try {
-      const res = await fetch(`/api/alerts?deviceId=${deviceId}`);
-      if (!res.ok) return;
-      const { alerts } = await res.json();
-      if (!getCached(key)) setCached(key, { alerts: alerts ?? [] });
-    } catch (_) {
-    } finally {
-      inflight.current.delete(key);
-    }
-  }
-
+  // Load the selected device first, then the others, once devices and profile are known.
   useEffect(() => {
     if (!selectedId || loadingDevices) return;
     const timer = setTimeout(async () => {
       await preloadDevice(selectedId);
-      const others = devices.filter(d => d.device_id !== selectedId);
-      for (const d of others) await preloadDevice(d.device_id);
-    }, 500);
+      for (const d of devices.filter(d => d.device_id !== selectedId)) await preloadDevice(d.device_id);
+    }, 300);
     return () => clearTimeout(timer);
-  }, [selectedId, loadingDevices, isDemo, demoReady]);
+  }, [selectedId, loadingDevices, isDemo, refreshKey]);
 
-  const selectedDevice =
-    devices.find(d => d.device_id === selectedId) ?? null;
+  const selectedDevice = devices.find(d => d.device_id === selectedId) ?? null;
+  const selectedSettings = useMemo(
+    () => resolveDeviceSettings(selectedDevice, profile),
+    [selectedDevice, profile],
+  );
 
   return (
     <DeviceContext.Provider
       value={{
-        devices,
-        setDevices,
-        selectedId,
-        setSelectedId,
-        selectedDevice,
-        loadingDevices,
-        refreshKey,
-        triggerRefresh,
-        getCached,
-        setCached,
-        getSubCache,
-        setSubCacheData,
-        preloadDevice,
-        isDemo,
-        demoReadings,
-        demoReadings2,
-        getDemoReadings: getDemoReadingsForDevice,
+        devices, setDevices, updateDevice, profile,
+        selectedId, setSelectedId, selectedDevice, selectedSettings,
+        loadingDevices, refreshKey, triggerRefresh,
+        getCached, setCached, cache,
+        loadEngine, settingsFor, nameOf,
+        acknowledgeAlerts,
+        subCache, setSubCacheData: setSubCache, preloadSubscription,
+        isDemo, getDemoReadings, demoReadings, demoReadings2,
         weatherError,
-        cache
       }}
     >
       {children}

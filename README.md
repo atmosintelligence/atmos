@@ -1,45 +1,45 @@
 # Atmos Intelligence
 
-Atmos finds wasted electricity in rooms and buildings. A plug-in ESP32 sensor streams power, climate and occupancy readings to a web dashboard. The dashboard flags waste (lights or AC running in an empty room, phantom loads, power spikes, bad voltage, rising usage), estimates the ₹ and CO₂ cost, and tells the user what to do. The sensor can also switch lights, fan and AC off by itself, following a schedule the user (or AI) sets.
+Atmos finds wasted electricity in rooms and buildings. A plug-in ESP32 sensor streams temperature, humidity, light and occupancy readings to a web dashboard. The dashboard flags waste (lights or AC running in an empty room, idle devices, rising waste), estimates the ₹ and CO₂ cost, and tells the user what to do. The sensor can also switch smart devices off by itself, following a schedule the user (or AI) sets.
 
-Built for Indian conditions: ₹ tariffs, BEE energy benchmarks, 210-245 V mains, British English copy. Made by school students; the product is real, the business plans on `/future` are aspirational.
+**The hardware cannot measure power, energy or voltage.** All energy and ₹ figures are estimates from assumed appliance loads (lighting 120 W, AC 1200 W, standby 45 W), scaled to the room's monthly kWh, which the owner can enter per device.
+
+Built for Indian conditions: ₹ tariffs, BEE energy benchmarks, British English copy. Made by school students; the product is real, the business plans on `/future` are aspirational.
 
 Live: https://atmosintelligence.vercel.app
 
 ## How it works
 
-1. **Sensor** posts `{device_id, private_key, power, current, energy, voltage, temperature, humidity, light, occupancy, auto_actions}` to `POST /api/device/reading`. The reply carries its automation config and enabled schedules.
+1. **Sensor** posts `{device_id, private_key, temperature, humidity, light, occupancy, auto_actions}` to `POST /api/device/reading`. The reply carries its automation config and enabled schedules.
 2. **Storage**: Supabase (Postgres, Mumbai). All DB access is in `lib/supabase.js` (browser client for user data, admin client for server-only functions; every admin query is filtered by the authorised user id or username).
 3. **Rule engine** (`lib/engine`, pure JS, deterministic): runs on the last 30 days of a device (max 5 pages x 1000 rows), cached 60 s in `lib/server/engine.js`.
 4. **AI layer** (`lib/ai`): Groq (`qwen/qwen3.8-27b`) rewrites engine findings into short, specific recommendations. No model is trained on user data. Machine learning is a roadmap item, not built.
-5. **Dashboard** (`app/dashboard`): overview, alerts, automation, analysis tabs (lighting, temperature, power, trends, environmental), history, devices, API keys, subscription, settings, PDF/JSON export. A demo mode runs on `public/demo.json` and `demo_2.json` without an account.
+5. **Dashboard** (`app/dashboard`): overview, alerts, automation, analysis tabs (lighting, temperature, standby, trends, environmental savings), devices (with per-device name, rate, location, monthly use, PDF/JSON export, and History underneath), API, and settings (subscription at the top). Overview savings count only alerts the user marked as done. Demo mode needs no account: its data is generated in `lib/demo.js`. Per-device settings need `docs/sql/device-settings.sql` run once in Supabase.
 
 ## Rule engine
 
-Energy = power x time until the next reading. Gaps over 1 h (device offline) are not counted. Tariff defaults to ₹10/kWh (`profiles.tariff_rate`). All thresholds live in `lib/engine/constants.js`.
+Energy is estimated: assumed load (scaled by the device's monthly kWh) x time until the next reading. Gaps over 1 h (device offline) are not counted. The rate per kWh is set per device (device, then profile, then ₹10). All thresholds live in `lib/engine/constants.js`; times use Asia/Kolkata.
 
 |    Rule | Fires when |
 |---------|------------|
-|      L1 | Room empty for 3+ readings and power > idle baseline + 50 W |
-|      L2 | Occupied, light > 400 lux, power > idle baseline |
-|      T1 | Empty for 3+ readings and temperature outside 22-30 °C |
-|      T2 | Outdoor < 26 °C and dry, room > 27 °C, power > baseline + 100 W (Open-Meteo weather) |
-|      T3 | Humidity outside 28-72 % |
-|      P1 | Latest power z-score > 2.5 vs same weekday and hour |
-|      P2 | Empty 4+ h and power > 80 W |
-|      P3 | Voltage outside 210-245 V |
-| Trend 1 | This week vs last week above 8 % (needs 5+ days in each week) |
-| Trend 2 | Occupied-hours power rising daily over 14 days (R² > 0.6) |
+|      L1 | Room empty for 3+ readings, after dark (18:00 to 06:00), and light still above 120 lux |
+|      L2 | Occupied, light above 400 lux, 08:00 to 17:00 |
+|      T1 | Room empty, 09:00 to 21:00, and at or below 24.5 °C (AC apparently running) |
+|      T2 | Outdoor below 26 °C and dry, fresh readings only (Open-Meteo weather) |
+|      T3 | Humidity outside 30-70 % |
+|      S1 | Room empty for 4+ hours in the daytime (standby devices) |
+| Trend 1 | Avoidable energy this week vs last week changed by more than 15 % and 0.5 kWh |
+| Trend 2 | The hour of the day with the largest share of waste |
 
-Idle baseline = average power of empty, dark (< 50 lux) readings between 00:00 and 05:00, default 50 W. Environmental savings compare use with the BEE benchmark (180 kWh/m²/year, 20 m² room, pro-rated to days covered), CO₂ at 0.727 kg/kWh, 24 kg CO₂ per tree-year. Users can override a few thresholds in `alert_preferences`.
+Environmental savings compare the estimated use with the BEE benchmark (180 kWh/m²/year, 20 m² room, pro-rated to days covered), CO₂ at 0.727 kg/kWh, 24 kg CO₂ per tree-year. Avoidable energy is capped at 60 % of estimated use.
 
 ## Alerts (`lib/alerts.js`, `POST /api/alerts`)
 
-Order: cooldown (30 s per user) -> quiet hours -> engine -> AI -> fall back to engine text if the AI fails, returns nothing or the insert is rejected -> drop titles already raised in the last hour -> save.
+Order: cooldown (30 s per user) -> quiet hours -> engine -> AI -> fall back to engine text if the AI fails, returns nothing or the insert is rejected -> drop titles already raised in the last six hours -> save.
 
 - The AI gets: country, tariff, last 24 readings, non-zero engine findings, the engine's current alert messages, and recent alert titles. It never gets name, email, username or device ID.
 - It replies with lines: `CATEGORY|SEVERITY|Title|Text|Saving|Date/time`. `parseAIResponse` in `lib/ai/groq.js` validates each line and drops anything malformed.
-- Categories: General, Lighting, Humidity, HVAC, Power, Trends (write HVAC in capitals everywhere).
+- Categories: General, Lighting, Humidity, HVAC, Standby, Trends (write HVAC in capitals everywhere).
 - `alerts` columns: `id, user_id, device_id, group_name, severity, title, message, saving_inr, acknowledged, created_at, when`. `created_at` is when the alert was generated; `when` is the sensor-reading time it is about (from the AI's Date/time, else the engine's event time, else the latest reading). `when` is a reserved SQL word, so quote it in raw SQL.
 
 ## Automation

@@ -1,459 +1,214 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDevice } from '../DeviceContext';
+import Icon from '@/components/Icon';
+import PageHeader from '@/components/dashboard/PageHeader';
+import Stat from '@/components/dashboard/Stat';
+import OptCard from '@/components/dashboard/OptCard';
+import Segmented from '@/components/dashboard/Segmented';
+import BarSeries from '@/components/dashboard/charts/BarSeries';
+import { C } from '@/components/dashboard/charts/ChartConfig';
 
-const SEVERITY_COLOR  = { critical: '#ef4444', warning: '#eab308', info: '#60a5fa' };
-const SEVERITY_BG     = { critical: 'rgba(239,68,68,0.06)', warning: 'rgba(234,179,8,0.06)', info: 'rgba(96,165,250,0.06)' };
-const SEVERITY_BORDER = { critical: 'rgba(239,68,68,0.2)', warning: 'rgba(234,179,8,0.2)', info: 'rgba(96,165,250,0.2)' };
-
-const GROUP_COLOR = {
-  General:  '#4ADE80',
-  Lighting: '#eab308',
-  HVAC:     '#60a5fa',
-  Humidity: '#60a5fa',
-  Power:    '#ef4444',
-  Trends:   '#a78bfa'
+const SEVERITIES = ['critical', 'warning', 'info'];
+const DEFAULT_PREFS = {
+  min_consecutive_empty: 3, phantom_load_hours: 4,
+  quiet_hours_enabled: false, quiet_hours_start: 22, quiet_hours_end: 7,
 };
 
-const CheckIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 6L9 17l-5-5" />
-  </svg>
-);
+const dayLabel = d => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const asOpt = a => ({ ...a, group: a.group_name, saving: a.saving_inr ? { inr: a.saving_inr } : null, timestamp: a.when ?? a.created_at });
 
-function fmtDate(str) {
-  return new Date(str).toLocaleString('en-IN', {
-    day: 'numeric', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit', hour12: true,
-  }).replace('am', 'AM').replace('pm', 'PM');
-}
-
-function timeAgo(str) {
-  const diff = Date.now() - new Date(str);
-  const mins  = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days  = Math.floor(diff / 86400000);
-  if (mins < 1)   return 'just now';
-  if (mins < 60)  return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-}
-
-function BarChart({ alerts }) {
-  const days = useMemo(() => {
-    const map = {};
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 86400000);
-      const k = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      map[k] = { critical: 0, warning: 0, info: 0, label: k };
-    }
-    for (const a of alerts) {
-      const k = new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      if (map[k]) map[k][a.severity]++;
-    }
-    return Object.values(map);
-  }, [alerts]);
-
-  const max = Math.max(...days.map(d => d.critical + d.warning + d.info), 1);
-
+function NumberField({ id, label, hint, value, min, max, onChange, unit }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '64px' }}>
-      {days.map((d, i) => {
-        const total = d.critical + d.warning + d.info;
-        const pct   = (total / max) * 100;
-        return (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%', justifyContent: 'flex-end' }} title={`${d.label}: ${total} alert${total !== 1 ? 's' : ''}`}>
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', borderRadius: '3px', overflow: 'hidden', height: `${Math.max(pct, total > 0 ? 8 : 2)}%` }}>
-              {d.critical > 0 && <div style={{ background: '#ef4444', flex: d.critical }} />}
-              {d.warning  > 0 && <div style={{ background: '#eab308', flex: d.warning  }} />}
-              {d.info     > 0 && <div style={{ background: '#60a5fa', flex: d.info     }} />}
-              {total === 0 && <div style={{ background: 'rgba(128,128,128,0.15)', flex: 1 }} />}
-            </div>
-          </div>
-        );
-      })}
+    <div className="dash-field">
+      <label htmlFor={id}>{label}</label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <input id={id} className="field-input" type="number" min={min} max={max} value={value}
+               onChange={e => onChange(Number(e.target.value))} style={{ maxWidth: '6rem', margin: 0 }} aria-describedby={`${id}-h`} />
+        <span className="dash-card-sub" style={{ margin: 0 }}>{unit}</span>
+      </div>
+      <span id={`${id}-h`} className="hint">{hint}</span>
     </div>
   );
 }
 
-export default function AlertsPage() {
-  const { selectedId, refreshKey, cache, getCached, setCached, isDemo, demoReadings } = useDevice();
-
-  const [alerts, setAlerts]         = useState([]);
-  const [prefs, setPrefs]           = useState(null);
-  const [status, setStatus]         = useState('loading');
-  const [severityFilter, setSeverityFilter] = useState('all');
-  const [groupFilter, setGroupFilter]       = useState('all');
-  const [showAcknowledged, setShowAcknowledged] = useState(true);
-  const [selected, setSelected]     = useState(new Set());
-  const [prefsSaving, setPrefsSaving] = useState(false);
-  const [prefsMsg, setPrefsMsg]       = useState('');
-  const [showPrefs, setShowPrefs]     = useState(false);
-  const [editPrefs, setEditPrefs]     = useState(null);
-
-    useEffect(() => {
-    if (!selectedId || isDemo) return;
-    if (getCached(`alerts-${selectedId}`)) return;
-    load();
-  }, [selectedId, refreshKey]);
+function AlertSettings() {
+  const { isDemo } = useDevice();
+  const [prefs, setPrefs] = useState(DEFAULT_PREFS);
+  const [busy, setBusy]   = useState(false);
+  const [msg, setMsg]     = useState(null);
 
   useEffect(() => {
-    const cached = cache?.[`alerts-${selectedId}`];
-    if (!cached) return;
-    setAlerts(cached.alerts ?? []);
-    setStatus('ready');
-  }, [cache, selectedId]);
+    if (isDemo) return;
+    fetch('/api/alerts/preferences').then(r => r.json()).then(({ preferences }) => {
+      if (preferences) setPrefs(p => ({ ...p, ...preferences }));
+    }).catch(() => {});
+  }, [isDemo]);
 
-  async function load() {
-    setStatus('loading');
-    const res = await fetch(`/api/alerts?deviceId=${selectedId}`);
-    if (!res.ok) { setStatus('error'); return; }
-    const { alerts: data } = await res.json();
-    setAlerts(data ?? []);
-    setCached(`alerts-${selectedId}`, { alerts: data ?? [] });
-    setStatus('ready');
-  }
+  const set = key => v => { setPrefs(p => ({ ...p, [key]: v })); setMsg(null); };
 
-  async function handleAcknowledge(ids) {
-    await fetch('/api/alerts/acknowledge', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids }),
-    });
-    setAlerts(prev => prev.map(a => ids.includes(a.id) ? { ...a, acknowledged: true } : a));
-    setSelected(new Set());
-  }
-
-  async function handleAcknowledgeAll() {
-    await fetch('/api/alerts/acknowledge', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ all: true, deviceId: selectedId }),
-    });
-    setAlerts(prev => prev.map(a => ({ ...a, acknowledged: true })));
-    setSelected(new Set());
-  }
-
-  async function handleSavePrefs() {
-    setPrefsSaving(true);
-    setPrefsMsg('');
+  async function save(e) {
+    e.preventDefault();
+    setBusy(true); setMsg(null);
+    const { min_consecutive_empty, phantom_load_hours, quiet_hours_enabled, quiet_hours_start, quiet_hours_end } = prefs;
     const res = await fetch('/api/alerts/preferences', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editPrefs),
-    });
-    if (res.ok) {
-      setPrefs(editPrefs);
-      setPrefsMsg('Preferences saved.');
-    } else {
-      setPrefsMsg('Failed to save.');
-    }
-    setPrefsSaving(false);
-    setTimeout(() => setPrefsMsg(''), 2000);
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ min_consecutive_empty, phantom_load_hours, quiet_hours_enabled, quiet_hours_start, quiet_hours_end }),
+    }).catch(() => null);
+    setMsg(res?.ok ? { ok: 'Saved.' } : { error: 'Could not save. Try again.' });
+    setBusy(false);
   }
-
-  function toggleSelect(id) {
-    setSelected(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }
-
-  const filtered = useMemo(() => {
-    return alerts.filter(a => {
-      if (!showAcknowledged && a.acknowledged) return false;
-      if (severityFilter !== 'all' && a.severity !== severityFilter) return false;
-      if (groupFilter !== 'all' && a.group_name !== groupFilter) return false;
-      return true;
-    });
-  }, [alerts, severityFilter, groupFilter, showAcknowledged]);
-
-  const unacknowledged = alerts.filter(a => !a.acknowledged);
-  const counts = {
-    critical: alerts.filter(a => a.severity === 'critical').length,
-    warning:  alerts.filter(a => a.severity === 'warning').length,
-    info:     alerts.filter(a => a.severity === 'info').length,
-  };
-  const groups = [...new Set(alerts.map(a => a.group_name))];
-  const last30 = alerts.filter(a => (Date.now() - new Date(a.created_at)) / 86400000 < 30);
-
-  if (status === 'loading') return <div className="dash-empty" style={{ border: 'none' }}>Loading alerts...</div>;
-  if (status === 'error')   return <div className="dash-empty" style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}>Failed to load alerts.</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-
-      <div className="dash-greeting">
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <div className="dash-greeting-name">Alerts</div>
-            <div className="dash-greeting-sub">A persistent log of every rule that fired for this device, from the past and in the present. You can acknowledge notifications here.</div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-        {[
-          { label: 'Unacknowledged', value: unacknowledged.length, color: unacknowledged.length > 0 ? '#ef4444' : undefined },
-          { label: 'Critical',       value: counts.critical,         color: counts.critical > 0 ? '#ef4444' : undefined },
-          { label: 'Warnings',       value: counts.warning,          color: counts.warning  > 0 ? '#eab308' : undefined },
-          { label: 'Last 30 days',   value: last30.length },
-        ].map((s, i) => (
-          <div key={i} className="dash-stat">
-            <div className="dash-stat-value" style={s.color ? { color: s.color } : {}}>{s.value}</div>
-            <div className="dash-stat-label">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {last30.length > 0 && (
-        <div>
-          <div className="dash-section-title" style={{ marginBottom: '0.625rem' }}>Alert frequency: last 14 days</div>
-          <div className="card" style={{ padding: '1rem 1.25rem' }}>
-            <BarChart alerts={last30} />
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-              {['critical', 'warning', 'info'].map(s => (
-                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', color: '#737373' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: SEVERITY_COLOR[s] }} />
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showPrefs && editPrefs && (
-        <div className="dash-device-card">
-          <div className="dash-section-title" style={{ marginBottom: '1rem' }}>Alert settings</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: '#737373', marginBottom: '0.375rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Consecutive empty readings before alert</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input
-                  type="number" min="2" max="10"
-                  value={editPrefs.min_consecutive_empty}
-                  onChange={e => setEditPrefs(p => ({ ...p, min_consecutive_empty: parseInt(e.target.value) }))}
-                  className="field-input" style={{ maxWidth: '80px', textAlign: 'right' }}
-                />
-                <span style={{ fontSize: '0.78rem', color: '#737373' }}>readings</span>
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: '#737373', marginBottom: '0.375rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Phantom load: min empty duration</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input
-                  type="number" min="1" max="12"
-                  value={editPrefs.phantom_load_hours}
-                  onChange={e => setEditPrefs(p => ({ ...p, phantom_load_hours: parseInt(e.target.value) }))}
-                  className="field-input" style={{ maxWidth: '80px', textAlign: 'right' }}
-                />
-                <span style={{ fontSize: '0.78rem', color: '#737373' }}>hours</span>
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: '#737373', marginBottom: '0.375rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Spike detection Z-score threshold</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input
-                  type="number" min="1.5" max="5" step="0.1"
-                  value={editPrefs.spike_zscore}
-                  onChange={e => setEditPrefs(p => ({ ...p, spike_zscore: parseFloat(e.target.value) }))}
-                  className="field-input" style={{ maxWidth: '80px', textAlign: 'right' }}
-                />
-                <span style={{ fontSize: '0.78rem', color: '#737373' }}>σ</span>
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: '#737373', marginBottom: '0.375rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Week-over-week threshold</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input
-                  type="number" min="1" max="50"
-                  value={editPrefs.week_over_week_pct}
-                  onChange={e => setEditPrefs(p => ({ ...p, week_over_week_pct: parseFloat(e.target.value) }))}
-                  className="field-input" style={{ maxWidth: '80px', textAlign: 'right' }}
-                />
-                <span style={{ fontSize: '0.78rem', color: '#737373' }}>%</span>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(128,128,128,0.15)' }}>
-            <div style={{ fontSize: '0.72rem', color: '#737373', marginBottom: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Quiet hours</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={editPrefs.quiet_hours_enabled}
-                  onChange={e => setEditPrefs(p => ({ ...p, quiet_hours_enabled: e.target.checked }))}
-                />
-                Enable quiet hours
-              </label>
-              {editPrefs.quiet_hours_enabled && (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.82rem' }}>
-                    <span style={{ color: '#737373' }}>From</span>
-                    <input
-                      type="number" min="0" max="23"
-                      value={editPrefs.quiet_hours_start}
-                      onChange={e => setEditPrefs(p => ({ ...p, quiet_hours_start: parseInt(e.target.value) }))}
-                      className="field-input" style={{ maxWidth: '60px', textAlign: 'right' }}
-                    />
-                    <span style={{ color: '#737373' }}>to</span>
-                    <input
-                      type="number" min="0" max="23"
-                      value={editPrefs.quiet_hours_end}
-                      onChange={e => setEditPrefs(p => ({ ...p, quiet_hours_end: parseInt(e.target.value) }))}
-                      className="field-input" style={{ maxWidth: '60px', textAlign: 'right' }}
-                    />
-                    <span style={{ color: '#737373' }}>hr (24h)</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button
-              onClick={handleSavePrefs}
-              disabled={prefsSaving}
-              className="btn bg-brand text-brand-on-bg"
-              style={{ fontSize: '0.8rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}
-            >
-              {prefsSaving ? 'Saving...' : 'Save settings'}
-            </button>
-            {prefsMsg && <span style={{ fontSize: '0.75rem', color: prefsMsg.includes('saved') ? 'var(--color-primary-dark)' : '#ef4444' }}>{prefsMsg}</span>}
-          </div>
-        </div>
-      )}
-
+    <form onSubmit={save} className="dash-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-          <div className="dash-section-title" style={{ marginBottom: 0 }}>
-            Alert log {filtered.length > 0 && <span style={{ color: '#737373', fontWeight: 400 }}>({filtered.length})</span>}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {selected.size > 0 && (
-              <button onClick={() => handleAcknowledge([...selected])} className="alert-btn primary alert-pop">
-                <CheckIcon />
-                Acknowledge {selected.size} selected
-              </button>
-            )}
-            {unacknowledged.length > 0 && (
-              <button onClick={handleAcknowledgeAll} className="alert-btn">
-                <CheckIcon />
-                Acknowledge all
-                <span className="alert-chip-count">{unacknowledged.length}</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
-          {['all', 'critical', 'warning', 'info'].map(s => (
-            <button
-              key={s}
-              onClick={() => setSeverityFilter(s)}
-              className={`alert-chip ${severityFilter === s ? 'active' : ''}`}
-              style={SEVERITY_COLOR[s] ? { '--chip': SEVERITY_COLOR[s] } : undefined}
-            >
-              {s === 'all' ? 'All severities' : s.charAt(0).toUpperCase() + s.slice(1)}
-              {s !== 'all' && <span className="alert-chip-count">{counts[s] ?? 0}</span>}
-            </button>
-          ))}
-          <div className="alert-divider" />
-          {['all', ...groups].map(g => (
-            <button
-              key={g}
-              onClick={() => setGroupFilter(g)}
-              className={`alert-chip ${groupFilter === g ? 'active' : ''}`}
-              style={GROUP_COLOR[g] ? { '--chip': GROUP_COLOR[g] } : undefined}
-            >
-              {g === 'all' ? 'All categories' : g}
-            </button>
-          ))}
-          <div className="alert-divider" />
-          <button
-            onClick={() => setShowAcknowledged(p => !p)}
-            className={`alert-chip ${showAcknowledged ? '' : 'active'}`}
-          >
-            {showAcknowledged ? 'Hide acknowledged' : 'Show acknowledged'}
-          </button>
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="dash-empty">
-            {alerts.length === 0
-              ? 'No alerts yet. Refresh to check for new alerts from your latest readings.'
-              : 'No alerts match the current filters.'}
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {filtered.map((a, i) => (
-              <div
-                key={a.id}
-                onClick={() => toggleSelect(a.id)}
-                className="alert-card"
-                style={{
-                  padding: '1rem 1.25rem',
-                  borderRadius: '0.875rem',
-                  border: `1px solid ${selected.has(a.id) ? SEVERITY_COLOR[a.severity] : SEVERITY_BORDER[a.severity]}`,
-                  background: selected.has(a.id) ? SEVERITY_BG[a.severity] : a.acknowledged ? 'rgba(128,128,128,0.03)' : SEVERITY_BG[a.severity],
-                  cursor: 'pointer',
-                  opacity: a.acknowledged ? 0.55 : 1,
-                  transition: 'all 0.15s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem',
-                  position: 'relative',
-                }}
-              >
-                {!a.acknowledged && (
-                  <div className="alert-dot" style={{ position: 'absolute', top: '1rem', right: '1.25rem', width: '7px', height: '7px', borderRadius: '9999px', background: SEVERITY_COLOR[a.severity], color: SEVERITY_COLOR[a.severity] }} />
-                )}
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', paddingRight: '1rem' }}>
-                  <span style={{
-                    fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em',
-                    padding: '0.15rem 0.5rem', borderRadius: '9999px',
-                    background: (GROUP_COLOR[a.group_name] ?? '#737373') + '18',
-                    color: GROUP_COLOR[a.group_name] ?? '#737373',
-                  }}>
-                    {a.group_name}
-                  </span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: SEVERITY_COLOR[a.severity], textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {a.severity}
-                  </span>
-                  {a.when && (
-                    <>
-                      <span style={{ fontSize: '0.7rem', color: '#737373', marginLeft: 'auto' }} title="Time of the sensor reading">
-                        {fmtDate(a.when)}
-                      </span>
-                      <span style={{ fontSize: '0.7rem', color: '#a3a3a3' }}>
-                        {timeAgo(a.when)}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, fontFamily: 'var(--font-syne)' }}>{a.title}</div>
-                <p style={{ fontSize: '0.8rem', color: '#a0a0a0', lineHeight: 1.65, margin: 0 }}>{a.message}</p>
-
-                {a.saving_inr && (
-                  <div style={{ fontSize: '0.72rem', color: 'var(--color-primary-dark)', fontWeight: 500 }} className="dark:text-[var(--color-primary)]">
-                    Estimated saving: ₹{parseFloat(a.saving_inr).toFixed(2)}
-                  </div>
-                )}
-
-                {a.acknowledged && (
-                  <div style={{ fontSize: '0.68rem', color: '#737373', fontStyle: 'italic' }}>Acknowledged</div>
-                )}
-              </div>
-            ))}
+        <h2 className="dash-card-title">Alert settings</h2>
+        <p className="dash-card-sub">Make alerts quicker or quieter. The defaults suit most rooms.</p>
+      </div>
+      <div className="dash-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(15rem, 1fr))' }}>
+        <NumberField id="pref-empty" label="Empty room, before alerting" value={prefs.min_consecutive_empty} min={2} max={10} unit="readings in a row"
+                     hint="How long a room must look empty before lights or AC are flagged." onChange={set('min_consecutive_empty')} />
+        <NumberField id="pref-standby" label="Empty room, for standby alerts" value={prefs.phantom_load_hours} min={1} max={12} unit="hours"
+                     hint="How long a room sits empty in the day before standby devices are flagged." onChange={set('phantom_load_hours')} />
+      </div>
+      <div style={{ borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+          <input type="checkbox" checked={prefs.quiet_hours_enabled} onChange={e => set('quiet_hours_enabled')(e.target.checked)} />
+          Pause new alerts during quiet hours
+        </label>
+        {prefs.quiet_hours_enabled && (
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <NumberField id="pref-from" label="From" value={prefs.quiet_hours_start} min={0} max={23} unit="o'clock (0 to 23)" hint="" onChange={set('quiet_hours_start')} />
+            <NumberField id="pref-to"   label="Until" value={prefs.quiet_hours_end} min={0} max={23} unit="o'clock (0 to 23)" hint="" onChange={set('quiet_hours_end')} />
           </div>
         )}
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <button type="submit" className="dash-btn primary" disabled={busy || isDemo}>{busy ? 'Saving...' : isDemo ? 'Not in demo' : 'Save settings'}</button>
+        {msg?.ok    && <span role="status" style={{ fontSize: '0.8rem', color: 'var(--color-primary-dark)' }}>{msg.ok}</span>}
+        {msg?.error && <span role="alert" className="err" style={{ fontSize: '0.8rem' }}>{msg.error}</span>}
+      </div>
+    </form>
+  );
+}
+
+export default function AlertsPage() {
+  const { selectedId, refreshKey, cache, getCached, setCached, isDemo, acknowledgeAlerts, nameOf } = useDevice();
+  const [status, setStatus]   = useState('loading');
+  const [view, setView]       = useState('todo');
+  const [severity, setSeverity] = useState('all');
+  const [group, setGroup]     = useState('all');
+  const [showSettings, setShowSettings] = useState(false);
+  const alerts = cache?.[`alerts-${selectedId}`]?.alerts;
+
+  useEffect(() => {
+    if (!selectedId || isDemo || getCached(`alerts-${selectedId}`)) return;
+    let cancelled = false;
+    setStatus('loading');
+    fetch(`/api/alerts?deviceId=${encodeURIComponent(selectedId)}`)
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then(({ alerts: data }) => { if (!cancelled) setCached(`alerts-${selectedId}`, { alerts: data ?? [] }); })
+      .catch(() => { if (!cancelled) setStatus('error'); });
+    return () => { cancelled = true; };
+  }, [selectedId, refreshKey, isDemo]);
+
+  useEffect(() => { if (alerts) setStatus('ready'); }, [alerts]);
+
+  const list = alerts ?? [];
+  const todo = list.filter(a => !a.acknowledged);
+  const groups = useMemo(() => [...new Set(list.map(a => a.group_name))].filter(Boolean), [list]);
+
+  const shown = useMemo(() => list.filter(a => {
+    if (view === 'todo' && a.acknowledged) return false;
+    if (view === 'done' && !a.acknowledged) return false;
+    if (severity !== 'all' && a.severity !== severity) return false;
+    if (group !== 'all' && a.group_name !== group) return false;
+    return true;
+  }).sort((a, b) => new Date(b.when ?? b.created_at) - new Date(a.when ?? a.created_at)), [list, view, severity, group]);
+
+  // Alerts per day over the last 14 days, split by severity.
+  const perDay = useMemo(() => {
+    const days = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000);
+      days.push({ key: dayLabel(d), day: dayLabel(d), critical: 0, warning: 0, info: 0 });
+    }
+    for (const a of list) {
+      const row = days.find(d => d.key === dayLabel(new Date(a.created_at)));
+      if (row && row[a.severity] != null) row[a.severity]++;
+    }
+    return days;
+  }, [list]);
+
+  if (status === 'loading') return <div className="dash-empty" style={{ border: 'none' }} aria-busy="true">Loading alerts...</div>;
+  if (status === 'error')   return <div className="dash-error" role="alert">We could not load your alerts. Try the refresh button.</div>;
+
+  const markAll = () => acknowledgeAlerts(selectedId, 'all');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+      <PageHeader
+        title="Alerts"
+        sub={`Everything Atmos has flagged in ${nameOf(selectedId)}. Mark an alert as done once you have acted on it, and its saving is counted on your Overview.`}
+        actions={
+          <>
+            {todo.length > 0 && <button type="button" className="dash-btn ghost" onClick={markAll}><Icon name="check" size={16} /> Mark all as done</button>}
+            <button type="button" className="dash-btn ghost" aria-expanded={showSettings} onClick={() => setShowSettings(s => !s)}><Icon name="settings" size={16} /> Alert settings</button>
+          </>
+        }
+      />
+
+      {showSettings && <AlertSettings />}
+
+      <section aria-label="Summary">
+        <div className="dash-grid">
+          <Stat icon="alerts"  tone={todo.length ? '#ef4444' : '#16a34a'} label="To do" value={todo.length} sub={todo.length ? 'Waiting for you' : 'All caught up'} />
+          <Stat icon="warning" tone="#f59e0b" label="Urgent" value={todo.filter(a => a.severity === 'critical').length} sub="Critical and not done" />
+          <Stat icon="check"   tone="#16a34a" label="Done" value={list.length - todo.length} sub="Counted in your savings" />
+        </div>
+      </section>
+
+      {list.length > 0 && (
+        <BarSeries
+          title="Alerts per day"
+          subtitle="The last 14 days. A steady drop means your habits are changing."
+          summary="Stacked bar chart of critical, warning and info alerts for each of the last fourteen days."
+          data={perDay} xKey="day" unit=""
+          bars={[
+            { key: 'critical', name: 'Critical', color: '#ef4444', stack: 'a' },
+            { key: 'warning',  name: 'Warning',  color: '#f59e0b', stack: 'a' },
+            { key: 'info',     name: 'Info',     color: C.temp,    stack: 'a' },
+          ]}
+        />
+      )}
+
+      <section aria-labelledby="log-title" style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+        <h2 id="log-title" className="dash-section-title" style={{ margin: 0 }}>
+          Alert log {shown.length > 0 && <span style={{ color: '#737373', fontWeight: 400 }}>({shown.length})</span>}
+        </h2>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <Segmented label="Show" value={view} onChange={setView} options={[{ value: 'todo', label: 'To do' }, { value: 'done', label: 'Done' }, { value: 'all', label: 'All' }]} />
+          <Segmented label="Severity" value={severity} onChange={setSeverity}
+                     options={[{ value: 'all', label: 'Any severity' }, ...SEVERITIES.map(s => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))]} />
+          {groups.length > 1 && (
+            <Segmented label="Category" value={group} onChange={setGroup} options={[{ value: 'all', label: 'All areas' }, ...groups.map(g => ({ value: g, label: g }))]} />
+          )}
+        </div>
+
+        {shown.length === 0 ? (
+          <div className="dash-empty">
+            {list.length === 0 ? 'Nothing flagged yet. Alerts appear after the device has sent a few readings.'
+              : view === 'todo' && !todo.length ? 'You are all caught up.' : 'No alerts match these filters.'}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+            {shown.map(a => (
+              <OptCard key={a.id} opt={asOpt(a)} acknowledged={Boolean(a.acknowledged)} onAcknowledge={() => acknowledgeAlerts(selectedId, [a.id])} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

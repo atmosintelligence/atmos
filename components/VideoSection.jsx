@@ -54,6 +54,10 @@ export default function VideoSection() {
     <>
       <div
         onClick={openExpanded}
+        role="button"
+        tabIndex={0}
+        aria-label="Play the Atmos video full screen"
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openExpanded(); } }}
         style={{
           position:   'relative',
           width:      '100%',
@@ -177,7 +181,7 @@ export default function VideoSection() {
                 fontSize:     '0.75rem',
                 zIndex:       10,
               }}
-              aria-label="Close"
+              aria-label="Close video"
             >
               ✕
             </button>

@@ -1,103 +1,64 @@
 'use client';
 
 import { useAnalysis, analysisGate } from '../../useAnalysis';
-import { getColStats, scaleColor, fmtDate, tdBase } from '../tableUtils';
-import Stat          from '@/components/dashboard/Stat';
-import TableWrapper  from '@/components/dashboard/TableWrapper';
-import OptCard       from '@/components/dashboard/OptCard';
-import LightingChart from '@/components/dashboard/charts/LightingChart';
+import { byDay, fmtDate, latest, rupees, sum } from '../tableUtils';
+import PageHeader      from '@/components/dashboard/PageHeader';
+import Stat            from '@/components/dashboard/Stat';
+import TableWrapper    from '@/components/dashboard/TableWrapper';
+import Recommendations from '@/components/dashboard/Recommendations';
+import OccupancyLight  from '@/components/dashboard/charts/OccupancyLight';
+import BarSeries       from '@/components/dashboard/charts/BarSeries';
+import { C }           from '@/components/dashboard/charts/ChartConfig';
 
 export default function LightingPage() {
-  const { data, status, selectedId, refreshKey } = useAnalysis('lighting');
+  const { data, status } = useAnalysis('lighting');
   const gate = analysisGate(status, data);
   if (gate) return gate;
 
-  const { l1Events, l2Events, idleBaseline, idleBaselineMeasured, optimizations, readings } = data;
-  const totalL1Waste = l1Events.reduce((a, e) => a + parseFloat(e.waste), 0);
-  const totalL2Save  = l2Events.reduce((a, e) => a + parseFloat(e.saving), 0);
+  const { l1Events, l2Events, optimizations, readings, loads } = data;
+  const wasteByDay = byDay(l1Events, 'waste', 'waste');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-      <div className="dash-greeting">
-        <div className="dash-greeting-name">Lighting</div>
-        <div className="dash-greeting-sub">Occupancy-based lighting waste, daylight harvesting opportunities, and idle baseline analysis.</div>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', width: '100%' }}>
+      <PageHeader title="Lighting" sub="When lights burn with nobody in the room, and when daylight is already enough." />
 
-      {optimizations.length > 0 ? (
-        <div>
-          <div className="dash-section-title">Recommendations</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            {optimizations.map((opt, i) => <OptCard key={i} opt={opt} />)}
-          </div>
-        </div>
-      ) : (
-        <div className="dash-empty">No lighting recommendations at this time.</div>
-      )}
-
-      <div>
-        <div className="dash-section-title">Summary</div>
+      <section aria-label="Summary">
         <div className="dash-grid">
-          <Stat label="Idle baseline"      value={`${idleBaseline.toFixed(0)} W`} sub={idleBaselineMeasured ? 'Night-time base load' : 'Default: no night readings yet'} />
-          <Stat label="Empty room events"  value={l1Events.length}                sub="Lights on whilst vacant" />
-          <Stat label="Daylight opportunities" value={l2Events.length}            sub="Artificial light redundant" />
-          <Stat label="Total waste"     value={`₹${totalL1Waste.toFixed(2)}`} />
+          <Stat icon="user"      tone="#ef4444" label="Lights on, room empty" value={l1Events.length} sub="Readings after dark" />
+          <Stat icon="coin"      tone="#16a34a" label="Estimated waste" value={rupees(sum(l1Events, 'waste'))} sub={`Assumes about ${Math.round(loads.lighting)} W of lighting`} />
+          <Stat icon="sun"       tone="#f59e0b" label="Daylight chances" value={l2Events.length} sub="Bright enough to work without lights" />
+          <Stat icon="lightbulb" tone="#f59e0b" label="Possible saving" value={`${rupees(sum(l2Events, 'saving'))}`} sub="If lights were off in daylight" />
         </div>
-      </div>
+      </section>
 
-      <div>
-        <div className="dash-section-title">Graphs</div>
-        <LightingChart
-          key={`${selectedId}-${refreshKey}`}
-          readings={readings}
-          idleBaseline={idleBaseline}
-          l1Events={l1Events}
-          l2Events={l2Events}
+      <section aria-label="Graphs" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <OccupancyLight readings={readings} />
+        <BarSeries
+          title="Estimated lighting waste by day"
+          subtitle="What the lights cost while the room was empty at night. Taller bars mean more to save."
+          summary="Bar chart of estimated rupees wasted on lighting each day."
+          data={wasteByDay} xKey="day" unit=" ₹" decimals={2}
+          bars={[{ key: 'waste', name: 'Waste (₹)', color: C.light }]}
         />
-      </div>
+      </section>
 
       {l1Events.length > 0 && (
-        <div>
-          <div className="dash-section-title">Empty room events</div>
-          <TableWrapper headers={['Detected at', 'Vacant for', 'Power', 'Estimated waste']}>
-            {(() => {
-              const vacantStats = getColStats(l1Events, 'vacantMins');
-              const powerStats  = getColStats(l1Events, 'power');
-              const wasteStats  = getColStats(l1Events, 'waste');
-              return l1Events.map((e, i) => (
-                <tr key={i} style={{ borderBottom: i < l1Events.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
-                  <td style={tdBase({ color: '#737373' })}>{fmtDate(e.timestamp)}</td>
-                  <td style={tdBase(scaleColor(e.vacantMins, vacantStats))}>{e.vacantMins} min</td>
-                  <td style={tdBase(scaleColor(e.power, powerStats))}>{e.power} W</td>
-                  <td style={tdBase(scaleColor(e.waste, wasteStats))}>₹{e.waste}</td>
-                </tr>
-              ));
-            })()}
+        <section aria-labelledby="events-title">
+          <div className="dash-section-title" id="events-title">Latest empty-room events</div>
+          <TableWrapper headers={['When', 'Room empty for', 'Light level', 'Estimated waste']} caption="Lights on in an empty room">
+            {latest(l1Events).map((e, i) => (
+              <tr key={i}>
+                <td>{fmtDate(e.timestamp)}</td>
+                <td>{e.vacantMins} min</td>
+                <td>{Math.round(e.lux)} lux</td>
+                <td>{rupees(e.windowWaste)}</td>
+              </tr>
+            ))}
           </TableWrapper>
-          <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: '#a3a3a3' }}>Total estimated waste: ₹{totalL1Waste.toFixed(2)}</div>
-        </div>
+        </section>
       )}
 
-      {l2Events.length > 0 && (
-        <div>
-          <div className="dash-section-title">Daylight harvesting opportunities</div>
-          <TableWrapper headers={['Detected at', 'Natural light', 'Power draw', 'Potential saving']}>
-            {(() => {
-              const luxStats    = getColStats(l2Events, 'lux');
-              const powerStats  = getColStats(l2Events, 'power');
-              const savingStats = getColStats(l2Events, 'saving');
-              return l2Events.map((e, i) => (
-                <tr key={i} style={{ borderBottom: i < l2Events.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
-                  <td style={tdBase({ color: '#737373' })}>{fmtDate(e.timestamp)}</td>
-                  <td style={tdBase(scaleColor(e.lux, luxStats))}>{e.lux} lux</td>
-                  <td style={tdBase(scaleColor(e.power, powerStats))}>{e.power} W</td>
-                  <td style={tdBase(scaleColor(e.saving, savingStats))}>₹{e.saving}</td>
-                </tr>
-              ));
-            })()}
-          </TableWrapper>
-          <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: '#a3a3a3' }}>Total potential saving: ₹{totalL2Save.toFixed(2)}</div>
-        </div>
-      )}
+      <Recommendations items={optimizations} empty="No lighting recommendations right now." />
     </div>
   );
 }

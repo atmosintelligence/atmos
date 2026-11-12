@@ -1,75 +1,71 @@
 'use client';
 
 import { useAnalysis, analysisGate } from '../../useAnalysis';
-import { getColStats, scaleColor, tdBase } from '../tableUtils';
-import Stat        from '@/components/dashboard/Stat';
-import TableWrapper from '@/components/dashboard/TableWrapper';
-import OptCard      from '@/components/dashboard/OptCard';
-import TrendsChart  from '@/components/dashboard/charts/TrendsChart';
+import PageHeader      from '@/components/dashboard/PageHeader';
+import Stat            from '@/components/dashboard/Stat';
+import TableWrapper    from '@/components/dashboard/TableWrapper';
+import Recommendations from '@/components/dashboard/Recommendations';
+import BarSeries       from '@/components/dashboard/charts/BarSeries';
+import { C }           from '@/components/dashboard/charts/ChartConfig';
+
+const hourLabel = h => `${h % 12 || 12} ${h >= 12 ? 'PM' : 'AM'}`;
 
 export default function TrendsPage() {
-  const { data, status, selectedId, refreshKey } = useAnalysis('trends');
+  const { data, status } = useAnalysis('trends');
   const gate = analysisGate(status, data);
   if (gate) return gate;
 
-  const { trend1, trend2, avgPowerThisWeek, avgPowerLastWeek, dailyBreakdown, optimizations } = data;
+  const { trend1, trend2, dailyBreakdown, optimizations } = data;
+  const change = trend1 ? Number(trend1.changePct) : null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-      <div className="dash-greeting">
-        <div className="dash-greeting-name">Trends & Predictions</div>
-        <div className="dash-greeting-sub">Week-over-week consumption trends, predictive degradation signals, and daily energy breakdowns.</div>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', width: '100%' }}>
+      <PageHeader title="Trends" sub="Is waste going up or down, and when does it happen? Avoidable energy is what the rules flagged, so these are estimates." />
 
-      {optimizations.length > 0 ? (
-        <div>
-          <div className="dash-section-title">Recommendations</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            {optimizations.map((opt, i) => <OptCard key={i} opt={opt} />)}
-          </div>
-        </div>
-      ) : (
-        <div className="dash-empty">No notable trends detected. Consumption appears stable.</div>
-      )}
-
-      <div>
-        <div className="dash-section-title">Week comparison</div>
+      <section aria-label="Summary">
         <div className="dash-grid">
-          <Stat label="This week avg power" value={`${avgPowerThisWeek.toFixed(0)} W`} />
-          <Stat label="Last week avg power" value={`${avgPowerLastWeek.toFixed(0)} W`} />
-          <Stat label="Week-on-week change" value={trend1 ? `${trend1.changePct > 0 ? '+' : ''}${trend1.changePct}%` : '—'} sub={trend1?.rising ? 'Above 8% threshold' : 'Within normal range'} />
-          {trend2 && <Stat label="Degradation rate" value={`${trend2.slope} W/day`} sub={`R² = ${trend2.r2}`} />}
+          <Stat icon="zap"           tone="#ef4444" label="Avoidable this week" value={trend1 ? `${trend1.thisKwh} kWh` : '—'} sub={trend1 ? `Last week: ${trend1.lastKwh} kWh` : 'Needs 5 days of data in both weeks'} />
+          <Stat icon="trendsAnalysis" tone={change != null && change > 0 ? '#ef4444' : '#16a34a'} label="Week on week" value={change != null ? `${change > 0 ? '+' : ''}${change}%` : '—'} sub={trend1 ? (trend1.rising ? 'More waste than last week' : trend1.falling ? 'Less waste than last week' : 'About the same') : undefined} />
+          <Stat icon="clock"         tone="#8b5cf6" label="Waste peaks around" value={trend2 ? hourLabel(trend2.hour) : '—'} sub={trend2 ? `${trend2.share}% of the waste happens in that hour` : 'No clear peak yet'} />
         </div>
-      </div>
+      </section>
 
-      <div>
-        <div className="dash-section-title">Graphs</div>
-        <TrendsChart
-          key={`${selectedId}-${refreshKey}`}
-          dailyBreakdown={dailyBreakdown}
-          avgPowerThisWeek={avgPowerThisWeek}
-          avgPowerLastWeek={avgPowerLastWeek}
+      <section aria-label="Graphs" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <BarSeries
+          title="Avoidable energy by day"
+          subtitle="Energy the rules found being used for nothing, over the last 7 days."
+          summary="Bar chart of estimated avoidable kilowatt-hours for each of the last seven days."
+          data={dailyBreakdown} xKey="date" unit=" kWh" decimals={2}
+          bars={[{ key: 'wasteKwh', name: 'Avoidable (kWh)', color: C.waste }]}
         />
-      </div>
+        <BarSeries
+          title="Occupied and empty hours"
+          subtitle="How the room was used each day. More empty hours with the same waste means devices are being left on."
+          summary="Stacked bar chart of occupied and empty hours for each of the last seven days."
+          data={dailyBreakdown} xKey="date" unit=" h"
+          bars={[
+            { key: 'occupiedH', name: 'Occupied', color: C.brand, stack: 'a' },
+            { key: 'emptyH',    name: 'Empty',    color: C.muted, stack: 'a' },
+          ]}
+        />
+      </section>
 
-      <div>
-        <div className="dash-section-title">Daily breakdown: Last 7 days</div>
-        <TableWrapper headers={['Date', 'Avg power', 'Energy', 'Readings']}>
-          {(() => {
-            const powerStats   = getColStats(dailyBreakdown, 'avgPower');
-            const kwhStats     = getColStats(dailyBreakdown, 'kwh');
-            const readingStats = getColStats(dailyBreakdown, 'readings');
-            return dailyBreakdown.map((d, i) => (
-              <tr key={i} style={{ borderBottom: i < dailyBreakdown.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
-                <td style={tdBase({ color: '#737373' })}>{d.date}</td>
-                <td style={tdBase(scaleColor(d.avgPower, powerStats))}>{d.avgPower} W</td>
-                <td style={tdBase(scaleColor(d.kwh, kwhStats))}>{d.kwh} kWh</td>
-                <td style={tdBase(scaleColor(d.readings, readingStats))}>{d.readings}</td>
-              </tr>
-            ));
-          })()}
+      <section aria-labelledby="daily-title">
+        <div className="dash-section-title" id="daily-title">Last 7 days</div>
+        <TableWrapper headers={['Day', 'Occupied', 'Empty', 'Avoidable energy', 'Readings']} caption="Daily breakdown">
+          {[...dailyBreakdown].reverse().map(d => (
+            <tr key={d.date}>
+              <td>{d.date}</td>
+              <td>{d.occupiedH} h</td>
+              <td>{d.emptyH} h</td>
+              <td>{d.wasteKwh.toFixed(2)} kWh</td>
+              <td>{d.readings}</td>
+            </tr>
+          ))}
         </TableWrapper>
-      </div>
+      </section>
+
+      <Recommendations items={optimizations} empty="No notable trends yet. Check back after a week or two of readings." />
     </div>
   );
 }

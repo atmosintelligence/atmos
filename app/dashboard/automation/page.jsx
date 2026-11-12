@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useDevice } from '../DeviceContext';
+import Select from '@/components/dashboard/Select';
+import PageHeader from '@/components/dashboard/PageHeader';
+import { getDemoSmartDevices } from '@/lib/demo';
 
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -47,69 +50,24 @@ function json(method, body) {
   return { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
 }
 
-function Dropdown({ labelledBy, value, options, onChange }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const selected = options.find(o => o.value === value) ?? options[0];
+const ROLE_NOUN = { light: 'Lights', fan: 'Fan', ac: 'AC' };
 
-  useEffect(() => {
-    if (!open) return;
-    function close(e) {
-      if (!ref.current?.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
-
-  function onKeyDown(e) {
-    if (e.key === 'Escape') {
-      setOpen(false);
-    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const i    = options.findIndex(o => o.value === value);
-      const step = e.key === 'ArrowDown' ? 1 : options.length - 1;
-      onChange(options[(i + step) % options.length].value);
-    }
+// One option per kind of appliance the unit has found. Rules act on every device of that kind.
+function applianceOptions(smartDevices) {
+  const byRole = new Map();
+  for (const d of smartDevices) {
+    const role = d.role_override || d.role;
+    if (!TARGET_LABEL[role] || d.managed === false) continue;
+    byRole.set(role, [...(byRole.get(role) ?? []), d]);
   }
-
-  return (
-    <div className="dash-dropdown auto-dropdown" ref={ref} onKeyDown={onKeyDown}>
-      <button
-        type="button"
-        className={`dash-dropdown-trigger select-none ${open ? 'open' : ''}`}
-        onClick={() => setOpen(o => !o)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-labelledby={labelledBy}
-      >
-        <span className="dash-dropdown-trigger-text">{selected.label}</span>
-        <svg className="dash-dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="dash-dropdown-menu" role="listbox" aria-labelledby={labelledBy}>
-          {options.map(o => (
-            <div
-              key={o.value}
-              role="option"
-              aria-selected={o.value === value}
-              className={`dash-dropdown-option ${o.value === value ? 'active' : ''}`}
-              onClick={() => { onChange(o.value); setOpen(false); }}
-            >
-              <span>{o.label}</span>
-              {o.value === value && (
-                <svg className="dash-dropdown-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return TARGETS.filter(t => byRole.has(t.value)).map(t => {
+    const list = byRole.get(t.value);
+    return {
+      value: t.value,
+      label: list.length === 1 ? list[0].name : `${ROLE_NOUN[t.value]} (${list.length} devices)`,
+      hint:  list.length === 1 ? `${t.label}${list[0].reachable === false ? ', not reachable right now' : ''}` : list.map(d => d.name).join(', '),
+    };
+  });
 }
 
 export default function AutomationPage() {
@@ -124,6 +82,7 @@ export default function AutomationPage() {
   const [saving, setSaving]       = useState(false);
   const [planning, setPlanning]   = useState(false);
   const [message, setMessage]     = useState(null);
+  const [smart, setSmart]       = useState(null);
   const formRef  = useRef(null);
   const demoSeq  = useRef(1);
 
@@ -145,6 +104,26 @@ export default function AutomationPage() {
 
     return () => { cancelled = true; };
   }, [selectedId, isDemo, refreshKey]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (isDemo) { setSmart(getDemoSmartDevices()); return; }
+    let cancelled = false;
+    setSmart(null);
+    request(`/api/devices/smart?deviceId=${encodeURIComponent(selectedId)}`)
+      .then(data => { if (!cancelled) setSmart(data.smartDevices ?? []); })
+      .catch(() => { if (!cancelled) setSmart([]); });
+    return () => { cancelled = true; };
+  }, [selectedId, isDemo]);
+
+  // Keep the chosen appliance among the ones this unit really has.
+  useEffect(() => {
+    if (!smart) return;
+    const options = applianceOptions(smart);
+    if (options.length && !options.some(o => o.value === form.target)) {
+      setForm(f => ({ ...f, target: options[0].value }));
+    }
+  }, [smart]);
 
   function resetForm() {
     setForm(EMPTY_FORM);
@@ -247,6 +226,9 @@ export default function AutomationPage() {
       : <div className="dash-empty" style={{ border: 'none' }}>Loading automation...</div>;
   }
 
+  const appliances = applianceOptions(smart ?? []);
+  const noSmart    = smart !== null && appliances.length === 0;
+  const targetOptions = appliances.length ? appliances : TARGETS;
   const today    = new Date().getDay();
   const aiCount  = schedules.filter(r => r.source === 'ai').length;
   const byDay    = day => schedules
@@ -255,12 +237,10 @@ export default function AutomationPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
-      <div className="dash-greeting">
-        <div className="dash-greeting-name">Automation</div>
-        <div className="dash-greeting-sub">
-          Atmos does not only watch. Set when your lights, fan and AC should switch on or off, or let AI plan it from how your room is used. The sensor unit carries the schedule out by itself.
-        </div>
-      </div>
+      <PageHeader
+        title="Automation"
+        sub="Choose when your smart devices turn on or off, or let AI plan it from how the room is used. Atmos sends the schedule to your sensor unit, which switches the devices for you."
+      />
 
       {message && (
         <div
@@ -285,13 +265,19 @@ export default function AutomationPage() {
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <span className="auto-field-label" id="auto-target-label">Appliance</span>
-              <Dropdown
-                labelledBy="auto-target-label"
-                value={form.target}
-                options={TARGETS}
+              <span className="auto-field-label">Appliance</span>
+              <Select
+                label="Appliance"
+                value={targetOptions.some(o => o.value === form.target) ? form.target : targetOptions[0].value}
+                options={targetOptions}
+                disabled={smart === null}
                 onChange={v => setForm(f => ({ ...f, target: v }))}
               />
+              {noSmart && (
+                <span className="hint" style={{ display: 'block', marginTop: '0.35rem', maxWidth: '16rem' }}>
+                  No smart devices found yet. Your unit lists them here once it finds plugs or switches on your Wi-Fi.
+                </span>
+              )}
             </div>
 
             <div>

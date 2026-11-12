@@ -1,15 +1,9 @@
-const GROUP_COLORS = {
-  Lighting: 'bg-yellow-500/10 text-yellow-500',
-  HVAC:     'bg-blue-400/10 text-blue-400',
-  Humidity: 'bg-blue-400/10 text-blue-400',
-  Power:    'bg-red-500/10 text-red-500',
-  Trends:   'bg-purple-400/10 text-purple-400',
-};
+'use client';
 
-const SEVERITY_BORDER = {
-  critical: 'text-red-500 bg-red-500/8 border-red-500/20',
-  warning:  'text-yellow-500 bg-yellow-500/8 border-yellow-500/20',
-  info:     'text-blue-400 bg-blue-400/8 border-blue-400/20',
+import Icon from '@/components/Icon';
+
+const GROUP_ICON = {
+  Lighting: 'lightbulb', HVAC: 'ac', Humidity: 'droplet', Standby: 'plug', Power: 'plug', Trends: 'trendsAnalysis', General: 'info',
 };
 
 function formatReadingTime(value) {
@@ -20,22 +14,33 @@ function formatReadingTime(value) {
     .replace('pm', 'PM');
 }
 
-export default function OptCard({ opt }) {
+// One recommendation. Pass onAcknowledge to show a "Mark as done" button: acknowledged
+// recommendations are what count as savings on the Overview.
+export default function OptCard({ opt, onAcknowledge, acknowledged = false }) {
   const readingTime = formatReadingTime(opt.timestamp);
+  const saving = opt.saving?.inr != null ? Number(opt.saving.inr) : null;
 
   return (
-    <div className={`dash-opt-card ${opt.severity} ${SEVERITY_BORDER[opt.group]}`}>
-      <div className="dash-opt-meta">
-        <span className={`dash-opt-badge ${GROUP_COLORS[opt.group] ?? 'bg-neutral-500/10 text-neutral-500'} text-xs font-semibold px-2 py-0.5 rounded-full`}>
+    <article className={`dash-opt-card ${opt.severity}${acknowledged ? ' acked' : ''}`}>
+      <div className="dash-opt-head">
+        <span className={`dash-opt-badge ${opt.group}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+          <Icon name={GROUP_ICON[opt.group] ?? 'info'} size={12} strokeWidth={2.25} />
           {opt.group}
         </span>
-        <span className="dash-opt-rule">{opt.title}</span>
+        <h3 className="dash-opt-title">{opt.title}</h3>
         {readingTime && <span className="dash-opt-time" title="Time of the sensor reading">{readingTime}</span>}
       </div>
       <p className="dash-opt-message">{opt.message}</p>
-      {opt.saving && (
-        <p className="dash-opt-saving">Estimated saving: ₹{opt.saving.inr}{opt.saving.kwh ? ` · ${opt.saving.kwh} kWh` : ''}</p>
-      )}
-    </div>
+      <div className="dash-opt-foot">
+        <span className="dash-opt-saving">
+          {saving ? `Estimated saving: ₹${saving.toFixed(saving < 10 ? 2 : 0)}` : ''}
+        </span>
+        {onAcknowledge && (
+          acknowledged
+            ? <span className="dash-opt-saving" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Icon name="check" size={14} /> Done</span>
+            : <button type="button" className="dash-btn ghost sm" onClick={onAcknowledge}><Icon name="check" size={14} /> Mark as done</button>
+        )}
+      </div>
+    </article>
   );
 }

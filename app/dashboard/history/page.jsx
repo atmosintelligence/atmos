@@ -1,81 +1,74 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDevice } from '../DeviceContext';
 import { fetchEngine } from '@/lib/engineFetch';
-import { getColStats, scaleColor, fmtDate } from '../analysis/tableUtils';
+import { fmtDate } from '../analysis/tableUtils';
+import PageHeader   from '@/components/dashboard/PageHeader';
+import Segmented    from '@/components/dashboard/Segmented';
+import TableWrapper from '@/components/dashboard/TableWrapper';
 
-const COLS = [
-  { key: 'timestamp',   label: 'Timestamp',  unit: null  },
-  { key: 'temperature', label: 'Temp',        unit: '°C'  },
-  { key: 'humidity',    label: 'Humidity',    unit: '%'   },
-  { key: 'power',       label: 'Power',       unit: 'W'   },
-  { key: 'energy',      label: 'Energy',      unit: 'kWh' },
-  { key: 'voltage',     label: 'Voltage',     unit: 'V'   },
-  { key: 'light',       label: 'Light',       unit: 'lux' },
-  { key: 'occupancy',   label: 'Occupancy',   unit: null  },
+const PAGE = 50;
+const RANGES = [
+  { value: 1,  label: '24 hours' },
+  { value: 7,  label: '7 days' },
+  { value: 30, label: '30 days' },
 ];
 
+const isYes = v => v === true || v === 'true' || v === 1 || v === '1';
+
 export default function HistoryPage() {
-  const {
-    selectedId,
-    refreshKey,
-    getCached,
-    setCached,
-    isDemo,
-    getDemoReadings,
-  } = useDevice();
-  const [rows, setRows]                 = useState([]);
-  const [status, setStatus]             = useState('loading');
+  const { selectedId, refreshKey, getCached, setCached, isDemo, getDemoReadings, nameOf } = useDevice();
+  const [rows, setRows]       = useState([]);
+  const [status, setStatus]   = useState('loading');
+  const [days, setDays]       = useState(1);
+  const [shown, setShown]     = useState(PAGE);
   const [clearing, setClearing]         = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
   useEffect(() => {
     if (!selectedId) return;
+    const sortDesc = list => [...list].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
     if (isDemo) {
       const source = getDemoReadings(selectedId) ?? [];
-
-      const sorted = [...source].sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-      );
-
-      setRows(sorted);
-      setStatus('ready');
+      setRows(sortDesc(source));
+      setStatus(source.length ? 'ready' : 'no-data');
       return;
     }
 
     let cancelled = false;
-    const cacheKey = `history-${selectedId}`;
-    const cached = getCached(cacheKey);
+    const key = `history-${selectedId}`;
+    const cached = getCached(key);
+    if (cached) { setRows(cached.rows); setStatus(cached.rows.length ? 'ready' : 'no-data'); return; }
 
-    if (cached) {
-      setRows(cached.rows);
-      setStatus('ready');
-      return;
-    }
-
-    async function load() {
+    (async () => {
       setStatus('loading');
-      let readings;
       try {
-        ({ readings } = await fetchEngine({ isDemo, deviceId: selectedId }));
+        const { readings } = await fetchEngine({ isDemo, deviceId: selectedId });
+        if (cancelled) return;
+        const sorted = sortDesc(readings ?? []);
+        setRows(sorted);
+        setCached(key, { rows: sorted });
+        setStatus(sorted.length ? 'ready' : 'no-data');
       } catch {
         if (!cancelled) setStatus('error');
-        return;
       }
-      if (cancelled) return;
-      if (!readings?.length) { setRows([]); setStatus('no-data'); return; }
-      const sorted = [...readings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setRows(sorted);
-      setCached(cacheKey, { rows: sorted });
-      setStatus('ready');
-    }
-
-    load();
+    })();
     return () => { cancelled = true; };
-  }, [selectedId, refreshKey]);
+  }, [selectedId, refreshKey, isDemo]);
 
-  async function handleClearHistory() {
+  useEffect(() => { setShown(PAGE); }, [days, selectedId]);
+
+  // Ranges are measured back from the newest reading, so old demo data still shows.
+  const visible = useMemo(() => {
+    if (!rows.length) return [];
+    const newest = new Date(rows[0].timestamp).getTime();
+    const from = newest - days * 86400000;
+    return rows.filter(r => new Date(r.timestamp).getTime() >= from);
+  }, [rows, days]);
+
+  async function clearHistory() {
     setClearing(true);
     const res = await fetch('/api/devices/clear-history', {
       method: 'POST',
@@ -84,98 +77,59 @@ export default function HistoryPage() {
     });
     setClearing(false);
     setConfirmClear(false);
-    if (res.ok) { setRows([]); setStatus('no-data'); }
+    if (res.ok) { setRows([]); setCached(`history-${selectedId}`, { rows: [] }); setStatus('no-data'); }
   }
 
-  const colStats = {};
-  COLS.slice(1).forEach(c => {
-    if (c.key !== 'occupancy') colStats[c.key] = getColStats(rows, c.key);
-  });
+  const actions = rows.length > 0 && !isDemo && (
+    confirmClear ? (
+      <>
+        <button type="button" className="dash-btn danger" onClick={clearHistory} disabled={clearing}>{clearing ? 'Clearing...' : 'Yes, delete readings'}</button>
+        <button type="button" className="dash-btn ghost" onClick={() => setConfirmClear(false)}>Cancel</button>
+      </>
+    ) : (
+      <button type="button" className="dash-btn ghost" onClick={() => setConfirmClear(true)}>Delete history</button>
+    )
+  );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-      <div className="dash-greeting">
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <div className="dash-greeting-name">History</div>
-            <div className="dash-greeting-sub">All recorded readings for the selected device, latest first.</div>
-          </div>
-          {rows.length > 0 && (
-            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, marginTop: '0.25rem' }}>
-              {!confirmClear ? (
-                <button
-                  onClick={() => setConfirmClear(true)}
-                  disabled={isDemo}
-                  style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.4rem 1rem', borderRadius: '0.5rem', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer' }}
-                >
-                  Forget history
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={handleClearHistory}
-                    disabled={clearing}
-                    style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.4rem 1rem', borderRadius: '0.5rem', background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer', opacity: clearing ? 0.6 : 1 }}
-                  >
-                    {clearing ? 'Clearing...' : 'Confirm'}
-                  </button>
-                  <button
-                    onClick={() => setConfirmClear(false)}
-                    style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.4rem 1rem', borderRadius: '0.5rem', background: 'rgba(0,0,0,0.06)', color: '#737373', border: 'none', cursor: 'pointer' }}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
+      <PageHeader
+        title="History"
+        sub={`Every reading ${nameOf(selectedId)} has sent, newest first. Atmos sensors report temperature, humidity, light and whether the room is occupied.`}
+        actions={actions}
+      />
 
-      {status === 'loading' && <div className="dash-empty" style={{ border: 'none' }}>Loading history...</div>}
-      {status === 'error'   && <div className="dash-empty" style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}>Failed to load history.</div>}
-      {status === 'no-data' && <div className="dash-empty">No history yet for this device.</div>}
+      {status === 'loading' && <div className="dash-empty" style={{ border: 'none' }} aria-busy="true">Loading history...</div>}
+      {status === 'error'   && <div className="dash-error" role="alert">We could not load the history. Try the refresh button.</div>}
+      {status === 'no-data' && <div className="dash-empty">No readings yet. They appear here a few minutes after the device is powered on.</div>}
 
       {status === 'ready' && (
-        <div style={{ overflowX: 'auto', borderRadius: '0.875rem', border: '1px solid rgba(0,0,0,0.08)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
-                {COLS.map(c => (
-                  <th key={c.key} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#737373', whiteSpace: 'nowrap', background: 'rgba(0,0,0,0.02)' }}>
-                    {c.label}
-                  </th>
-                ))}
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <Segmented label="Time range" value={days} options={RANGES} onChange={setDays} />
+            <span className="dash-card-sub" style={{ margin: 0 }}>{visible.length.toLocaleString('en-IN')} readings</span>
+          </div>
+
+          <TableWrapper headers={['Time', 'Temperature', 'Humidity', 'Light', 'Occupancy']} caption="Sensor readings">
+            {visible.slice(0, shown).map((r, i) => (
+              <tr key={`${r.timestamp}-${i}`}>
+                <td>{fmtDate(r.timestamp)}</td>
+                <td>{r.temperature != null ? `${r.temperature} °C` : '—'}</td>
+                <td>{r.humidity != null ? `${r.humidity} %` : '—'}</td>
+                <td>{r.light != null ? `${r.light} lux` : '—'}</td>
+                <td>{isYes(r.occupancy) ? 'Occupied' : 'Empty'}</td>
               </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => {
-                const isOccupancy = (key) => key === 'occupancy';
-                const isYes = row.occupancy === 'true' || row.occupancy === true;
-                return (
-                  <tr key={i} style={{ borderBottom: i < rows.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
-                    <td style={{ padding: '0.6rem 1rem', whiteSpace: 'nowrap', color: '#737373' }}>{fmtDate(row.timestamp)}</td>
-                    {COLS.slice(1).map(c => {
-                      const occ = isOccupancy(c.key);
-                      const occStyle = occ ? { color: isYes ? 'rgb(240,240,240)' : 'rgb(160,160,160)' } : {};
-                      const valStyle = !occ && row[c.key] != null ? scaleColor(row[c.key], colStats[c.key]) : {};
-                      return (
-                        <td key={c.key} style={{ padding: '0.6rem 1rem', whiteSpace: 'nowrap', ...occStyle, ...valStyle }}>
-                          {occ
-                            ? (isYes ? 'Yes' : 'No')
-                            : row[c.key] != null
-                              ? `${row[c.key]}${c.unit ? ' ' + c.unit : ''}`
-                              : '—'
-                          }
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </TableWrapper>
+
+          {shown < visible.length && (
+            <div style={{ textAlign: 'center' }}>
+              <button type="button" className="dash-btn ghost" onClick={() => setShown(s => s + PAGE)}>
+                Show more ({(visible.length - shown).toLocaleString('en-IN')} left)
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
