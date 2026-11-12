@@ -828,6 +828,12 @@ textarea:disabled {
   background: rgba(128,128,128,0.12);
   border: 1px solid rgba(128,128,128,0.18);
 }
+/* Modifier to suppress the container background and border */
+.seg.seg--transparent {
+  background: transparent;
+  border-color: transparent;
+  padding: 0;
+}
 .seg button {
   font-size: 0.72rem;
   font-weight: 600;

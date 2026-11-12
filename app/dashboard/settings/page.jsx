@@ -147,7 +147,7 @@ export default function SettingsPage() {
       </Card>
 
       <Card title="Appearance">
-        <Segmented label="Theme" value={theme} onChange={setThemeTo} options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} />
+        <Segmented label="Theme" value={theme} onChange={setThemeTo} options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} transparent />
       </Card>
 
       <Card title="How recommendations are written" sub="AI-based recommendations are more specific to your room. Rule-based ones are simpler and always predictable.">

@@ -51,7 +51,6 @@ function Sidebar({ refreshing, open, onNavigate }) {
   const { devices, selectedId, setSelectedId, selectedDevice, loadingDevices, triggerRefresh, weatherError } = useDevice();
   const { isDemo } = useDemo();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [linking, setLinking]           = useState(false);
 
   useEffect(() => {
     function onDown(e) { if (!e.target.closest('.dash-dropdown')) setDropdownOpen(false); }
@@ -128,10 +127,6 @@ function Sidebar({ refreshing, open, onNavigate }) {
           </button>
         </div>
 
-        <button type="button" className="dash-btn ghost sm" style={{ width: '100%', marginTop: '0.625rem' }} onClick={() => setLinking(true)}>
-          <Icon name="plus" size={15} /> Link new device
-        </button>
-
         {selectedDevice?.last_contacted_at && (
           <div style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: '#a3a3a3' }}>
             Last heard from: {formatDate(selectedDevice.last_contacted_at)}
@@ -185,8 +180,6 @@ function Sidebar({ refreshing, open, onNavigate }) {
         )}
         <Link href="/privacy" className="dash-side-link select-none">Privacy Policy</Link>
       </div>
-
-      {linking && <LinkDeviceModal onClose={() => setLinking(false)} />}
     </aside>
   );
 }
