@@ -428,7 +428,7 @@ export default function AlertsPage() {
                   {a.when && (
                     <>
                       <span style={{ fontSize: '0.7rem', color: '#737373', marginLeft: 'auto' }} title="Time of the sensor reading">
-                        Reading: {fmtDate(a.when)}
+                        {fmtDate(a.when)}
                       </span>
                       <span style={{ fontSize: '0.7rem', color: '#a3a3a3' }}>
                         {timeAgo(a.when)}

@@ -30,7 +30,7 @@ export default function OptCard({ opt }) {
           {opt.group}
         </span>
         <span className="dash-opt-rule">{opt.title}</span>
-        {readingTime && <span className="dash-opt-time" title="Time of the sensor reading">Reading: {readingTime}</span>}
+        {readingTime && <span className="dash-opt-time" title="Time of the sensor reading">{readingTime}</span>}
       </div>
       <p className="dash-opt-message">{opt.message}</p>
       {opt.saving && (
