@@ -123,7 +123,7 @@ export default function OverviewPage() {
 
       {latest && (
         <section aria-labelledby="now-title">
-          <div className="dash-section-title" id="now-title">The room right now</div>
+          <div className="dash-section-title" id="now-title">Last captured readings</div>
           <div className="dash-grid">
             <Stat icon="thermometer" tone="#3b82f6" label="Temperature" value={latest.temperature != null ? `${latest.temperature}°C` : '—'} />
             <Stat icon="droplet"     tone="#8b5cf6" label="Humidity"    value={latest.humidity != null ? `${latest.humidity}%` : '—'} />
