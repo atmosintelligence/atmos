@@ -7,6 +7,7 @@ const eyebrow = (color = '#4ADE80', extra = {}) => ({
 });
 const h2Style = { fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '1.25rem' };
 const bodyStyle = { color: '#737373', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.25rem' };
+const cardStyle = { padding: '1.75rem', borderRadius: '1rem', border: '1px solid rgba(128,128,128,0.12)', background: 'rgba(255,255,255,0.01)' };
 
 function Bullets({ items, color }) {
   return items.map((pt, i) => (
@@ -26,6 +27,56 @@ function Panel({ color, rgb, title, items }) {
   );
 }
 
+const tables = [
+  { name: 'profiles',             access: 'Read and edit own row',            blocked: 'Other accounts. Changing id, email or username',  tag: 'Own row',     color: '#4ADE80' },
+  { name: 'subscriptions',        access: 'Read own plan, change own plan',   blocked: 'Other accounts. Billing dates of others',        tag: 'Own row',     color: '#4ADE80' },
+  { name: 'alerts',               access: 'Read own alerts',                  blocked: 'Writing or editing from the browser',            tag: 'Read only',   color: '#60a5fa' },
+  { name: 'alert_preferences',    access: 'Read own settings',                blocked: 'Writing from the browser',                       tag: 'Read only',   color: '#60a5fa' },
+  { name: 'automation_schedules', access: 'Read own rules',                   blocked: 'Writing from the browser',                       tag: 'Read only',   color: '#60a5fa' },
+  { name: 'devices',              access: 'Nothing',                          blocked: 'Everything. This table holds device private keys', tag: 'Server only', color: '#ef4444' },
+  { name: 'readings',             access: 'Nothing',                          blocked: 'Everything',                                     tag: 'Server only', color: '#ef4444' },
+  { name: 'automation_logs',      access: 'Nothing',                          blocked: 'Everything',                                     tag: 'Server only', color: '#ef4444' },
+];
+
+const extras = [
+  {
+    title: 'Two locks, not one',
+    icon:  '🔒',
+    color: '#4ADE80',
+    body:  'Our API routes check who is asking and filter every query by that account. RLS adds a second lock inside the database itself, so even a mistake in browser code cannot reach another account\'s rows.',
+  },
+  {
+    title: 'No default access',
+    icon:  '🚪',
+    color: '#ef4444',
+    body:  'The public database key can do nothing on its own. Anonymous visitors have no table privileges, and signed-in users get only the privileges each table needs.',
+  },
+  {
+    title: 'Fixed identity',
+    icon:  '🪪',
+    color: '#a78bfa',
+    body:  'Editing is allowed per column. You can change your display name, location and API key, but not your id, email or username, which tie your devices and data to you.',
+  },
+  {
+    title: 'Safe login lookup',
+    icon:  '🔑',
+    color: '#60a5fa',
+    body:  'Logging in with a username used to need a readable profiles table. It now uses one small database function that returns a single email and nothing else, so the table stays closed.',
+  },
+  {
+    title: 'Validated at the door',
+    icon:  '✅',
+    color: '#eab308',
+    body:  'The database rejects impossible values, such as coordinates off the globe, unknown plans, bad alert severities and invalid schedule actions, even if a request skips our own checks.',
+  },
+  {
+    title: 'Locked functions',
+    icon:  '🧰',
+    color: '#4ADE80',
+    body:  'Account deletion can only be called by a signed-in user, and our database functions use a fixed search path so they cannot be tricked into running other code.',
+  },
+];
+
 const layers = [
   {
     layer:   'Layer 1: Sensor to server',
@@ -35,24 +86,24 @@ const layers = [
     future:  'Hash device keys at rest, allow keys to be rotated from the dashboard, and add certificate pinning on the unit.',
   },
   {
-    layer:   'Layer 2: Storage',
+    layer:   'Layer 2: Database',
     icon:    '🗄️',
     color:   '#60a5fa',
-    current: 'Everything lives in Supabase, our database and login provider. Supabase encrypts customer data at rest with AES-256 and in transit with TLS. Our server holds the privileged database key as a private environment variable, and every query it runs is limited to the signed-in account.',
+    current: 'Supabase encrypts customer data at rest with AES-256 and in transit with TLS. Row-level security is on for all eight tables, the browser key has only the privileges listed above, and the privileged key lives only in a private server environment variable.',
     future:  'Field-level encryption for location coordinates, and a documented backup and restore routine.',
   },
   {
     layer:   'Layer 3: Dashboard and API',
     icon:    '🔐',
     color:   '#a78bfa',
-    current: 'Sign-in, passwords and sessions are handled by Supabase Auth, so Atmos never stores your password. The session is refreshed on every request. API access uses a Bearer key you create, replace or revoke yourself from the API tab.',
-    future:  'Store API keys hashed, add expiry dates, and rate-limit the API.',
+    current: 'Sign-in, passwords and sessions are handled by Supabase Auth, so Atmos never stores your password. The session is refreshed on every request. API access uses a Bearer key you create, replace or revoke yourself.',
+    future:  'Store API keys hashed, add expiry dates, rate-limit the API and login lookups, and move plan changes to the server once payments exist.',
   },
   {
     layer:   'Layer 4: AI recommendations',
     icon:    '🧠',
     color:   '#eab308',
-    current: 'Our rule engine runs on our own server. Only the short text-writing step goes to a hosted AI model (Groq), and it receives a limited set of data, listed below. Nothing is trained on your readings.',
+    current: 'Our rule engine runs on our own server. Only the short text-writing step goes to a hosted AI model (Groq), and it receives a limited set of data, listed below. Savings it quotes are recomputed by our code from capped inputs. Nothing is trained on your readings.',
     future:  'Add a per-account switch to turn the AI step off.',
   },
 ];
@@ -62,7 +113,7 @@ const aiCards = [
     title: 'What the AI receives',
     icon:  '📨',
     color: '#60a5fa',
-    body:  'The latest 24 readings (power, energy, voltage, temperature, humidity, light, occupancy), the rule engine\'s findings, your tariff, the country your coordinates fall in, and recent alert titles. It does not receive your name, email, username or device ID.',
+    body:  'The latest 24 readings, the rule engine\'s findings, your tariff, the country your coordinates fall in, and recent alert titles. It does not receive your name, email, username or device ID.',
   },
   {
     title: 'What Groq does with it',
@@ -74,23 +125,23 @@ const aiCards = [
     title: 'Rules decide, AI words it',
     icon:  '🔎',
     color: '#a78bfa',
-    body:  'Every finding starts as a deterministic rule on your readings, such as lights on in an empty room. The AI only rewrites it as a short recommendation in a fixed format. Anything that does not parse is discarded, and if the AI is down the engine\'s own text is shown.',
+    body:  'Every finding starts as a deterministic rule on your readings. The AI only rewrites it in a fixed format. Anything that does not parse is discarded, and if the AI is down the engine\'s own text is shown.',
   },
   {
     title: 'Guarded generation',
     icon:  '🛡️',
     color: '#ef4444',
-    body:  'Alert generation is authenticated, limited to one run per 30 seconds per account, skips titles already raised in the last hour, and respects your quiet hours. These checks run on the server, so a modified browser cannot skip them.',
+    body:  'Alert generation is authenticated, limited to one run per 30 seconds per account, skips titles already raised in the last hour, and respects your quiet hours. These checks run on the server.',
   },
 ];
 
 const principles = [
-  { principle: 'Collect little',       number: '01', color: '#4ADE80', desc: 'We store sensor readings, your profile, your tariff and your approximate location. We do not ask for anything we do not use.' },
-  { principle: 'Keep accounts apart',  number: '02', color: '#60a5fa', desc: 'API routes check who is asking, then filter every query by that account. One account cannot read another account\'s devices, readings or alerts.' },
+  { principle: 'Collect little',        number: '01', color: '#4ADE80', desc: 'We store sensor readings, your profile, your tariff and your approximate location. We do not ask for anything we do not use.' },
+  { principle: 'Keep accounts apart',   number: '02', color: '#60a5fa', desc: 'API routes check who is asking, and the database enforces the same boundary with row-level security.' },
   { principle: 'Location with consent', number: '03', color: '#a78bfa', desc: 'Your browser asks before sharing location at sign-up, you can type it in yourself, and you can change it any time in Settings.' },
-  { principle: 'Export anything',      number: '04', color: '#eab308', desc: 'Download your readings and recommendations as JSON or PDF from the Settings page whenever you like.' },
-  { principle: 'Delete anything',      number: '05', color: '#ef4444', desc: 'Clear a device\'s history, unlink a device, or delete your account from the dashboard. No support ticket needed.' },
-  { principle: 'No selling, no ads',   number: '06', color: '#4ADE80', desc: 'Your data is used to run your dashboard and alerts. It is not sold, and it is not used for advertising or profiling.' },
+  { principle: 'Export anything',       number: '04', color: '#eab308', desc: 'Download your readings and recommendations as JSON or PDF from the Settings page whenever you like.' },
+  { principle: 'Delete anything',       number: '05', color: '#ef4444', desc: 'Clear a device\'s history, unlink a device, or delete your account from the dashboard. No support ticket needed.' },
+  { principle: 'No selling, no ads',    number: '06', color: '#4ADE80', desc: 'Your data is used to run your dashboard and alerts. It is not sold, and it is not used for advertising or profiling.' },
 ];
 
 const standards = [
@@ -100,7 +151,7 @@ const standards = [
     region:   '🇮🇳 India',
     status:   'Aligning',
     color:    '#eab308',
-    relevance: 'India\'s data protection law. Consent for location, the ability to export and delete your data, and keeping the data we hold small are the parts we are building around first.',
+    relevance: 'India\'s data protection law. Consent for location, export and deletion of your data, and keeping the data we hold small are the parts we are building around first.',
   },
   {
     standard: 'GDPR',
@@ -121,11 +172,11 @@ const standards = [
 ];
 
 const controls = [
-  { where: 'API tab',        action: 'Revoke or regenerate your API key',  desc: 'The old key stops working straight away.',                          color: '#ef4444' },
-  { where: 'Settings',       action: 'Change your password',               desc: 'Needs your current password.',                                      color: '#eab308' },
-  { where: 'Devices',        action: 'Unlink a sensor',                    desc: 'Frees the device from your account.',                               color: '#60a5fa' },
-  { where: 'History',        action: 'Clear a device\'s readings',         desc: 'Export them first from Settings as JSON or PDF if you want a copy.', color: '#a78bfa' },
-  { where: 'Settings',       action: 'Delete your account',                desc: 'Removes your login and profile.',                                    color: '#4ADE80' },
+  { where: 'API tab',  action: 'Revoke or regenerate your API key', desc: 'The old key stops working straight away.',                           color: '#ef4444' },
+  { where: 'Settings', action: 'Change your password',              desc: 'Needs your current password.',                                       color: '#eab308' },
+  { where: 'Devices',  action: 'Unlink a sensor',                   desc: 'Frees the device from your account.',                                color: '#60a5fa' },
+  { where: 'History',  action: 'Clear a device\'s readings',        desc: 'Export them first from Settings as JSON or PDF if you want a copy.', color: '#a78bfa' },
+  { where: 'Settings', action: 'Delete your account',               desc: 'Removes your login and profile.',                                    color: '#4ADE80' },
 ];
 
 export default function CybersecurityPage() {
@@ -136,22 +187,22 @@ export default function CybersecurityPage() {
         <div className="hero-glow" />
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '740px' }}>
-          <div style={{ ...eyebrow('#4ADE80', { letterSpacing: '0.14em', marginBottom: '1.5rem' }) }}>
+          <div style={eyebrow('#4ADE80', { letterSpacing: '0.14em', marginBottom: '1.5rem' })}>
             Security & Privacy
           </div>
           <h1 className="font-heading" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.05, color: '#e8e8e8', marginBottom: '1.5rem' }}>
             Your building's data<br />is your data.<br />
-            <span style={{ color: '#4ADE80' }}>Full stop.</span>
+            <span style={{ color: '#4ADE80' }}>Locked in the database.</span>
           </h1>
-          <p style={{ fontSize: '1.05rem', color: '#737373', lineHeight: 1.8, maxWidth: '540px', margin: '0 auto 2.5rem' }}>
-            Atmos handles live energy readings, occupancy and an approximate location. This page explains plainly what we collect, where it lives, who can see it, and what is still on our to-do list.
+          <p style={{ fontSize: '1.05rem', color: '#737373', lineHeight: 1.8, maxWidth: '560px', margin: '0 auto 2.5rem' }}>
+            Atmos handles live energy readings, occupancy and an approximate location. Every table now sits behind row-level security, so the database itself refuses to show one account's data to another.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden', maxWidth: '540px', margin: '0 auto' }}>
             {[
-              { value: 'AES-256', label: 'Encrypted at rest, by Supabase', color: '#4ADE80' },
-              { value: 'TLS',     label: 'Encrypted in transit',           color: '#60a5fa' },
-              { value: 'Never',   label: 'Sold or used for ads',           color: '#ef4444' },
+              { value: '8 of 8',  label: 'Tables protected by row-level security', color: '#4ADE80' },
+              { value: 'AES-256', label: 'Encrypted at rest, by Supabase',         color: '#60a5fa' },
+              { value: 'Never',   label: 'Sold or used for ads',                   color: '#ef4444' },
             ].map((s, i) => (
               <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '1.25rem 1rem', textAlign: 'center' }}>
                 <div className="font-heading" style={{ fontSize: '1.3rem', fontWeight: 700, color: s.color, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>{s.value}</div>
@@ -191,6 +242,62 @@ export default function CybersecurityPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-pad section-border">
+        <div className="max-w-5xl mx-auto">
+          <div style={eyebrow('#4ADE80', { textAlign: 'center' })}>Row-level security</div>
+          <h2 className="font-heading" style={{ ...h2Style, textAlign: 'center', lineHeight: 1.2, marginBottom: '1rem' }}>
+            The database says no<br />before our code does.
+          </h2>
+          <p style={{ color: '#737373', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '600px', margin: '0 auto 3.5rem', textAlign: 'center' }}>
+            Row-level security (RLS) is a rule set inside the database. It decides, row by row, who may read or change data, whatever the application asks for. All eight Atmos tables have it switched on.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
+            <div className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '0.875rem 1.5rem', display: 'grid', gridTemplateColumns: '200px 100px 1fr 1fr', gap: '1.5rem' }}>
+              {['Table', 'Rule', 'What your browser can do', 'What is blocked'].map(h => (
+                <div key={h} style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#737373' }}>{h}</div>
+              ))}
+            </div>
+            {tables.map((t, i) => (
+              <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '1rem 1.5rem', display: 'grid', gridTemplateColumns: '200px 100px 1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#c0c0c0' }}>{t.name}</div>
+                <div>
+                  <span style={{ display: 'inline-block', fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.55rem', borderRadius: '9999px', background: t.color + '18', color: t.color, border: `1px solid ${t.color}30`, whiteSpace: 'nowrap' }}>{t.tag}</span>
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#737373', lineHeight: 1.6 }}>{t.access}</div>
+                <div style={{ fontSize: '0.78rem', color: '#737373', lineHeight: 1.6 }}>{t.blocked}</div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ fontSize: '0.75rem', color: '#555', lineHeight: 1.7, marginTop: '1.25rem', maxWidth: '640px' }}>
+            Our own server uses a privileged key that skips RLS so it can run your analysis and alerts. That is why every API route also checks who is asking and filters by that account. RLS protects the other path, the public browser key.
+          </p>
+        </div>
+      </section>
+
+      <section className="section-pad section-border">
+        <div className="max-w-5xl mx-auto">
+          <div style={eyebrow('#4ADE80', { textAlign: 'center' })}>Added safeguards</div>
+          <h2 className="font-heading" style={{ ...h2Style, textAlign: 'center', lineHeight: 1.2, marginBottom: '1rem' }}>
+            More than a switch.
+          </h2>
+          <p style={{ color: '#737373', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '560px', margin: '0 auto 3.5rem', textAlign: 'center' }}>
+            Turning RLS on is the start. These changes close the gaps around it.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            {extras.map((item, i) => (
+              <div key={i} style={cardStyle}>
+                <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{item.icon}</div>
+                <div className="font-heading" style={{ fontSize: '1rem', fontWeight: 700, color: item.color, marginBottom: '0.625rem', lineHeight: 1.25 }}>{item.title}</div>
+                <p style={{ fontSize: '0.78rem', color: '#737373', lineHeight: 1.75, margin: 0 }}>{item.body}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -238,7 +345,7 @@ export default function CybersecurityPage() {
                 We use your building's coordinates to fetch outdoor weather, compare your HVAC against the temperature outside, and give the AI some local context.
               </p>
               <p style={bodyStyle}>
-                A precise location tied to an occupancy pattern is more than a place, it is a routine. That is why we are open about exactly where the coordinates go.
+                A precise location tied to an occupancy pattern is more than a place, it is a routine. That is why we are open about exactly where the coordinates go. The database also rejects coordinates that are not real places on Earth.
               </p>
               <p style={{ ...bodyStyle, marginBottom: 0 }}>
                 They are never sold, and never used for advertising or profiling.
@@ -247,7 +354,7 @@ export default function CybersecurityPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <Panel color="#4ADE80" rgb="74,222,128" title="Where your coordinates go" items={[
-                'Our database, in your profile, as you entered or shared them',
+                'Our database, in your profile, readable only by you',
                 'Open-Meteo, from our server, to get current outdoor weather. The request carries coordinates only, with no account details',
                 'BigDataCloud, from our server, to turn the coordinates into a country name',
                 'Groq, inside the AI prompt, as a country name only',
@@ -274,7 +381,7 @@ export default function CybersecurityPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
             {aiCards.map((item, i) => (
-              <div key={i} style={{ padding: '1.75rem', borderRadius: '1rem', border: '1px solid rgba(128,128,128,0.12)', background: 'rgba(255,255,255,0.01)' }}>
+              <div key={i} style={cardStyle}>
                 <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{item.icon}</div>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: item.color, marginBottom: '0.5rem' }}>AI layer</div>
                 <div className="font-heading" style={{ fontSize: '1.05rem', fontWeight: 700, color: '#e8e8e8', marginBottom: '0.75rem', lineHeight: 1.25 }}>{item.title}</div>
@@ -313,7 +420,7 @@ export default function CybersecurityPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
             {principles.map((item, i) => (
-              <div key={i} style={{ padding: '1.75rem', borderRadius: '1rem', border: '1px solid rgba(128,128,128,0.12)', background: 'rgba(255,255,255,0.01)' }}>
+              <div key={i} style={cardStyle}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
                   <div style={{ fontSize: '0.62rem', fontWeight: 700, color: item.color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Practice</div>
                   <div className="font-heading" style={{ fontSize: '1.1rem', fontWeight: 700, color: 'rgba(128,128,128,0.2)' }}>{item.number}</div>
