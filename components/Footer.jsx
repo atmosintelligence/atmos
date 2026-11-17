@@ -28,6 +28,12 @@ export default function Footer() {
                 Pricing
               </Link>
               <Link
+                href="/pricing/subsidy"
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Subsidy Calculator
+              </Link>
+              <Link
                 href="/dashboard"
                 className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
               >

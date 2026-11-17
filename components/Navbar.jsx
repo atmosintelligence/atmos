@@ -11,7 +11,11 @@ const NAV_ITEMS = [
   { label: 'Home', href: '/' },
   {
     label: 'Pricing',
-    href: '/pricing'
+    href: '/pricing',
+    subTabs: [
+      { label: 'Plans', href: '/pricing', description: 'Simple, honest pricing' },
+      { label: 'Subsidy Calculator', href: '/pricing/subsidy', description: 'See what schemes can pay for' }
+    ],
   },
   {
     label: 'Our Future',
