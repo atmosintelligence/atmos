@@ -114,7 +114,7 @@ export default function OverviewPage() {
           <Stat icon="leaf" tone="#0d9488" label="CO₂ avoided" value={`${savings.co2Kg.toFixed(1)} kg`} sub="Using the India grid factor" />
           <Stat icon="tree" tone="#65a30d" label="Trees' worth" value={savings.trees} sub="A tree absorbs about 24 kg a year" />
         </div>
-        <p style={{ fontSize: '0.72rem', color: '#737373', marginTop: '0.625rem', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.625rem', lineHeight: 1.6 }}>
           {savings.count
             ? `Based on ${savings.count} recommendation${savings.count === 1 ? '' : 's'} you marked as done. These are estimates, not meter readings.`
             : 'Numbers appear here when you mark a recommendation as done. They are estimates, not meter readings.'}

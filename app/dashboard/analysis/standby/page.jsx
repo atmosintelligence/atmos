@@ -6,8 +6,8 @@ import PageHeader      from '@/components/dashboard/PageHeader';
 import Stat            from '@/components/dashboard/Stat';
 import TableWrapper    from '@/components/dashboard/TableWrapper';
 import Recommendations from '@/components/dashboard/Recommendations';
-import BarSeries       from '@/components/dashboard/charts/BarSeries';
 import { C }           from '@/components/dashboard/charts/ChartConfig';
+import { BarSeries } from '@/components/dashboard/charts/lazy';
 
 export default function StandbyPage() {
   const { data, status } = useAnalysis('standby');

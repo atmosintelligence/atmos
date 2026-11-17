@@ -8,6 +8,6 @@ export default function NavbarBorderOverride() {
   useEffect(() => {
     setForceBorder(true);
     return () => setForceBorder(false);
-  }, []);
+  }, [setForceBorder]);
   return null;
 }

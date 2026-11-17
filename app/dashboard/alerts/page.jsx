@@ -7,8 +7,8 @@ import PageHeader from '@/components/dashboard/PageHeader';
 import Stat from '@/components/dashboard/Stat';
 import OptCard from '@/components/dashboard/OptCard';
 import Segmented from '@/components/dashboard/Segmented';
-import BarSeries from '@/components/dashboard/charts/BarSeries';
 import { C } from '@/components/dashboard/charts/ChartConfig';
+import { BarSeries } from '@/components/dashboard/charts/lazy';
 
 const SEVERITIES = ['critical', 'warning', 'info'];
 const DEFAULT_PREFS = {
@@ -100,6 +100,7 @@ export default function AlertsPage() {
   const [severity, setSeverity] = useState('all');
   const [group, setGroup]     = useState('all');
   const [showSettings, setShowSettings] = useState(false);
+  const [today] = useState(() => Date.now());
   const alerts = cache?.[`alerts-${selectedId}`]?.alerts;
 
   useEffect(() => {
@@ -115,7 +116,7 @@ export default function AlertsPage() {
 
   useEffect(() => { if (alerts) setStatus('ready'); }, [alerts]);
 
-  const list = alerts ?? [];
+  const list = useMemo(() => alerts ?? [], [alerts]);
   const todo = list.filter(a => !a.acknowledged);
   const groups = useMemo(() => [...new Set(list.map(a => a.group_name))].filter(Boolean), [list]);
 
@@ -131,7 +132,7 @@ export default function AlertsPage() {
   const perDay = useMemo(() => {
     const days = [];
     for (let i = 13; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 86400000);
+      const d = new Date(today - i * 86400000);
       days.push({ key: dayLabel(d), day: dayLabel(d), critical: 0, warning: 0, info: 0 });
     }
     for (const a of list) {
@@ -139,7 +140,7 @@ export default function AlertsPage() {
       if (row && row[a.severity] != null) row[a.severity]++;
     }
     return days;
-  }, [list]);
+  }, [list, today]);
 
   if (status === 'loading') return <div className="dash-empty" style={{ border: 'none' }} aria-busy="true">Loading alerts...</div>;
   if (status === 'error')   return <div className="dash-error" role="alert">We could not load your alerts. Try the refresh button.</div>;
@@ -185,7 +186,7 @@ export default function AlertsPage() {
 
       <section aria-labelledby="log-title" style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
         <h2 id="log-title" className="dash-section-title" style={{ margin: 0 }}>
-          Alert log {shown.length > 0 && <span style={{ color: '#737373', fontWeight: 400 }}>({shown.length})</span>}
+          Alert log {shown.length > 0 && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({shown.length})</span>}
         </h2>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <Segmented label="Show" value={view} onChange={setView} options={[{ value: 'todo', label: 'To do' }, { value: 'done', label: 'Done' }, { value: 'all', label: 'All' }]} />

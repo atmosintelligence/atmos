@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Icon from './Icon';
 import { useNavbar } from './NavbarContext';
-import { getProfile, onAuthChange } from '@/lib/supabase';
 
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
@@ -98,6 +97,7 @@ function NavItem({ item, pathname }) {
               <Link
                 key={sub.href}
                 href={sub.href}
+                prefetch={false}
                 className="block rounded-lg px-3 py-2 transition-colors hover:bg-black/5 dark:hover:bg-white/8"
               >
                 <div className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
@@ -141,22 +141,33 @@ export default function Navbar() {
     };
     window.addEventListener('atmos:profileChanged', onProfileChange);
 
-    getProfile('display_name, username').then(data => { if (data) setProfile(data); });
-
     setIsDemoMode(
       localStorage.getItem('atmos:demoMode') === 'true'
     );
 
-    const stopAuthListener = onAuthChange(session => {
-      if (session) {
-        localStorage.removeItem('atmos:demoMode');
-        setIsDemoMode(false);
-      } else {
-        setProfile(null);
-      }
+    // The account library is large, so it loads once the page is idle, not before first paint.
+    let cancelled = false;
+    let stopAuthListener = () => {};
+    const whenIdle = window.requestIdleCallback ?? (fn => setTimeout(fn, 200));
+    const cancelIdle = window.cancelIdleCallback ?? clearTimeout;
+    const idleId = whenIdle(() => {
+      import('@/lib/supabase').then(({ getProfile, onAuthChange }) => {
+        if (cancelled) return;
+        getProfile('display_name, username').then(data => { if (data && !cancelled) setProfile(data); });
+        stopAuthListener = onAuthChange(session => {
+          if (session) {
+            localStorage.removeItem('atmos:demoMode');
+            setIsDemoMode(false);
+          } else {
+            setProfile(null);
+          }
+        });
+      });
     });
 
     return () => {
+      cancelled = true;
+      cancelIdle(idleId);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('atmos:themeChanged', onThemeChange);
       window.removeEventListener('atmos:profileChanged', onProfileChange);
@@ -196,7 +207,7 @@ export default function Navbar() {
               padding: '0.2rem 0.6rem',
               borderRadius: '9999px',
               background: 'rgba(74,222,128,0.1)',
-              color: '#4ADE80',
+              color: 'var(--text-accent)',
               border: '1px solid rgba(74,222,128,0.2)',
             }}
           >

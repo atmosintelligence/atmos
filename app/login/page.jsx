@@ -78,7 +78,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col">
+    <main id="main-content" className="min-h-dvh flex flex-col">
       <NavbarBorderOverride />
       <div className="flex-1 flex items-center justify-center px-6 pt-16">
         <div className="w-full max-w-sm">

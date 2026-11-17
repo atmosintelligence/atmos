@@ -11,6 +11,36 @@
   --color-primary-dark-hover: #14532d;
 }
 
+
+/* Text colours that stay readable in both themes (WCAG AA). Use these instead of hex values. */
+:root {
+  --text-heading: #171717;
+  --text-muted:   #5f5f5f;
+  --text-soft:    #6b6b6b;
+  --text-accent:  #15803D;
+  --text-blue:    #1d4ed8;
+  --text-violet:  #6d28d9;
+  --text-red:     #c81e1e;
+  --text-amber:   #a16207;
+  /* Tailwind's neutral text greys, tuned to pass contrast on white */
+  --color-neutral-400: #6b6b6b;
+  --color-neutral-500: #5f5f5f;
+  --tone-mix: 55%;
+}
+.dark {
+  --text-heading: #e8e8e8;
+  --text-muted:   #9a9a9a;
+  --text-soft:    #a8a8a8;
+  --text-accent:  #4ADE80;
+  --text-blue:    #60a5fa;
+  --text-violet:  #a78bfa;
+  --text-red:     #ef4444;
+  --text-amber:   #eab308;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #9a9a9a;
+  --tone-mix: 100%;
+}
+
 * { box-sizing: border-box; }
 
 *:focus-visible {
@@ -564,3 +594,14 @@ button,
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Skip link: first thing a keyboard user reaches on every page */
+.skip-link {
+  position: fixed; left: 0.75rem; top: -3rem; z-index: 100;
+  padding: 0.5rem 0.875rem; border-radius: 0.5rem;
+  background: var(--color-primary-dark); color: #fff; font-size: 0.8rem; font-weight: 600;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0.75rem; }
+
+p .link, li .link, small .link { text-decoration: underline; text-underline-offset: 3px; }

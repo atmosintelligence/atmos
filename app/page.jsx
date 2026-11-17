@@ -7,9 +7,8 @@ import Footer from '@/components/Footer';
 import VideoSection from '@/components/VideoSection';
 import RevealSection from '@/components/RevealSection';
 import AutomationDemo from '@/components/home/AutomationDemo';
-
-// Placeholder pictures until real product screenshots are ready.
-const shot = (w, h, text) => `https://placehold.co/${w}x${h}/101311/4ADE80/png?text=${encodeURIComponent(text)}`;
+import Globe from '@/components/home/Globe';
+import ShotPlaceholder from '@/components/home/ShotPlaceholder';
 
 /* ---------- content ---------- */
 
@@ -59,9 +58,10 @@ function Heading({ children, sub, center = false }) {
 
 export default function HomePage() {
   return (
-    <main id="main">
+    <main id="main-content">
       {/* Hero: the whole idea in one screen */}
       <section className="px-6 pt-28 pb-14 section-border bg-white dark:bg-black relative overflow-hidden">
+        <Globe />
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(52,211,105,0.10),transparent_50%)]" />
         <div className="relative max-w-5xl mx-auto text-center">
           <Eyebrow>Energy optimization for Indian rooms</Eyebrow>
@@ -82,7 +82,8 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <ol className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left" aria-label="How Atmos works">
+          <h2 className="sr-only">How Atmos works</h2>
+          <ol className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
             {STEPS.map((s, i) => (
               <li key={s.title} className="card" style={{ padding: '1.25rem' }}>
                 <div className="flex items-center justify-between mb-3">
@@ -118,12 +119,7 @@ export default function HomePage() {
               ))}
             </ul>
           </div>
-          <img
-            src={shot(960, 600, 'Dashboard overview')}
-            alt="Placeholder for the Atmos dashboard overview"
-            width="960" height="600" loading="lazy"
-            className="w-full h-auto rounded-2xl border border-black/10 dark:border-white/10"
-          />
+          <ShotPlaceholder label="Dashboard overview" />
         </div>
       </RevealSection>
 

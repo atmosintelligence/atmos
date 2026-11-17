@@ -7,9 +7,9 @@ import { summariseSavings, formatINR } from '@/lib/savings';
 import PageHeader   from '@/components/dashboard/PageHeader';
 import Stat         from '@/components/dashboard/Stat';
 import TableWrapper from '@/components/dashboard/TableWrapper';
-import BarSeries    from '@/components/dashboard/charts/BarSeries';
 import { C }        from '@/components/dashboard/charts/ChartConfig';
 import { BEE_BENCHMARK_KWH_M2 } from '@/lib/engine/constants.js';
+import { BarSeries } from '@/components/dashboard/charts/lazy';
 
 export default function EnvironmentalPage() {
   const { data: env, status } = useAnalysis('environmental');
@@ -43,7 +43,7 @@ export default function EnvironmentalPage() {
           <Stat icon="plug" tone="#ef4444" label="Still avoidable" value={`${env.avoidableKwh} kWh`} sub="Waste the rules found, not yet fixed" />
         </div>
         {!env.monthlyKwhKnown && (
-          <p style={{ fontSize: '0.75rem', color: '#737373', marginTop: '0.625rem', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.625rem', lineHeight: 1.6 }}>
             Atmos cannot measure electricity, so use is an estimate. Enter this room&apos;s monthly kWh from your bill in <Link className="link" href="/dashboard/devices">Devices</Link> for a closer figure.
           </p>
         )}

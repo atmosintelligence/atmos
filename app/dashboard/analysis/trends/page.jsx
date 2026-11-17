@@ -5,8 +5,8 @@ import PageHeader      from '@/components/dashboard/PageHeader';
 import Stat            from '@/components/dashboard/Stat';
 import TableWrapper    from '@/components/dashboard/TableWrapper';
 import Recommendations from '@/components/dashboard/Recommendations';
-import BarSeries       from '@/components/dashboard/charts/BarSeries';
 import { C }           from '@/components/dashboard/charts/ChartConfig';
+import { BarSeries } from '@/components/dashboard/charts/lazy';
 
 const hourLabel = h => `${h % 12 || 12} ${h >= 12 ? 'PM' : 'AM'}`;
 

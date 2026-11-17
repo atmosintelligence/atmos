@@ -1,6 +1,7 @@
 'use client';
 
 import Icon from '@/components/Icon';
+import { formatINR } from '@/lib/savings';
 
 const GROUP_ICON = {
   Lighting: 'lightbulb', HVAC: 'ac', Humidity: 'droplet', Standby: 'plug', Power: 'plug', Trends: 'trendsAnalysis', General: 'info',
@@ -33,7 +34,7 @@ export default function OptCard({ opt, onAcknowledge, acknowledged = false }) {
       <p className="dash-opt-message">{opt.message}</p>
       <div className="dash-opt-foot">
         <span className="dash-opt-saving">
-          {saving ? `Estimated saving: ₹${saving.toFixed(saving < 10 ? 2 : 0)}` : ''}
+          {saving ? `Estimated saving: ${formatINR(saving, 2)}` : ''}
         </span>
         {onAcknowledge && (
           acknowledged

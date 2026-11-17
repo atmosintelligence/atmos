@@ -1,13 +1,14 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 
 const NavbarContext = createContext(null);
 
 export function NavbarProvider({ children }) {
   const [forceBorder, setForceBorder] = useState(false);
+  const value = useMemo(() => ({ forceBorder, setForceBorder }), [forceBorder]);
   return (
-    <NavbarContext.Provider value={{ forceBorder, setForceBorder }}>
+    <NavbarContext.Provider value={value}>
       {children}
     </NavbarContext.Provider>
   );

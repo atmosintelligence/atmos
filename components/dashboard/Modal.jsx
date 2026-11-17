@@ -8,6 +8,8 @@ import Icon from '@/components/Icon';
 export default function Modal({ title, onClose, children }) {
   const titleId  = useId();
   const dialog   = useRef(null);
+  const closeRef = useRef(onClose);
+  useEffect(() => { closeRef.current = onClose; });
 
   useEffect(() => {
     const opener = document.activeElement;
@@ -15,7 +17,7 @@ export default function Modal({ title, onClose, children }) {
     (focusables()?.[1] ?? focusables()?.[0])?.focus();
 
     function onKey(e) {
-      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'Escape') { closeRef.current(); return; }
       if (e.key !== 'Tab') return;
       const items = [...(focusables() ?? [])].filter(el => !el.disabled);
       if (!items.length) return;

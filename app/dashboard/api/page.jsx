@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useDevice } from '../DeviceContext';
 import { hasApiKey, setApiKey as saveApiKey } from '@/lib/supabase';
 import Link from 'next/link';
+import PageHeader from '@/components/dashboard/PageHeader';
 
 function CodeBlock({ code, label }) {
   const [copied, setCopied] = useState(false);
@@ -15,7 +16,7 @@ function CodeBlock({ code, label }) {
   return (
     <div style={{ borderRadius: '0.75rem', border: '1px solid rgba(128,128,128,0.15)', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 1rem', background: 'rgba(128,128,128,0.06)', borderBottom: '1px solid rgba(128,128,128,0.1)' }}>
-        <span style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#737373' }}>{label}</span>
+        <span style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>{label}</span>
         <button
           onClick={copy}
           style={{ fontSize: '0.72rem', fontWeight: 600, padding: '0.2rem 0.6rem', borderRadius: '0.375rem', background: copied ? 'rgba(74,222,128,0.1)' : 'rgba(128,128,128,0.1)', color: copied ? 'var(--color-primary-dark)' : '#737373', border: 'none', cursor: 'pointer' }}
@@ -24,7 +25,7 @@ function CodeBlock({ code, label }) {
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <pre style={{ margin: 0, padding: '1rem', fontSize: '0.75rem', lineHeight: 1.7, overflowX: 'auto', color: '#c0c0c0', background: 'rgba(0,0,0,0.2)', fontFamily: 'monospace' }}>
+      <pre style={{ margin: 0, padding: '1rem', fontSize: '0.75rem', lineHeight: 1.7, overflowX: 'auto', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', fontFamily: 'monospace' }}>
         {code}
       </pre>
     </div>
@@ -56,8 +57,8 @@ function EndpointCard({ method, path, description, children }) {
         >
           {method}
         </span>
-        <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: '#c0c0c0', flex: 1 }}>{path}</span>
-        <span style={{ fontSize: '0.78rem', color: '#737373', flex: 2, textAlign: 'left' }}>{description}</span>
+        <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--text-muted)', flex: 1 }}>{path}</span>
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flex: 2, textAlign: 'left' }}>{description}</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
           <path d="M6 9l6 6 6-6"/>
         </svg>
@@ -72,7 +73,7 @@ function EndpointCard({ method, path, description, children }) {
 }
 
 function Note({ children }) {
-  return <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, margin: 0 }}>{children}</p>;
+  return <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.65, margin: 0 }}>{children}</p>;
 }
 
 export default function ApiPage() {
@@ -121,28 +122,26 @@ export default function ApiPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       {isDemo && (
-        <div style={{ fontSize: '0.78rem', color: '#737373', padding: '0.75rem 1rem', background: 'rgba(74,222,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(74,222,128,0.15)', marginBottom: '0.5rem' }}>
+        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', padding: '0.75rem 1rem', background: 'rgba(74,222,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(74,222,128,0.15)', marginBottom: '0.5rem' }}>
           API key generation is not possible in demo mode. <Link href="/signup" className="link">Create an account</Link> and grab a hardware unit to generate an API key!
         </div>
       )}
 
-      <div className="dash-greeting">
-        <div className="dash-greeting-name">API</div>
-        <div className="dash-greeting-sub">
-          Read your devices, run the analysis and manage alerts from your own code. Everything the dashboard does goes through these endpoints.
-        </div>
-      </div>
+      <PageHeader
+        title="API"
+        sub="Read your devices, run the analysis and manage alerts from your own code. Everything the dashboard does goes through these endpoints."
+      />
 
       <div className="dash-device-card">
         <div className="dash-section-title" style={{ marginBottom: '0.75rem' }}>Your API key</div>
-        <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, marginBottom: '1rem' }}>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: '1rem' }}>
           Send your key in the <code style={{ fontSize: '0.75rem', background: 'rgba(128,128,128,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem' }}>Authorization</code> header as a Bearer token. Generating a new key replaces the old one. Keep it secret.
         </p>
 
         {apiKey ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <code style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(128,128,128,0.08)', border: '1px solid rgba(128,128,128,0.15)', color: '#4ADE80', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+              <code style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(128,128,128,0.08)', border: '1px solid rgba(128,128,128,0.15)', color: 'var(--text-accent)', fontFamily: 'monospace', wordBreak: 'break-all' }}>
                 {apiKey}
               </code>
               <button
@@ -217,7 +216,7 @@ export default function ApiPage() {
 
       <div>
         <div className="dash-section-title">Endpoints</div>
-        <p style={{ fontSize: '0.78rem', color: '#737373', lineHeight: 1.65, margin: '0 0 0.75rem' }}>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.65, margin: '0 0 0.75rem' }}>
           Every endpoint below needs the Bearer key. Errors return <code>{`{ "error": "message" }`}</code> with status 400 (bad input), 401 (missing or wrong key) or 500.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -237,7 +236,7 @@ export default function ApiPage() {
 
           <EndpointCard method="POST" path="/api/engine" description="Run the analysis on the last 30 days of readings">
             <Note>
-              Runs the rule engine for one device (omit <code>deviceId</code> for all). Rate per kWh, location and monthly usage come from the device's own settings. Atmos sensors do not measure power, so energy figures are estimates from assumed appliance loads. <code>roomAreaM2</code> defaults to 20 and sets the benchmark. Results are cached for 60 seconds.
+              Runs the rule engine for one device (omit <code>deviceId</code> for all). Rate per kWh, location and monthly usage come from the device&apos;s own settings. Atmos sensors do not measure power, so energy figures are estimates from assumed appliance loads. <code>roomAreaM2</code> defaults to 20 and sets the benchmark. Results are cached for 60 seconds.
             </Note>
             <CodeBlock label="Request body" code={JSON.stringify({ deviceId, roomAreaM2: 20 }, null, 2)} />
             <CodeBlock label="Response" code={`{
@@ -297,7 +296,7 @@ export default function ApiPage() {
 
           <EndpointCard method="POST" path="/api/alerts" description="Generate alerts from the latest analysis">
             <Note>
-              Runs the engine, asks the AI layer to write the recommendations (falls back to the engine's own text), skips titles already raised in the last six hours, and stores the rest. One run per 30 seconds per account, and nothing is generated during your quiet hours.
+              Runs the engine, asks the AI layer to write the recommendations (falls back to the engine&apos;s own text), skips titles already raised in the last six hours, and stores the rest. One run per 30 seconds per account, and nothing is generated during your quiet hours.
             </Note>
             <CodeBlock label="Request body" code={JSON.stringify({ deviceId, roomAreaM2: 20 }, null, 2)} />
             <CodeBlock label="Response" code={`{ "synced": 2, "source": "ai" }
@@ -405,7 +404,7 @@ const { optimizations, environmental } = await res.json();`}
         />
       </div>
 
-      <div style={{ fontSize: '0.75rem', color: '#737373', lineHeight: 1.7, padding: '1rem', background: 'rgba(128,128,128,0.04)', borderRadius: '0.75rem', border: '1px solid rgba(128,128,128,0.1)' }}>
+      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.7, padding: '1rem', background: 'rgba(128,128,128,0.04)', borderRadius: '0.75rem', border: '1px solid rgba(128,128,128,0.1)' }}>
         <strong style={{ color: 'inherit' }}>Security note:</strong> Anyone with your key can read your devices, alerts and readings, and can clear history or unlink devices. Share it only with apps you trust, revoke it if it leaks, and please use the API fairly.
       </div>
     </div>

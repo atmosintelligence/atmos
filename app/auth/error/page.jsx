@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 
-export const metadata = { title: 'Auth Error' };
+export const metadata = { title: 'Sign-in problem' };
 
 export default function AuthErrorPage() {
   return (
-    <main className="min-h-dvh flex flex-col">
+    <main id="main-content" className="min-h-dvh flex flex-col">
       <div className="flex-1 flex items-center justify-center px-6 pt-16">
         <div className="w-full max-w-sm text-center">
           <h1 className="font-heading text-2xl font-semibold tracking-tight mb-2">Link expired</h1>

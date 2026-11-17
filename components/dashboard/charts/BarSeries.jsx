@@ -19,7 +19,7 @@ export default function BarSeries({ title, subtitle, summary, data, xKey, bars, 
   return (
     <ChartCard title={title} subtitle={subtitle} summary={summary} legend={bars.map(b => ({ label: b.name, color: b.color }))}>
       <ResponsiveContainer width="100%" height={CHART_H}>
-        <BarChart data={rows} margin={CHART_MARGIN} barCategoryGap="22%">
+        <BarChart data={rows} margin={CHART_MARGIN} barCategoryGap="22%" accessibilityLayer={false}>
           <CartesianGrid stroke={theme.grid} vertical={false} />
           <XAxis dataKey={xKey} {...axisProps(theme)} />
           <YAxis {...axisProps(theme)} unit={unit.trim().length > 2 ? '' : unit} width={46} />

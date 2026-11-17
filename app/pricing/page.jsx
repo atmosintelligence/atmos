@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { tone } from '@/lib/tone';
 import { useRef, useState, useEffect, Fragment } from 'react';
 import Footer from '@/components/Footer';
 import Icon from '@/components/Icon';
@@ -34,10 +35,10 @@ function Calculator() {
       : 'spark';
 
   const planMeta = {
-    spark:      { label: 'Spark',      price: 0,    color: '#737373' },
-    basic:      { label: 'Basic',      price: 349,  color: '#60a5fa' },
-    premium:    { label: 'Premium',    price: 699,  color: '#4ADE80' },
-    enterprise: { label: 'Enterprise', price: null, color: '#a78bfa' },
+    spark:      { label: 'Spark',      price: 0,    color: 'var(--text-muted)' },
+    basic:      { label: 'Basic',      price: 349,  color: 'var(--text-blue)' },
+    premium:    { label: 'Premium',    price: 699,  color: 'var(--text-accent)' },
+    enterprise: { label: 'Enterprise', price: null, color: 'var(--text-violet)' },
   };
 
   const rec          = planMeta[recommendation];
@@ -55,15 +56,16 @@ function Calculator() {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <div>
-          <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#737373', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
             Your rooms
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {rooms.map((room, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.78rem', color: '#737373', minWidth: '60px' }}>Room {i + 1}</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', minWidth: '60px' }}>Room {i + 1}</span>
                 <input
                   type="number"
+                  aria-label={`Room ${i + 1} size in square feet`}
                   value={room.size}
                   min="50"
                   step="50"
@@ -71,8 +73,8 @@ function Calculator() {
                   className="field-input"
                   style={{ maxWidth: '100px', textAlign: 'right' }}
                 />
-                <span style={{ fontSize: '0.75rem', color: '#737373' }}>sq ft</span>
-                <span style={{ fontSize: '0.72rem', color: '#4ADE80', minWidth: '70px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>sq ft</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-accent)', minWidth: '70px' }}>
                   {unitsForRoom(room.size)} unit{unitsForRoom(room.size) > 1 ? 's' : ''}
                 </span>
                 {rooms.length > 1 && (
@@ -95,7 +97,7 @@ function Calculator() {
           </button>
         </div>
 
-        <div style={{ fontSize: '0.72rem', color: '#737373', lineHeight: 1.65, padding: '0.875rem', background: 'rgba(128,128,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(128,128,128,0.12)' }}>
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.65, padding: '0.875rem', background: 'rgba(128,128,128,0.06)', borderRadius: '0.625rem', border: '1px solid rgba(128,128,128,0.12)' }}>
           <strong style={{ color: 'inherit', fontWeight: 600 }}>
             How units are calculated:
           </strong>{' '}
@@ -107,56 +109,56 @@ function Calculator() {
         <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '0' }}>
 
           <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid rgba(128,128,128,0.12)' }}>
-            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#737373', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
               Hardware units needed
             </div>
             <div className="font-heading text-brand" style={{ fontSize: '3.5rem', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>
               {totalUnits}
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#737373', marginTop: '0.375rem' }}>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>
               across {rooms.length} room{rooms.length > 1 ? 's' : ''} · {totalSqft.toLocaleString()} sq ft total
             </div>
           </div>
 
           <div style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(128,128,128,0.12)' }}>
-            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#737373', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
               Recommended plan
             </div>
-            <div className="font-heading" style={{ fontSize: '1.5rem', fontWeight: 700, color: rec.color, marginBottom: '0.375rem' }}>
+            <div className="font-heading" style={{ fontSize: '1.5rem', fontWeight: 700, color: tone(rec.color), marginBottom: '0.375rem' }}>
               {rec.label}
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#737373', lineHeight: 1.6 }}>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
               {recDesc[recommendation]}
             </div>
           </div>
 
           <div style={{ paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#737373', marginBottom: '0.25rem' }}>
+            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
               Costs
             </div>
             {monthlyCost !== null ? (
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.82rem', color: '#737373' }}>Monthly cost</span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Monthly cost</span>
                   <span className="font-heading" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
                     {monthlyCost === 0 ? 'Free' : `₹${monthlyCost.toLocaleString()}`}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.82rem', color: '#737373' }}>One-time hardware cost</span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>One-time hardware cost</span>
                   <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>
                     ₹{(totalUnits * 3499).toLocaleString()}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.82rem', color: '#737373' }}>Cost per room</span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Cost per room</span>
                   <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>
                     {costPerRoom === 0 ? 'Free' : `₹${costPerRoom.toLocaleString()} / mo`}
                   </span>
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: '0.82rem', color: '#737373', lineHeight: 1.65 }}>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.65 }}>
                 Enterprise pricing is custom. <a href="mailto:atmosintelligence@gmail.com" className="link">Contact us</a> for a tailored quote.
               </div>
             )}
@@ -242,9 +244,9 @@ export default function PricingPage() {
     },
   ];
 
-  const CHECK   = <span style={{ color: '#4ADE80', fontWeight: 700 }}>✓</span>;
-  const CROSS   = <span style={{ color: '#444', fontWeight: 700 }}>✗</span>;
-  const NOTE    = (t) => <span style={{ color: '#4ADE80', fontWeight: 700 }}>✓ <span style={{ color: '#737373', fontWeight: 400, fontSize: '0.7rem' }}><br />{t}</span></span>;
+  const CHECK   = <span style={{ color: 'var(--text-accent)', fontWeight: 700 }}>✓</span>;
+  const CROSS   = <span style={{ color: 'var(--text-muted)', fontWeight: 700 }}>✗</span>;
+  const NOTE    = (t) => <span style={{ color: 'var(--text-accent)', fontWeight: 700 }}>✓ <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.7rem' }}><br />{t}</span></span>;
 
   const tableGroups = [
     {
@@ -295,7 +297,7 @@ export default function PricingPage() {
     fontWeight: 700,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
-    color: '#737373',
+    color: 'var(--text-muted)',
     textAlign: 'center',
     whiteSpace: 'nowrap',
     background: 'transparent',
@@ -313,7 +315,7 @@ export default function PricingPage() {
   const tdFeatureStyle = {
     ...tdStyle,
     textAlign: 'left',
-    color: '#c0c0c0',
+    color: 'var(--text-muted)',
     fontWeight: 400,
     paddingLeft: '1rem',
   };
@@ -324,14 +326,14 @@ export default function PricingPage() {
     fontWeight: 700,
     textTransform: 'uppercase',
     letterSpacing: '0.1em',
-    color: '#4ADE80',
+    color: 'var(--text-accent)',
     textAlign: 'left',
     borderBottom: '1px solid rgba(128,128,128,0.08)',
     paddingLeft: '1rem'
   };
 
   return (
-    <main className="min-h-dvh flex flex-col">
+    <main id="main-content" className="min-h-dvh flex flex-col">
       <section className="min-h-dvh flex flex-col section-border relative overflow-hidden">
         <div className="hero-glow" />
         <div className="flex-1 flex flex-col md:flex-row items-center gap-12 max-w-5xl mx-auto w-full px-6 pt-28 pb-8">
@@ -427,7 +429,7 @@ export default function PricingPage() {
               </div>
 
               <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xl">
-                Apart from the subscription, you'll also need the hardware device itself. Pay only once.
+                Apart from the subscription, you&apos;ll also need the hardware device itself. Pay only once.
               </p>
             </div>
 
@@ -458,7 +460,7 @@ export default function PricingPage() {
                   <th style={{ ...thStyle, textAlign: 'left', paddingLeft: '1rem', width: '35%' }}>Feature</th>
                   <th style={thStyle}>Spark</th>
                   <th style={thStyle}>Basic</th>
-                  <th style={{ ...thStyle, color: '#4ADE80' }}>Premium</th>
+                  <th style={{ ...thStyle, color: 'var(--text-accent)' }}>Premium</th>
                   <th style={thStyle}>Enterprise</th>
                 </tr>
               </thead>
@@ -502,7 +504,7 @@ export default function PricingPage() {
           </div>
           <h2 className="font-heading text-3xl font-semibold tracking-tight text-center mb-3">Explore your needs</h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-center mb-12 max-w-md mx-auto">
-            Tell us about your space and we'll recommend the right setup.
+            Tell us about your space and we&apos;ll recommend the right setup.
           </p>
           <Calculator />
         </div>

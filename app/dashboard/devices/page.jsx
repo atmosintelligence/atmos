@@ -7,7 +7,6 @@ import Icon from '@/components/Icon';
 import PageHeader from '@/components/dashboard/PageHeader';
 import LinkDeviceModal from '@/components/dashboard/LinkDeviceModal';
 import DeviceSettingsForm from '@/components/dashboard/DeviceSettingsForm';
-import { exportDevicePDF, exportDeviceJSON } from '@/lib/exportDevice';
 import { deviceLabel } from '@/lib/deviceSettings';
 
 const fmt = s => (s
@@ -41,6 +40,7 @@ function DeviceCard({ d }) {
         demoReadings: isDemo ? getDemoReadings(d.device_id) : null,
         alerts: cache[`alerts-${d.device_id}`]?.alerts ?? [],
       };
+      const { exportDevicePDF, exportDeviceJSON } = await import('@/lib/exportDevice');
       await (kind === 'pdf' ? exportDevicePDF(args) : exportDeviceJSON(args));
     } catch (e) {
       console.error(e);

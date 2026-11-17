@@ -358,10 +358,10 @@ export default function AutomationPage() {
 
         <div className="dash-device-card">
           <div className="dash-section-title" style={{ marginBottom: 0 }}>AI planner</div>
-          <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, margin: 0 }}>
-            <strong>Let AI plan for you first, then control whether it's doing right.</strong> AI studies the last 30 days of occupancy in this room, then proposes when to switch each appliance on or off. Your own rules are never touched, and AI skips anything that clashes with them.
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.65, margin: 0 }}>
+            <strong>Let AI plan for you first, then control whether it&apos;s doing right.</strong> AI studies the last 30 days of occupancy in this room, then proposes when to switch each appliance on or off. Your own rules are never touched, and AI skips anything that clashes with them.
           </p>
-          <p style={{ fontSize: '0.8rem', color: '#737373', lineHeight: 1.65, margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.65, margin: 0 }}>
             You stay in charge. Edit or delete any AI rule and it becomes yours, so the next plan will not replace it.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -374,10 +374,10 @@ export default function AutomationPage() {
             >
               {planning ? 'Planning...' : aiCount ? 'Plan again with AI' : 'Plan with AI'}
             </button>
-            {aiCount > 0 && <span style={{ fontSize: '0.75rem', color: '#737373' }}>{aiCount} AI rule{aiCount === 1 ? '' : 's'} on the calendar</span>}
+            {aiCount > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{aiCount} AI rule{aiCount === 1 ? '' : 's'} on the calendar</span>}
           </div>
           {isDemo && (
-            <p style={{ fontSize: '0.72rem', color: '#a3a3a3', margin: 0 }}>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-soft)', margin: 0 }}>
               Demo mode: rules live in this page only and the plan is a sample.
             </p>
           )}
@@ -392,7 +392,7 @@ export default function AutomationPage() {
             return (
               <div key={day} className={`auto-col ${day === today ? 'today' : ''}`}>
                 <div className="auto-col-head">{DAY_SHORT[day]}</div>
-                {rules.length === 0 && <div style={{ fontSize: '0.7rem', color: '#a3a3a3', padding: '0.25rem' }}>No rules</div>}
+                {rules.length === 0 && <div style={{ fontSize: '0.7rem', color: 'var(--text-soft)', padding: '0.25rem' }}>No rules</div>}
                 {rules.map(rule => (
                   <button
                     key={rule.id}
@@ -413,7 +413,7 @@ export default function AutomationPage() {
             );
           })}
         </div>
-        <p style={{ fontSize: '0.72rem', color: '#a3a3a3', margin: '0.625rem 0 0' }}>
+        <p style={{ fontSize: '0.72rem', color: 'var(--text-soft)', margin: '0.625rem 0 0' }}>
           Times are in {TZ}. Click a rule to edit it.
         </p>
       </div>
@@ -422,14 +422,14 @@ export default function AutomationPage() {
         <div className="dash-section-title">Recent actions by the sensor</div>
         <div className="dash-device-card" style={{ padding: '0.5rem 1.25rem' }}>
           {logs.length === 0 ? (
-            <div style={{ fontSize: '0.8rem', color: '#737373', padding: '0.75rem 0' }}>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0.75rem 0' }}>
               {isDemo ? 'Actions the sensor takes will appear here.' : 'No actions reported yet. Once your unit switches something, it shows up here.'}
             </div>
           ) : logs.map((log, i) => (
             <div key={i} className="auto-log">
-              <span style={{ color: '#737373', minWidth: '8.5rem' }}>{fmtLogTime(log.timestamp)}</span>
+              <span style={{ color: 'var(--text-muted)', minWidth: '8.5rem' }}>{fmtLogTime(log.timestamp)}</span>
               <span style={{ fontWeight: 500 }}>{TARGET_LABEL[log.target] ?? log.target} {log.action}</span>
-              {log.reason && <span style={{ color: '#737373' }}>{log.reason}</span>}
+              {log.reason && <span style={{ color: 'var(--text-muted)' }}>{log.reason}</span>}
             </div>
           ))}
         </div>

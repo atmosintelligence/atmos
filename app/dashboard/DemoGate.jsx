@@ -42,8 +42,8 @@ export default function DemoGate({ onEnterDemo }) {
           See how a space<br />thinks for itself.
         </h1>
 
-        <p style={{ fontSize: '0.9rem', color: '#737373', lineHeight: 1.7, marginBottom: '2.5rem' }}>
-          You don't need an account to explore how the dashboard works. Through the demo mode, you can feel the dashboard before signing up! Do you want to enter demo mode?
+        <p style={{ fontSize: '0.9rem', color: '#a3a3a3', lineHeight: 1.7, marginBottom: '2.5rem' }}>
+          You don&apos;t need an account to explore how the dashboard works. Through the demo mode, you can feel the dashboard before signing up! Do you want to enter demo mode?
         </p>
 
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -92,7 +92,7 @@ export default function DemoGate({ onEnterDemo }) {
           </Link>
         </div>
 
-        <p style={{ fontSize: '0.72rem', color: '#444', marginTop: '2rem', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '0.72rem', color: '#9a9a9a', marginTop: '2rem', lineHeight: 1.6 }}>
           Demo uses realistic, simulated sensor data from a single room.<br />No data is stored on the cloud or associated with your device.
         </p>
       </div>

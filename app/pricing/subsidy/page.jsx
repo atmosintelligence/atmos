@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import Footer from '@/components/Footer';
 import InputPanel from '@/components/subsidy/InputPanel';
 import { Headline, Kpis, PaybackChart } from '@/components/subsidy/Results';
@@ -34,12 +34,14 @@ export default function SubsidyPage() {
     setInput({ ...DEFAULT_INPUT, ...p.input });
   };
 
-  const result = useMemo(() => calculate(input), [input]);
+  // Typing and dragging stay instant; the results catch up a moment later.
+  const deferredInput = useDeferredValue(input);
+  const result = useMemo(() => calculate(deferredInput), [deferredInput]);
   const T = (k, v) => tr(lang, k, v);
 
   return (
     <div className="sub-page min-h-dvh flex flex-col" lang={lang}>
-      <main className="flex-1 relative">
+      <main id="main-content" className="flex-1 relative">
         {/* hero */}
         <header className="relative pt-28 pb-8 sm:pb-10">
           <div className="sub-hero-bg" aria-hidden="true" />
@@ -89,11 +91,11 @@ export default function SubsidyPage() {
               <Kpis r={result} lang={lang} />
               <PaybackChart r={result} lang={lang} />
             </div>
-            <Schemes r={result} lang={lang} />
-            <ThirdParty r={result} lang={lang} />
-            <AtmosPanel r={result} lang={lang} />
-            <ImpactPanel r={result} lang={lang} set={set} />
-            <NextSteps r={result} lang={lang} />
+            <div className="sub-defer"><Schemes r={result} lang={lang} /></div>
+            <div className="sub-defer"><ThirdParty r={result} lang={lang} /></div>
+            <div className="sub-defer"><AtmosPanel r={result} lang={lang} /></div>
+            <div className="sub-defer"><ImpactPanel r={result} lang={lang} set={set} /></div>
+            <div className="sub-defer"><NextSteps r={result} lang={lang} /></div>
             <Method lang={lang} />
           </div>
         </div>

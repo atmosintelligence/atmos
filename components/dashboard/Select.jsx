@@ -68,7 +68,7 @@ export default function Select({ label, value, options, onChange, placeholder = 
             >
               <span style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
                 <span>{o.label}</span>
-                {o.hint && <span style={{ fontSize: '0.68rem', color: '#a3a3a3' }}>{o.hint}</span>}
+                {o.hint && <span style={{ fontSize: '0.68rem', color: 'var(--text-soft)' }}>{o.hint}</span>}
               </span>
               {o.value === value && <Icon name="check" size={14} className="dash-dropdown-option-check" />}
             </div>

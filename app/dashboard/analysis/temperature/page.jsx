@@ -6,8 +6,8 @@ import PageHeader      from '@/components/dashboard/PageHeader';
 import Stat            from '@/components/dashboard/Stat';
 import TableWrapper    from '@/components/dashboard/TableWrapper';
 import Recommendations from '@/components/dashboard/Recommendations';
-import TimeSeries      from '@/components/dashboard/charts/TimeSeries';
 import { C }           from '@/components/dashboard/charts/ChartConfig';
+import { TimeSeries } from '@/components/dashboard/charts/lazy';
 
 export default function TemperaturePage() {
   const { data, status } = useAnalysis('temperature');

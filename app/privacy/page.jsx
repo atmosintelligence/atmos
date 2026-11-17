@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer';
 
-export const metadata = { title: 'Privacy Policy • Atmos Intelligence' };
+export const metadata = { title: 'Privacy Policy' };
 
 const sections = [
   {
@@ -135,18 +135,18 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-dvh flex flex-col">
+    <main id="main-content" className="min-h-dvh flex flex-col">
       <div className="flex-1 max-w-3xl mx-auto w-full px-6 pt-32 pb-24">
 
         <div style={{ marginBottom: '3rem' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#4ADE80', marginBottom: '1rem' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-accent)', marginBottom: '1rem' }}>
             Legal
           </div>
           <h1 className="font-heading text-5xl font-semibold tracking-tight mb-3">Privacy Policy</h1>
           <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed max-w-xl">
             Atmos Intelligence is committed to handling your data with transparency and care. This policy explains what we collect, why we collect it, and how we protect it.
           </p>
-          <p style={{ fontSize: '0.72rem', color: '#737373', marginTop: '1rem' }}>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
             Last updated: 25 May, 2026
           </p>
         </div>
@@ -172,7 +172,7 @@ export default function PrivacyPage() {
                 {s.items.map((item, ii) => (
                   <div key={ii}>
                     {item.subtitle && (
-                      <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#737373', marginBottom: '0.4rem' }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
                         {item.subtitle}
                       </div>
                     )}
@@ -189,7 +189,7 @@ export default function PrivacyPage() {
           ))}
 
           <div style={{ paddingTop: '2rem', borderTop: '1px solid rgba(128,128,128,0.15)' }}>
-            <p style={{ fontSize: '0.75rem', color: '#737373', lineHeight: 1.7 }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
               This policy applies to all users of Atmos Intelligence products and services, including the Atmos hardware device, the Atmos web dashboard, and any associated APIs. It does not apply to third-party services linked from our platform.
             </p>
           </div>

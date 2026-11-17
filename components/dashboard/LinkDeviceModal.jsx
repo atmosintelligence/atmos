@@ -51,7 +51,7 @@ export default function LinkDeviceModal({ onClose }) {
         </div>
       ) : (
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <p style={{ fontSize: '0.82rem', color: '#737373', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
             Enter the private key printed on your device. It links the device to your account, and only you can see its data.
           </p>
           <div className="dash-field">

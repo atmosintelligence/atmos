@@ -26,7 +26,7 @@ export default function TimeSeries({
   return (
     <ChartCard title={title} subtitle={subtitle} summary={summary} range={range} onRange={setRange} ranges={RANGES}>
       <ResponsiveContainer width="100%" height={CHART_H}>
-        <AreaChart data={data} margin={CHART_MARGIN}>
+        <AreaChart data={data} margin={CHART_MARGIN} accessibilityLayer={false}>
           <defs>
             <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor={color} stopOpacity={0.28} />

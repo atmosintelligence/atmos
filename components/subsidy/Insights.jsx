@@ -27,7 +27,7 @@ export function AtmosPanel({ r, lang }) {
   const unit = 'kW';
   return (
     <section className="card p-5 sm:p-7 overflow-hidden relative" aria-labelledby="sub-atmos-h">
-      <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full blur-3xl pointer-events-none" style={{ background: 'color-mix(in srgb, var(--color-primary) 18%, transparent)' }} />
+      <div className="absolute -right-24 -top-24 h-72 w-72 pointer-events-none" style={{ background: 'radial-gradient(closest-side, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent)' }} />
       <div className="relative">
         <div className="flex items-center gap-2 text-brand"><Icon name="sensor" size={18} /><span className="sub-label !text-inherit">Atmos</span></div>
         <h2 id="sub-atmos-h" className="mt-2 font-heading text-xl sm:text-2xl font-bold tracking-tight">{T('atmosTitle')}</h2>

@@ -8,19 +8,19 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const syne = localFont({
-  src: './fonts/Syne.ttf',
+  src: './fonts/Syne.woff2',
   variable: '--font-syne',
   display: 'swap'
 });
 
 const inter = localFont({
-  src: './fonts/Inter.ttf',
+  src: './fonts/Inter.woff2',
   variable: '--font-inter',
   display: 'swap'
 });
 
 export const metadata = {
-  title: 'Atmos Intelligence',
+  title: { default: 'Atmos Intelligence', template: '%s | Atmos Intelligence' },
   description: "India's premier energy optimisation tech, built for homes and offices alike"
 };
 
@@ -73,6 +73,7 @@ export default function RootLayout({ children }) {
       </head>
 
       <body className="bg-white text-neutral-900 dark:bg-[#0f0f0f] dark:text-neutral-100 antialiased transition-colors duration-300">
+        <a href="#main-content" className="skip-link">Skip to content</a>
         <NavbarProvider>
           <Navbar />
           {children}

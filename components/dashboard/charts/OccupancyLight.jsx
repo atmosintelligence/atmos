@@ -26,7 +26,7 @@ export default function OccupancyLight({ readings }) {
       legend={[{ label: 'Light (lux)', color: C.light }, { label: 'Room occupied', color: C.muted }]}
     >
       <ResponsiveContainer width="100%" height={CHART_H}>
-        <ComposedChart data={data} margin={CHART_MARGIN}>
+        <ComposedChart data={data} margin={CHART_MARGIN} accessibilityLayer={false}>
           <CartesianGrid stroke={theme.grid} vertical={false} />
           <XAxis dataKey="t" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={tickFormat(range)} {...axisProps(theme)} minTickGap={36} />
           <YAxis yAxisId="lux" {...axisProps(theme)} unit=" lx" width={58} />

@@ -7,7 +7,7 @@ import Icon from '@/components/Icon';
 
 // Plans match the public pricing page. Prices are per unit, per month.
 const PLANS = {
-  spark:      { label: 'Spark',      price: '₹0',     color: '#737373', text: 'Free for up to 2 devices.',
+  spark:      { label: 'Spark',      price: '₹0',     color: 'var(--text-muted)', text: 'Free for up to 2 devices.',
                 features: ['10-minute refresh', 'Up to 2 devices', 'Alerts and analysis'] },
   basic:      { label: 'Basic',      price: '₹349',   color: '#3b82f6', text: 'For homes and small offices.',
                 features: ['10-minute refresh', 'Unlimited devices', 'Simple export'] },

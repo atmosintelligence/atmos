@@ -11,11 +11,10 @@
   -webkit-mask-image: radial-gradient(ellipse 75% 85% at 50% 0%, #000 25%, transparent 78%);
   mask-image: radial-gradient(ellipse 75% 85% at 50% 0%, #000 25%, transparent 78%);
 }
-.sub-orb {
-  position: absolute; border-radius: 9999px; filter: blur(110px); pointer-events: none; z-index: 0;
-}
-.sub-orb.a { width: 520px; height: 520px; top: -160px; left: 8%;  background: color-mix(in srgb, var(--color-primary) 16%, transparent); }
-.sub-orb.b { width: 420px; height: 420px; top: -60px;  right: 4%; background: rgba(56,189,248,0.10); }
+/* Soft colour wash. Plain gradients: no blur filter, so nothing heavy to repaint. */
+.sub-orb { position: absolute; pointer-events: none; z-index: 0; }
+.sub-orb.a { width: 900px; height: 700px; top: -300px; left: -4%;  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent); }
+.sub-orb.b { width: 760px; height: 600px; top: -220px; right: -6%; background: radial-gradient(closest-side, rgba(56,189,248,0.12), transparent); }
 
 .sub-gradient-text {
   background: linear-gradient(100deg, var(--color-primary-dark) 0%, #0ea5e9 100%);
@@ -106,14 +105,15 @@
 .sub-pill.no { background: rgba(239,68,68,0.14); color: #b91c1c; }
 .dark .sub-pill.no { color: #f87171; }
 
-.sub-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #737373; }
+.sub-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
 
 .sub-scroll { scrollbar-width: thin; }
 
 @keyframes sub-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .sub-rise { animation: sub-rise .5s ease both; }
 
-@keyframes sub-pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+/* Below-the-fold sections are only painted when they scroll near the screen. */
+.sub-defer { content-visibility: auto; contain-intrinsic-size: auto 720px; }
 
 @media (prefers-reduced-motion: reduce) {
   .sub-rise { animation: none; }
