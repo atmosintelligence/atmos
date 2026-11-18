@@ -1,4 +1,4 @@
-import { resolveApiUser, linkDeviceByKey } from '@/lib/supabase';
+import { resolveApiUser, linkDeviceByKey } from '@/lib/server/db';
 import { clearEngineCache } from '@/lib/server/engine';
 
 // A few wrong guesses in a row lock the account out for a while, so the private key

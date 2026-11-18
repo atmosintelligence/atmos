@@ -1,4 +1,4 @@
-import { updateSession } from '@/lib/supabase';
+import { updateSession } from '@/lib/server/db';
 
 export async function proxy(request) {
   return updateSession(request);

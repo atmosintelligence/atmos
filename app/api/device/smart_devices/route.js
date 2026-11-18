@@ -1,4 +1,4 @@
-import { getDeviceByCredentials, touchDevice, syncSmartDevices } from '@/lib/supabase';
+import { getDeviceByCredentials, touchDevice, syncSmartDevices, getPendingCommands } from '@/lib/server/db';
 import { cleanSnapshot } from '@/lib/smartDevices';
 
 export async function POST(request) {
@@ -23,8 +23,9 @@ export async function POST(request) {
 
     const devices = await syncSmartDevices(device_id, value.devices, value.scanAt);
     await touchDevice(device_id);
+    const commands = await getPendingCommands(device_id).catch(() => []);
 
-    return Response.json({ ok: true, devices });
+    return Response.json({ ok: true, devices, commands });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }

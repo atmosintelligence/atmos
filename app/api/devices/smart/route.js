@@ -1,4 +1,4 @@
-import { resolveApiUser, getSmartDevices } from '@/lib/supabase';
+import { resolveApiUser, getSmartDevices } from '@/lib/server/db';
 
 // GET /api/devices/smart?deviceId=ATM-D001 → { smartDevices } the plugs that unit has found
 export async function GET(request) {

@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
-import { getEmailForUsername, signIn, getProfile } from '@/lib/supabase';
+import { signIn } from '@/lib/auth';
+import { getEmailForUsername, getProfile } from '@/lib/api';
 
 const firstNames = [
   'Aryan', 'Rohan', 'Vikram', 'Aditya', 'Rahul',
@@ -68,7 +69,7 @@ export default function LoginPage() {
       }
       setLoading(false);
     } else {
-      const prof = await getProfile('display_name, username');
+      const prof = await getProfile();
       if (prof) {
         window.dispatchEvent(new CustomEvent('atmos:profileChanged', { detail: prof }));
       }

@@ -943,3 +943,84 @@ textarea:disabled {
 @media (min-width: 1024px) {
   .dash-btn.dash-menu-btn { display: none; }
 }
+
+/* Small notes, anywhere in the dashboard (not only inside .dash-field) */
+.dash-page .hint { font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; }
+
+/* Explains who acts: Alerts (not smart) vs Automation (smart) */
+.dash-note {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(21,128,61,0.22);
+  background: rgba(74,222,128,0.07);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.dark .dash-note { border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.05); }
+.dash-note strong { color: var(--text-heading); font-weight: 600; }
+.dash-note-icon { flex-shrink: 0; margin-top: 0.1rem; color: var(--text-accent); display: inline-flex; }
+.dash-note-meta { display: block; margin-top: 0.35rem; font-size: 0.72rem; color: var(--text-soft); }
+
+/* Manual control */
+.manual-quick { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+.manual-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.manual-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.dark .manual-row { border-top-color: rgba(255,255,255,0.06); }
+.manual-name { font-size: 0.875rem; font-weight: 600; }
+.manual-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.5; }
+.manual-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+.manual-status { font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 9999px; white-space: nowrap; }
+.manual-status.on    { background: rgba(74,222,128,0.14); color: var(--text-accent); }
+.manual-status.off   { background: rgba(239,68,68,0.12);  color: #ef4444; }
+.manual-status.wait  { background: rgba(234,179,8,0.14);  color: var(--text-amber); }
+.manual-status.muted { background: rgba(128,128,128,0.12); color: var(--text-muted); }
+
+.dash-switch {
+  position: relative;
+  width: 2.6rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: rgba(128,128,128,0.35);
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  flex-shrink: 0;
+}
+.dash-switch.on { background: var(--color-primary-dark); }
+.dark .dash-switch.on { background: var(--color-primary); }
+.dash-switch:disabled { opacity: 0.45; cursor: not-allowed; }
+.dash-switch.busy { opacity: 0.7; }
+.dash-switch-knob {
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease;
+}
+.dash-switch.on .dash-switch-knob { transform: translateX(1.1rem); }
+
+@media (max-width: 480px) {
+  .manual-row { align-items: flex-start; }
+  .manual-actions { flex-direction: column-reverse; align-items: flex-end; gap: 0.4rem; }
+}
+
+/* API tab: on phones the endpoint description gets its own line */
+@media (max-width: 640px) {
+  .api-ep { flex-wrap: wrap; row-gap: 0.4rem !important; }
+  .api-ep-path { flex: 1 1 0 !important; min-width: 0; overflow-wrap: anywhere; }
+  .api-ep-desc { flex: 1 1 100% !important; order: 3; }
+}

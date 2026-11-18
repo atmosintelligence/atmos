@@ -1,12 +1,13 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { getCurrentUser, getProfile, getSubscription } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/auth';
+import { getProfile, getSubscription } from '@/lib/api';
 import { fetchEngine } from '@/lib/engineFetch';
 import { resolveDeviceSettings, deviceLabel } from '@/lib/deviceSettings';
 import { SECTIONS, SECTION_NAMES } from './sections';
 import { useDemo } from './DemoContext';
-import { DEMO_DEVICE_ID, DEMO_DEVICE_ID_2 } from '@/lib/demo';
+import { DEMO_DEVICE_ID, DEMO_DEVICE_ID_2, getDemoSmartDevices } from '@/lib/demo';
 
 const DeviceContext = createContext(null);
 
@@ -93,6 +94,32 @@ export function DeviceProvider({ children }) {
 
     inflight.current.set(key, promise);
     return promise;
+  }
+
+  // Smart plugs and switches the unit has found. Shared by Overview, Alerts and Automation.
+  function loadSmartDevices(deviceId) {
+    const key = `smart-${deviceId}`;
+    const hit = getCached(key);
+    if (hit) return Promise.resolve(hit);
+    if (inflight.current.has(key)) return inflight.current.get(key);
+
+    const promise = (isDemo
+      ? Promise.resolve(getDemoSmartDevices())
+      : fetch(`/api/devices/smart?deviceId=${encodeURIComponent(deviceId)}`)
+          .then(r => (r.ok ? r.json() : { smartDevices: [] }))
+          .then(json => json.smartDevices ?? [])
+          .catch(() => []))
+      .then(list => { setCached(key, list); return list; })
+      .finally(() => inflight.current.delete(key));
+
+    inflight.current.set(key, promise);
+    return promise;
+  }
+
+  // Replaces one smart device after a manual switch.
+  function updateSmartDevice(deviceId, row) {
+    const key = `smart-${deviceId}`;
+    setCached(key, (getCached(key) ?? []).map(d => (d.mac === row.mac ? { ...d, ...row } : d)));
   }
 
   async function preloadSubscription() {
@@ -205,7 +232,7 @@ export function DeviceProvider({ children }) {
 
       const [res, prof] = await Promise.all([
         fetch('/api/devices'),
-        getProfile('display_name, username, latitude, longitude, tariff_rate').catch(() => null),
+        getProfile().catch(() => null),
       ]);
       setProfile(prof);
       if (!res.ok) { setLoadingDevices(false); return; }
@@ -248,6 +275,7 @@ export function DeviceProvider({ children }) {
         loadingDevices, refreshKey, triggerRefresh,
         getCached, setCached, cache,
         loadEngine, settingsFor, nameOf,
+        loadSmartDevices, updateSmartDevice,
         acknowledgeAlerts,
         subCache, setSubCacheData: setSubCache, preloadSubscription,
         isDemo, getDemoReadings, demoReadings, demoReadings2,

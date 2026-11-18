@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Icon from '@/components/Icon';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
 import LinkDeviceModal from '@/components/dashboard/LinkDeviceModal';
-import { getCurrentUser, signOut } from '@/lib/supabase';
+import { getCurrentUser, signOut } from '@/lib/auth';
 import { deviceLabel } from '@/lib/deviceSettings';
 import { DeviceProvider, useDevice } from './DeviceContext';
 import { DemoProvider, useDemo } from './DemoContext';

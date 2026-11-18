@@ -1,4 +1,4 @@
-import { resolveApiUser, getDevices } from '@/lib/supabase';
+import { resolveApiUser, getDevices } from '@/lib/server/db';
 
 export async function GET(request) {
   try {

@@ -53,7 +53,7 @@ function Calculator() {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start' }}>
+    <div className="m-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <div>
           <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
@@ -348,7 +348,7 @@ export default function PricingPage() {
               <span>See all plans</span>
               <span className="arrow inline-flex items-center"><Icon name="arrowRight" /></span>
             </a>
-            <Link href="/pricing/subsidy" className="arrow-link link self-start text-sm">
+            <Link href="/about/subsidy" className="arrow-link link self-start text-sm">
               <span>Check what subsidies can pay for</span>
               <span className="arrow inline-flex items-center"><Icon name="arrowRight" /></span>
             </Link>

@@ -1,4 +1,4 @@
-import { getDeviceByCredentials, insertReading, touchDevice, logAutomationActions, getDeviceSchedules } from '@/lib/supabase';
+import { getDeviceByCredentials, insertReading, touchDevice, logAutomationActions, getDeviceSchedules, getPendingCommands } from '@/lib/server/db';
 import { buildConfig, normalizeActions } from '@/lib/automation';
 import { toDevicePayload } from '@/lib/schedules';
 
@@ -20,13 +20,18 @@ export async function POST(request) {
     await logAutomationActions(normalizeActions(auto_actions, device_id));
     await touchDevice(device_id);
 
-    // A schedule lookup failure must never lose the reading that was just saved.
-    const schedules = await getDeviceSchedules(device_id).catch(() => []);
+    // A lookup failure must never lose the reading that was just saved.
+    const [schedules, commands] = await Promise.all([
+      getDeviceSchedules(device_id).catch(() => []),
+      getPendingCommands(device_id).catch(() => []),
+    ]);
 
     return Response.json({
       ok: true,
       config: buildConfig(device.automation_config),
       schedules: toDevicePayload(schedules),
+      // Manual switches from the dashboard: [{ mac, action: 'on' | 'off' }]
+      commands,
     });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });

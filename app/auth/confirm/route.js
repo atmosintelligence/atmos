@@ -1,4 +1,4 @@
-import { exchangeCodeForSession } from '@/lib/supabase';
+import { exchangeCodeForSession } from '@/lib/server/db';
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {

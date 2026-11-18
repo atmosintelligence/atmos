@@ -1,4 +1,4 @@
-import { resolveApiUser, getAlertPreferences, saveAlertPreferences } from '@/lib/supabase';
+import { resolveApiUser, getAlertPreferences, saveAlertPreferences } from '@/lib/server/db';
 
 export async function GET(request) {
   try {

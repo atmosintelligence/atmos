@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDevice } from '../DeviceContext';
-import { hasApiKey, setApiKey as saveApiKey } from '@/lib/supabase';
+import { hasApiKey, createApiKey, revokeApiKey as removeApiKey } from '@/lib/api';
 import Link from 'next/link';
 import PageHeader from '@/components/dashboard/PageHeader';
 
@@ -39,6 +39,7 @@ function EndpointCard({ method, path, description, children }) {
     <div style={{ borderRadius: '0.875rem', border: '1px solid rgba(128,128,128,0.12)', overflow: 'hidden' }}>
       <button
         onClick={() => setOpen(o => !o)}
+        className="api-ep"
         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.02)', border: 'none', cursor: 'pointer', textAlign: 'left' }}
       >
         <span
@@ -57,8 +58,8 @@ function EndpointCard({ method, path, description, children }) {
         >
           {method}
         </span>
-        <span style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--text-muted)', flex: 1 }}>{path}</span>
-        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flex: 2, textAlign: 'left' }}>{description}</span>
+        <span className="api-ep-path" style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--text-muted)', flex: 1 }}>{path}</span>
+        <span className="api-ep-desc" style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flex: 2, textAlign: 'left' }}>{description}</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
           <path d="M6 9l6 6 6-6"/>
         </svg>
@@ -88,15 +89,14 @@ export default function ApiPage() {
   const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com';
 
   useEffect(() => {
+    if (isDemo) return;
     hasApiKey().then(setHasKey);
-  }, []);
+  }, [isDemo]);
 
   async function generateApiKey() {
     setGenerating(true);
-    const key = 'atmos_' + Array.from(crypto.getRandomValues(new Uint8Array(24)))
-      .map(b => b.toString(16).padStart(2, '0')).join('');
-    const { error } = await saveApiKey(key);
-    if (!error) {
+    const { key, error } = await createApiKey();
+    if (!error && key) {
       setApiKey(key);
       setHasKey(true);
     }
@@ -105,7 +105,7 @@ export default function ApiPage() {
 
   async function revokeApiKey() {
     setRevoking(true);
-    const { error } = await saveApiKey(null);
+    const { error } = await removeApiKey();
     if (!error) {
       setApiKey(null);
       setHasKey(false);

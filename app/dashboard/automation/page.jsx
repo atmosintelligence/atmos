@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useDevice } from '../DeviceContext';
+import Icon from '@/components/Icon';
 import Select from '@/components/dashboard/Select';
 import PageHeader from '@/components/dashboard/PageHeader';
-import { getDemoSmartDevices } from '@/lib/demo';
+import ManualControl from '@/components/dashboard/ManualControl';
 
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -71,7 +73,7 @@ function applianceOptions(smartDevices) {
 }
 
 export default function AutomationPage() {
-  const { selectedId, isDemo, loadingDevices, refreshKey } = useDevice();
+  const { selectedId, isDemo, loadingDevices, refreshKey, cache, loadSmartDevices, updateSmartDevice } = useDevice();
 
   const [schedules, setSchedules] = useState([]);
   const [logs, setLogs]           = useState([]);
@@ -82,7 +84,6 @@ export default function AutomationPage() {
   const [saving, setSaving]       = useState(false);
   const [planning, setPlanning]   = useState(false);
   const [message, setMessage]     = useState(null);
-  const [smart, setSmart]       = useState(null);
   const formRef  = useRef(null);
   const demoSeq  = useRef(1);
 
@@ -105,16 +106,11 @@ export default function AutomationPage() {
     return () => { cancelled = true; };
   }, [selectedId, isDemo, refreshKey]);
 
+  const smart = selectedId ? cache?.[`smart-${selectedId}`] ?? null : null;
+
   useEffect(() => {
-    if (!selectedId) return;
-    if (isDemo) { setSmart(getDemoSmartDevices()); return; }
-    let cancelled = false;
-    setSmart(null);
-    request(`/api/devices/smart?deviceId=${encodeURIComponent(selectedId)}`)
-      .then(data => { if (!cancelled) setSmart(data.smartDevices ?? []); })
-      .catch(() => { if (!cancelled) setSmart([]); });
-    return () => { cancelled = true; };
-  }, [selectedId, isDemo]);
+    if (selectedId) loadSmartDevices(selectedId);
+  }, [selectedId, isDemo, refreshKey]);
 
   // Keep the chosen appliance among the ones this unit really has.
   useEffect(() => {
@@ -228,7 +224,8 @@ export default function AutomationPage() {
 
   const appliances = applianceOptions(smart ?? []);
   const noSmart    = smart !== null && appliances.length === 0;
-  const targetOptions = appliances.length ? appliances : TARGETS;
+  const targetOptions = appliances.length ? appliances : [{ value: form.target, label: 'No smart devices' }];
+  const automatedNames = appliances.map(a => a.label);
   const today    = new Date().getDay();
   const aiCount  = schedules.filter(r => r.source === 'ai').length;
   const byDay    = day => schedules
@@ -241,6 +238,15 @@ export default function AutomationPage() {
         title="Automation"
         sub="Choose when your smart devices turn on or off, or let AI plan it from how the room is used. Atmos sends the schedule to your sensor unit, which switches the devices for you."
       />
+
+      <div className="dash-note" role="note">
+        <span className="dash-note-icon"><Icon name="automation" size={18} /></span>
+        <div>
+          <strong>Automation is for smart devices.</strong> Smart plugs and switches on your Wi-Fi can be switched by Atmos itself, on a schedule or by hand below.
+          {' '}Appliances that are not smart, such as an ordinary AC or tube lights, cannot be switched from here, so Atmos raises <Link href="/dashboard/alerts" className="link">Alerts</Link> for them instead.
+          {automatedNames.length > 0 && <span className="dash-note-meta">Automated in this room: {automatedNames.join(', ')}.</span>}
+        </div>
+      </div>
 
       {message && (
         <div
@@ -270,7 +276,7 @@ export default function AutomationPage() {
                 label="Appliance"
                 value={targetOptions.some(o => o.value === form.target) ? form.target : targetOptions[0].value}
                 options={targetOptions}
-                disabled={smart === null}
+                disabled={smart === null || noSmart}
                 onChange={v => setForm(f => ({ ...f, target: v }))}
               />
               {noSmart && (
@@ -340,7 +346,7 @@ export default function AutomationPage() {
           )}
 
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <button type="submit" disabled={saving} className="btn bg-brand text-brand-on-bg" style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}>
+            <button type="submit" disabled={saving || noSmart} className="btn bg-brand text-brand-on-bg" style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}>
               {saving ? 'Saving...' : editingId ? 'Save changes' : 'Add rule'}
             </button>
             {editingId && (
@@ -434,6 +440,24 @@ export default function AutomationPage() {
           ))}
         </div>
       </div>
+
+      <section aria-labelledby="manual-title">
+        <h2 id="manual-title" className="dash-section-title">Manual control</h2>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.65, margin: '0 0 0.875rem' }}>
+          Switch any smart device on or off right now. Your schedule still runs as normal afterwards.
+        </p>
+        {smart === null
+          ? <div className="dash-empty" style={{ border: 'none' }}>Loading smart devices...</div>
+          : (
+            <ManualControl
+              devices={smart}
+              deviceId={selectedId}
+              isDemo={isDemo}
+              onUpdated={row => updateSmartDevice(selectedId, row)}
+              onAction={entry => setLogs(list => [entry, ...list].slice(0, 15))}
+            />
+          )}
+      </section>
     </div>
   );
 }

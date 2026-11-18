@@ -605,3 +605,21 @@ button,
 .skip-link:focus { top: 0.75rem; }
 
 p .link, li .link, small .link { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Phones (below 768px). Laptop and desktop layouts are not affected. ── */
+@media (max-width: 767px) {
+  .section-pad { padding: 3.5rem 1.25rem; }
+
+  /* Side-by-side layouts set in inline styles become one column */
+  .m-stack       { grid-template-columns: minmax(0, 1fr) !important; gap: 2.5rem !important; }
+  .m-stack-tight { grid-template-columns: minmax(0, 1fr) !important; gap: 0.875rem !important; }
+  .m-stack-lines { grid-template-columns: minmax(0, 1fr) !important; }
+  .m-pad         { padding: 1.5rem 1.25rem !important; }
+  .m-h2          { font-size: 1.9rem !important; line-height: 1.15 !important; }
+
+  /* Long words, links and numbers never push the page sideways */
+  main p, main li { overflow-wrap: break-word; }
+
+  /* Comfortable tap targets for form fields (and no zoom-on-focus in iOS Safari) */
+  .field-input { font-size: 16px; }
+}

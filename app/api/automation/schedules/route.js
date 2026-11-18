@@ -1,6 +1,6 @@
 import {
   resolveApiUser, getSchedules, insertSchedules, updateSchedule, deleteSchedule, getAutomationLogs,
-} from '@/lib/supabase';
+} from '@/lib/server/db';
 import { cleanSchedule, MAX_SCHEDULES_PER_DEVICE } from '@/lib/schedules';
 
 // GET /api/automation/schedules?deviceId=ATM-001 → { schedules, logs }

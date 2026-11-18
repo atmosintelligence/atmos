@@ -1,4 +1,4 @@
-import { resolveApiUser, updateDeviceSettings } from '@/lib/supabase';
+import { resolveApiUser, updateDeviceSettings } from '@/lib/server/db';
 import { cleanDeviceSettings } from '@/lib/deviceSettings';
 import { clearEngineCache } from '@/lib/server/engine';
 

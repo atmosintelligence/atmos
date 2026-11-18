@@ -1,4 +1,4 @@
-import { resolveApiUser, unlinkDevice } from '@/lib/supabase';
+import { resolveApiUser, unlinkDevice } from '@/lib/server/db';
 import { clearEngineCache } from '@/lib/server/engine';
 
 export async function POST(request) {

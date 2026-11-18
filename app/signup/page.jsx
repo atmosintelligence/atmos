@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import NavbarBorderOverride from '@/components/NavbarBorderOverride';
-import { signUp } from '@/lib/supabase';
+import { signUp } from '@/lib/auth';
 
 const firstNames = [
   'Aryan', 'Rohan', 'Vikram', 'Aditya', 'Rahul',

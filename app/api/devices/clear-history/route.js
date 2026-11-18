@@ -1,4 +1,4 @@
-import { resolveApiUser, clearReadings } from '@/lib/supabase';
+import { resolveApiUser, clearReadings } from '@/lib/server/db';
 
 export async function POST(request) {
   try {

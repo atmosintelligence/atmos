@@ -8,7 +8,7 @@ import VideoSection from '@/components/VideoSection';
 import RevealSection from '@/components/RevealSection';
 import AutomationDemo from '@/components/home/AutomationDemo';
 import Globe from '@/components/home/Globe';
-import ShotPlaceholder from '@/components/home/ShotPlaceholder';
+import DashboardPreview from '@/components/home/DashboardPreview';
 
 /* ---------- content ---------- */
 
@@ -119,7 +119,7 @@ export default function HomePage() {
               ))}
             </ul>
           </div>
-          <ShotPlaceholder label="Dashboard overview" />
+          <DashboardPreview />
         </div>
       </RevealSection>
 

@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useDevice } from '../DeviceContext';
+import { automatedRoles } from '@/lib/smartDevices';
 import Icon from '@/components/Icon';
 import PageHeader from '@/components/dashboard/PageHeader';
 import Stat from '@/components/dashboard/Stat';
@@ -94,7 +96,7 @@ function AlertSettings() {
 }
 
 export default function AlertsPage() {
-  const { selectedId, refreshKey, cache, getCached, setCached, isDemo, acknowledgeAlerts, nameOf } = useDevice();
+  const { selectedId, refreshKey, cache, getCached, setCached, isDemo, acknowledgeAlerts, nameOf, loadSmartDevices } = useDevice();
   const [status, setStatus]   = useState('loading');
   const [view, setView]       = useState('todo');
   const [severity, setSeverity] = useState('all');
@@ -115,6 +117,10 @@ export default function AlertsPage() {
   }, [selectedId, refreshKey, isDemo]);
 
   useEffect(() => { if (alerts) setStatus('ready'); }, [alerts]);
+  useEffect(() => { if (selectedId) loadSmartDevices(selectedId); }, [selectedId, refreshKey, isDemo]);
+
+  const ROLE_NAME = { light: 'lights', fan: 'fan', ac: 'AC' };
+  const automated = [...automatedRoles(cache?.[`smart-${selectedId}`])].map(r => ROLE_NAME[r]).filter(Boolean);
 
   const list = useMemo(() => alerts ?? [], [alerts]);
   const todo = list.filter(a => !a.acknowledged);
@@ -159,6 +165,15 @@ export default function AlertsPage() {
           </>
         }
       />
+
+      <div className="dash-note" role="note">
+        <span className="dash-note-icon"><Icon name="alerts" size={18} /></span>
+        <div>
+          <strong>Alerts are for appliances that are not smart.</strong> Atmos cannot switch an ordinary AC, tube light or charger by itself, so it tells you here and you act on it.
+          {' '}Smart devices do not raise alerts: Atmos switches them for you under <Link href="/dashboard/automation" className="link">Automation</Link>.
+          {automated.length > 0 && <span className="dash-note-meta">Handled by Automation in this room: {automated.join(', ')}.</span>}
+        </div>
+      </div>
 
       {showSettings && <AlertSettings />}
 

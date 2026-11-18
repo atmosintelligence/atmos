@@ -1,4 +1,4 @@
-import { resolveApiUser } from '@/lib/supabase';
+import { resolveApiUser } from '@/lib/server/db';
 import { getEngine } from '@/lib/server/engine';
 
 export async function POST(request) {

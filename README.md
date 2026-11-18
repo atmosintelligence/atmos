@@ -4,17 +4,17 @@ Atmos finds wasted electricity in rooms and buildings. A plug-in ESP32 sensor st
 
 **The hardware cannot measure power, energy or voltage.** All energy and ₹ figures are estimates from assumed appliance loads (lighting 120 W, AC 1200 W, standby 45 W), scaled to the room's monthly kWh, which the owner can enter per device.
 
-Built for Indian conditions: ₹ tariffs, BEE energy benchmarks, British English copy. Made by school students; the product is real, the business plans on `/future` are aspirational.
+Built for Indian conditions: ₹ tariffs, BEE energy benchmarks, British English copy. Made by school students; the product is real, the business plans on `/about/future` are aspirational. Public pages: `/`, `/pricing`, and under About: `/about`, `/about/future`, `/about/ai`, `/about/cybersecurity`, `/about/subsidy` and `/about/bibliography` (sources live in `lib/bibliography.js`). Old `/future` and `/pricing/subsidy` links redirect.
 
 Live: https://atmosintelligence.vercel.app
 
 ## How it works
 
-1. **Sensor** posts `{device_id, private_key, temperature, humidity, light, occupancy, auto_actions}` to `POST /api/device/reading`. The reply carries its automation config and enabled schedules.
-2. **Storage**: Supabase (Postgres, Mumbai). All DB access is in `lib/supabase.js` (browser client for user data, admin client for server-only functions; every admin query is filtered by the authorised user id or username).
+1. **Sensor** posts `{device_id, private_key, temperature, humidity, light, occupancy, appliance_power?, appliance_energy?, auto_actions}` to `POST /api/device/reading`. The reply carries its automation config, enabled schedules and `commands` (manual switches from the dashboard: `[{ mac, action }]`).
+2. **Storage**: Supabase (Postgres, Mumbai). Every query lives in one server-only file, `lib/server/db.js`; table and column names are listed once at its top (`SCHEMA`). The browser never touches a table: pages call our API routes, which check who is asking and filter every query by that account. `lib/auth.js` is browser sign-in only; `lib/api.js` holds the browser's fetch helpers. Schema changes for this version are in `docs/sql/schema-update.sql`.
 3. **Rule engine** (`lib/engine`, pure JS, deterministic): runs on the last 30 days of a device (max 5 pages x 1000 rows), cached 60 s in `lib/server/engine.js`.
 4. **AI layer** (`lib/ai`): Groq (`qwen/qwen3.8-27b`) rewrites engine findings into short, specific recommendations. No model is trained on user data. Machine learning is a roadmap item, not built.
-5. **Dashboard** (`app/dashboard`): overview, alerts, automation, analysis tabs (lighting, temperature, standby, trends, environmental savings), devices (with per-device name, rate, location, monthly use, PDF/JSON export, and History underneath), API, and settings (subscription at the top). Overview savings count only alerts the user marked as done. Demo mode needs no account: its data is generated in `lib/demo.js`. Per-device settings need `docs/sql/device-settings.sql` run once in Supabase.
+5. **Dashboard** (`app/dashboard`): overview, alerts, automation, analysis tabs (lighting, temperature, standby, trends, environmental savings), devices (with per-device name, rate, location, monthly use, PDF/JSON export, and History underneath), API, and settings (subscription at the top). Overview savings count only alerts the user marked as done. Demo mode needs no account: its data is generated in `lib/demo.js`. Database changes for this version are in `docs/sql/schema-update.sql`.
 
 ## Rule engine
 
@@ -44,6 +44,10 @@ Order: cooldown (30 s per user) -> quiet hours -> engine -> AI -> fall back to e
 
 ## Automation
 
+Automation is for smart devices (plugs and switches the unit finds on Wi-Fi). Only appliances that are not smart raise alerts: Lighting and HVAC findings are dropped for a room whose lights or AC Atmos can switch itself (`lib/smartDevices.js`). Settings → "Rule-based" skips the AI and saves the engine's own text.
+
+Manual control (bottom of the Automation tab) sets `smart_devices.desired_state`; the unit receives it as `commands` and reports the new `power_state` back, which clears it. Unclaimed commands expire after 15 minutes.
+
 Rules (`automation_schedules`): target (light, fan, ac), on/off, weekdays, HH:MM, time zone, source (`manual` or `ai`). "Plan with AI" (`POST /api/automation/suggest`, `lib/ai/schedule.js`) replaces only the device's AI rules from usage patterns and never touches manual ones; editing an AI rule makes it manual. The sensor receives enabled rules with a UTC offset and reports what it did via `auto_actions` into `automation_logs`.
 
 ## Plans
@@ -52,7 +56,7 @@ Spark (free, 2 devices, 10 min refresh), Basic ₹349, Premium ₹699 (30 s refr
 
 ## API
 
-`Authorization: Bearer atmos_...` (key made on the dashboard API tab) or a logged-in session: `/api/devices`, `/api/engine`, `/api/alerts` (+ `/acknowledge`, `/preferences`), `/api/automation/*`, `/api/devices/clear-history`, `/api/devices/unlink`. Sensors use their own device key on `/api/device/reading`.
+`Authorization: Bearer atmos_...` (key made on the dashboard API tab) or a logged-in session: `/api/devices`, `/api/engine`, `/api/alerts` (+ `/acknowledge`, `/preferences`), `/api/automation/*`, `/api/devices/clear-history`, `/api/devices/unlink`, `/api/devices/smart` (+ `/control`). Session only: `/api/account` (DELETE), `/api/account/profile`, `/api/account/subscription`, `/api/account/api-key`. Sensors use their own device key on `/api/device/reading`.
 
 ## Tech stack
 

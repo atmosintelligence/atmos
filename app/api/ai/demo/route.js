@@ -1,5 +1,7 @@
 import { generateAIOptimizations } from '@/lib/ai/groq';
 import { runEngine } from '@/lib/engine/index.js';
+import { getDemoSmartDevices } from '@/lib/demo';
+import { automatedRoles, nonSmartOnly } from '@/lib/smartDevices';
 
 export async function POST(request) {
   try {
@@ -16,6 +18,10 @@ export async function POST(request) {
       tariff:     tariff     ?? 10,
       monthlyKwh: monthlyKwh ?? null,
     });
+
+    // Only appliances Atmos cannot switch itself produce alerts.
+    const automated = automatedRoles(getDemoSmartDevices());
+    engineResult.optimizations = nonSmartOnly(engineResult.optimizations, automated);
 
     let ai = (engineResult.optimizations ?? []).map(o => ({
       group:      o.group,
@@ -38,8 +44,10 @@ export async function POST(request) {
         readings,
         engineResult,
         priorAlerts: [],
+        automated:   [...automated],
         interval:    '10 minutes',
       });
+      ai = nonSmartOnly(ai, automated);
     } catch (err) {
       console.error('[Atmos AI Demo] Generation failed:', err.message);
     }

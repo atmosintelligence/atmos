@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getSubscription, updateSubscription } from '@/lib/supabase';
+import { getSubscription, changePlan } from '@/lib/api';
 import { useDevice } from '@/app/dashboard/DeviceContext';
 import Icon from '@/components/Icon';
 
@@ -49,17 +49,10 @@ export default function SubscriptionPanel() {
   async function change(plan) {
     if (confirm !== plan) { setConfirm(plan); return; }
     setBusy(true); setMsg('');
-    const now = new Date();
-    const next = new Date(now); next.setMonth(next.getMonth() + 1);
-    const patch = {
-      plan,
-      last_payment_at: plan === 'spark' ? null : now.toISOString(),
-      next_payment_at: plan === 'spark' ? null : next.toISOString(),
-    };
-    const { error } = await updateSubscription(patch);
+    const { subscription, error } = await changePlan(plan);
     if (error) setMsg(error.message);
     else {
-      const updated = { ...sub, ...patch };
+      const updated = { ...sub, ...subscription };
       setSub(updated); setSubCacheData(updated);
       setMsg(`Plan changed to ${PLANS[plan].label}.`);
       setShowPlans(false);

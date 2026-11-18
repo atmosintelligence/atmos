@@ -1,4 +1,4 @@
-import { pingDatabase } from '@/lib/supabase';
+import { pingDatabase } from '@/lib/server/db';
 
 export const dynamic = 'force-dynamic';
 

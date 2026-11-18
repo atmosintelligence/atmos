@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getProfile, updateProfile, changePassword, deleteAccount } from '@/lib/supabase';
+import { changePassword, signOut } from '@/lib/auth';
+import { getProfile, updateProfile, deleteAccount } from '@/lib/api';
 import { useDevice } from '../DeviceContext';
 import PageHeader from '@/components/dashboard/PageHeader';
 import Segmented from '@/components/dashboard/Segmented';
@@ -56,13 +57,14 @@ export default function SettingsPage() {
       if (cached === 'ai' || cached === 'rule') setMode(cached);
     } catch {}
 
-    getProfile('display_name').then(d => { if (d) setName(d.display_name ?? ''); });
-    // Fetched on its own so a missing column cannot break the rest of the page.
-    getProfile('optimization_mode').then(d => {
-      const m = d?.optimization_mode;
+    if (isDemo) return;
+    getProfile().then(d => {
+      if (!d) return;
+      setName(d.display_name ?? '');
+      const m = d.optimization_mode;
       if (m === 'ai' || m === 'rule') { setMode(m); try { localStorage.setItem('atmos:optMode', m); } catch {} }
     });
-  }, []);
+  }, [isDemo]);
 
   async function saveName(e) {
     e.preventDefault();
@@ -106,8 +108,9 @@ export default function SettingsPage() {
   async function removeAccount() {
     setDeleting(true); setDeleteMsg(null);
     const { error } = await deleteAccount();
-    if (error) { setDeleteMsg({ error: error.message }); setDeleting(false); }
-    else router.replace('/');
+    if (error) { setDeleteMsg({ error: error.message }); setDeleting(false); return; }
+    await signOut().catch(() => {});
+    router.replace('/');
   }
 
   return (

@@ -1,4 +1,4 @@
-import { resolveApiUser, getSchedules, replaceAiSchedules } from '@/lib/supabase';
+import { resolveApiUser, getSchedules, replaceAiSchedules } from '@/lib/server/db';
 import { getEngine } from '@/lib/server/engine';
 import { generateAISchedule } from '@/lib/ai/schedule';
 import { isValidTimeZone, overlaps, MAX_SCHEDULES_PER_DEVICE } from '@/lib/schedules';

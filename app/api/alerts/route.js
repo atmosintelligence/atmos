@@ -1,4 +1,4 @@
-import { resolveApiUser, getAlerts } from '@/lib/supabase';
+import { resolveApiUser, getAlerts } from '@/lib/server/db';
 import { syncAlerts } from '@/lib/alerts';
 
 // GET /api/alerts?deviceId=ATM-001  → alert log

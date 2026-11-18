@@ -31,14 +31,14 @@ export default function FuturePage() {
           <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-accent)', marginBottom: '1rem' }}>
             Expansion roadmap
           </div>
-          <h2 className="font-heading" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '0.75rem' }}>
+          <h2 className="font-heading m-h2" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '0.75rem' }}>
             Local. National. Global.
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.7, maxWidth: '540px', marginBottom: '4rem' }}>
             Atmos is designed to scale in three explicit phases, each one funded by the margins of the one before it, and each one more defensible than the last.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
+          <div className="m-stack-lines" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(128,128,128,0.15)', borderRadius: '1rem', overflow: 'hidden' }}>
             {[
               {
                 phase:   '01',
@@ -86,7 +86,7 @@ export default function FuturePage() {
                 ],
               },
             ].map((p, i) => (
-              <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '2.5rem 2rem' }}>
+              <div key={i} className="bg-white dark:bg-[#0f0f0f] m-pad" style={{ padding: '2.5rem 2rem' }}>
                 <div style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: tone(p.color), marginBottom: '0.5rem' }}>
                   Phase {p.phase} · {p.label}
                 </div>
@@ -110,12 +110,12 @@ export default function FuturePage() {
 
       <section className="section-pad section-border">
         <div className="max-w-5xl mx-auto">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
+          <div className="m-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-accent)', marginBottom: '1rem' }}>
                 Autonomous control
               </div>
-              <h2 className="font-heading" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '1.25rem' }}>
+              <h2 className="font-heading m-h2" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '1.25rem' }}>
                 From suggestions<br />to action.
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: '1.5rem' }}>
@@ -183,7 +183,7 @@ export default function FuturePage() {
             <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-accent)', marginBottom: '1rem' }}>
               The AI platform
             </div>
-            <h2 className="font-heading" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '1rem' }}>
+            <h2 className="font-heading m-h2" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '1rem' }}>
               Three stages of intelligence.
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '580px', margin: '0 auto' }}>
@@ -208,7 +208,7 @@ export default function FuturePage() {
                 status:      'In development',
                 statusColor: '#eab308',
                 color:       '#60a5fa',
-                description: 'An AI agent, built on TensorFlow, that trains continuously on anonymised, cross-building data gathered from every climate zone and construction type we operate in. It learns consumption histories it has never seen explicitly labelled: the HVAC that predictably degrades every summer in a particular building typology; the occupancy pattern that correlates with a 14% power spike on the third week of every month. The rule engine catches what we know. The learning layer surfaces what we did not know to look for.',
+                description: 'An AI agent that learns continuously from anonymised, cross-building data gathered from every climate zone and construction type we operate in. It learns consumption histories it has never seen explicitly labelled: the HVAC that predictably degrades every summer in a particular building typology; the occupancy pattern that correlates with a 14% power spike on the third week of every month. The rule engine catches what we know. The learning layer surfaces what we did not know to look for.',
                 capability:  'Learns consumption history. Surfaces unknown inefficiency patterns.',
               },
               {
@@ -221,7 +221,7 @@ export default function FuturePage() {
                 capability:  'Acts autonomously at the edge. No cloud dependency.',
               },
             ].map((s, i) => (
-              <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '2.5rem', display: 'grid', gridTemplateColumns: '200px 1fr', gap: '3rem', alignItems: 'start' }}>
+              <div key={i} className="bg-white dark:bg-[#0f0f0f] m-stack-tight m-pad" style={{ padding: '2.5rem', display: 'grid', gridTemplateColumns: '200px 1fr', gap: '3rem', alignItems: 'start' }}>
                 <div>
                   <div style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: tone(s.color), marginBottom: '0.375rem' }}>{s.stage}</div>
                   <div className="font-heading" style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '0.75rem', lineHeight: 1.2 }}>{s.label}</div>
@@ -245,12 +245,12 @@ export default function FuturePage() {
 
       <section className="section-pad section-border">
         <div className="max-w-5xl mx-auto">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'start' }}>
+          <div className="m-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'start' }}>
             <div>
               <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-accent)', marginBottom: '1rem' }}>
                 Scalability
               </div>
-              <h2 className="font-heading" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '1.25rem' }}>
+              <h2 className="font-heading m-h2" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: '1.25rem' }}>
                 Three structural<br />reasons it scales.
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.8 }}>
@@ -297,14 +297,14 @@ export default function FuturePage() {
           <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-accent)', marginBottom: '1rem', textAlign: 'center' }}>
             Green economy
           </div>
-          <h2 className="font-heading" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', textAlign: 'center', marginBottom: '1rem' }}>
+          <h2 className="font-heading m-h2" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', textAlign: 'center', marginBottom: '1rem' }}>
             We are not a sensor company.<br />We are a green finance company.
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '580px', margin: '0 auto 4rem', textAlign: 'center' }}>
             The sensor and dashboard are the entry point. The long-term value — for customers, investors, and governments — lives in what verified energy data unlocks downstream. The global voluntary carbon market is projected to reach $50 billion by 2030. We intend to be infrastructure for it.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="m-stack-tight" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
             {[
               {
                 title: 'Macro advocacy: Data to policy',
@@ -327,7 +327,7 @@ export default function FuturePage() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+          <div className="m-stack-tight" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
             {[
               {
                 stat:  '$1.2T',
@@ -363,7 +363,7 @@ export default function FuturePage() {
           <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-accent)', marginBottom: '1rem' }}>
             Regulatory tailwinds
           </div>
-          <h2 className="font-heading" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '1rem' }}>
+          <h2 className="font-heading m-h2" style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '1rem' }}>
             The world is legislating<br />in our direction.
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '560px', marginBottom: '3rem' }}>
@@ -401,7 +401,7 @@ export default function FuturePage() {
                 color:   '#eab308',
               },
             ].map((item, i) => (
-              <div key={i} className="bg-white dark:bg-[#0f0f0f]" style={{ padding: '1.75rem 2rem', display: 'grid', gridTemplateColumns: '220px 1fr', gap: '2.5rem', alignItems: 'start' }}>
+              <div key={i} className="bg-white dark:bg-[#0f0f0f] m-stack-tight m-pad" style={{ padding: '1.75rem 2rem', display: 'grid', gridTemplateColumns: '220px 1fr', gap: '2.5rem', alignItems: 'start' }}>
                 <div>
                   <div style={{ fontSize: '1.25rem', marginBottom: '0.375rem' }}>{item.flag}</div>
                   <div className="font-heading" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '0.375rem' }}>{item.region}</div>

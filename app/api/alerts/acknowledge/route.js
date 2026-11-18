@@ -1,4 +1,4 @@
-import { resolveApiUser, acknowledgeAlerts } from '@/lib/supabase';
+import { resolveApiUser, acknowledgeAlerts } from '@/lib/server/db';
 
 // POST { ids: [1, 2] }  or  { all: true, deviceId }
 export async function POST(request) {

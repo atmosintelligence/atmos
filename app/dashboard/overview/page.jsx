@@ -7,6 +7,7 @@ import Stat from '@/components/dashboard/Stat';
 import OptCard from '@/components/dashboard/OptCard';
 import PageHeader from '@/components/dashboard/PageHeader';
 import { summariseSavings, formatINR } from '@/lib/savings';
+import { automatedRoles, nonSmartOnly } from '@/lib/smartDevices';
 import { useDevice } from '../DeviceContext';
 
 const MAX_SHOWN = 5;
@@ -35,7 +36,7 @@ function Skeleton() {
 }
 
 export default function OverviewPage() {
-  const { selectedId, devices, loadingDevices, profile, cache, loadEngine, refreshKey, isDemo, getDemoReadings, selectedSettings, nameOf, acknowledgeAlerts } = useDevice();
+  const { selectedId, devices, loadingDevices, profile, cache, loadEngine, loadSmartDevices, refreshKey, isDemo, getDemoReadings, selectedSettings, nameOf, acknowledgeAlerts } = useDevice();
 
   const [engine, setEngine] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -52,13 +53,17 @@ export default function OverviewPage() {
     return () => { cancelled = true; };
   }, [selectedId, refreshKey, waitingForDemo]);
 
+  useEffect(() => { if (selectedId) loadSmartDevices(selectedId); }, [selectedId, refreshKey, isDemo]);
+
   if (loadingDevices || (status === 'loading' && selectedId)) return <Skeleton />;
   if (!selectedId) return <div className="dash-empty">Link a device to see your recommendations.</div>;
   if (status === 'error') return <div className="dash-empty dash-error" role="alert">Could not load your data. Check your connection and try again.</div>;
 
   const alerts   = cache[`alerts-${selectedId}`]?.alerts;
   const pending  = alerts?.length ? alerts.filter(a => !a.acknowledged) : null;   // no alerts yet: show the engine's own findings
-  const toShow   = (pending ?? (engine?.optimizations ?? []).map(o => ({ ...o, group_name: o.group, saving_inr: o.saving?.inr, when: o.timestamp })))
+  const automated = automatedRoles(cache[`smart-${selectedId}`]);
+  const findings = nonSmartOnly(engine?.optimizations, automated);
+  const toShow   = (pending ?? findings.map(o => ({ ...o, group_name: o.group, saving_inr: o.saving?.inr, when: o.timestamp })))
     .slice()
     .sort((a, b) => (SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]) || (new Date(b.when ?? 0) - new Date(a.when ?? 0)));
 
