@@ -4,17 +4,24 @@ Atmos finds wasted electricity in rooms and buildings. A plug-in ESP32 sensor st
 
 **The hardware cannot measure power, energy or voltage.** All energy and ₹ figures are estimates from assumed appliance loads (lighting 120 W, AC 1200 W, standby 45 W), scaled to the room's monthly kWh, which the owner can enter per device.
 
-Built for Indian conditions: ₹ tariffs, BEE energy benchmarks, British English copy. Made by school students; the product is real, the business plans on `/about/future` are aspirational. Public pages: `/`, `/pricing`, and under About: `/about`, `/about/future`, `/about/ai`, `/about/cybersecurity`, `/about/subsidy` and `/about/bibliography` (sources live in `lib/bibliography.js`). Old `/future` and `/pricing/subsidy` links redirect.
-
 Live: https://atmosintelligence.vercel.app
 
 ## How it works
 
-1. **Sensor** (`Hardware.ino`, ESP32 with DHT22, BH1750 and RCWL-0516) posts `{device_id, private_key, temperature, humidity, light, occupancy, auto_actions, power, current, voltage, energy}` to `POST /api/device/reading` every 10 minutes. The four electrical fields are simulated by the firmware and are not saved; `appliance_power` and `appliance_energy` are only stored when a sender names them exactly. The reply is `{ ok, config }`: the Auto-off times from the Automation tab (`devices.automation_config`). The unit finds Shelly and Tasmota plugs on its own Wi-Fi by name (light, fan, ac) and switches them off when the room is empty; it reports each switch in `auto_actions` (e.g. `light_23`, saved as target `light`).
-2. **Storage**: Supabase (Postgres, Mumbai). Every query lives in one server-only file, `lib/server/db.js`; table and column names are listed once at its top (`SCHEMA`). The browser never touches a table: pages call our API routes, which check who is asking and filter every query by that account. `lib/auth.js` is browser sign-in only; `lib/api.js` holds the browser's fetch helpers. Schema changes are in `docs/sql/schema-update.sql` (3.7.0) and `docs/sql/schema-update-3.7.1.sql`.
-3. **Rule engine** (`lib/engine`, pure JS, deterministic): runs on the last 30 days of a device (max 5 pages x 1000 rows), cached 60 s in `lib/server/engine.js`.
-4. **AI layer** (`lib/ai`): Groq (`qwen/qwen3.8-27b`) rewrites engine findings into short, specific recommendations. No model is trained on user data. Machine learning is a roadmap item, not built.
-5. **Dashboard** (`app/dashboard`): overview, alerts, automation, analysis tabs (lighting, temperature, standby, trends, environmental savings), devices (with per-device name, rate, location, monthly use, PDF/JSON export, and History underneath), API, and settings (subscription at the top). Overview savings count only alerts the user marked as done. Demo mode needs no account: its data is generated in `lib/demo.js`. Database changes are in `docs/sql/schema-update.sql` and `docs/sql/schema-update-3.7.1.sql`.
+1. Smart Sensor & Plug Control
+An ESP32 sensor tracks room temperature, humidity, light, and motion, sending updates to the server every 10 minutes. In return, it receives user-set auto-off timers. When a room is empty, the sensor automatically turns off local smart plugs (lights, fans, or AC) over Wi-Fi and logs the action. (Note: Simulated power metrics are ignored unless explicitly named).
+
+2. Database & Security (lib/server/db.js)
+All data is stored in a Supabase database in Mumbai. For security, the web browser never accesses the database directly. Instead, it requests data through secure server routes that verify the user's identity and isolate their account data.
+
+3. Rule Engine (lib/engine)
+A logic engine scans up to 30 days of a device's recent history (up to 5,000 data points) to spot patterns. Results are cached for 60 seconds to keep the app fast.
+
+4. AI Writing Assistant (lib/ai)
+An AI model (Qwen via Groq) translates the rule engine's technical findings into short, plain-English tips. No user data is used to train the AI, and predictive machine learning is planned for the future.
+
+5. User Dashboard (app/dashboard)
+The web app lets users manage devices, set electricity rates, view energy analysis, and export reports (PDF/JSON). The savings tracker only counts recommendations the user marks as completed. A no-signup Demo Mode is also available using sample data.
 
 ## Rule engine
 
@@ -33,14 +40,13 @@ Energy is estimated: assumed load (scaled by the device's monthly kWh) x time un
 
 Environmental savings compare the estimated use with the BEE benchmark (180 kWh/m²/year, 20 m² room, pro-rated to days covered), CO₂ at 0.727 kg/kWh, 24 kg CO₂ per tree-year. Avoidable energy is capped at 60 % of estimated use.
 
-## Alerts (`lib/alerts.js`, `POST /api/alerts`)
+## Alerts (`POST /api/alerts`)
 
 Order: cooldown (30 s per user) -> quiet hours -> engine -> AI -> fall back to engine text if the AI fails, returns nothing or the insert is rejected -> drop titles already raised in the last six hours -> save.
 
 - The AI gets: country, tariff, last 24 readings, non-zero engine findings, the engine's current alert messages, and recent alert titles. It never gets name, email, username or device ID.
-- It replies with lines: `CATEGORY|SEVERITY|Title|Text|Saving|Date/time`. `parseAIResponse` in `lib/ai/groq.js` validates each line and drops anything malformed.
+- It replies with optimizations, validates them, and drops anything malformed.
 - Categories: General, Lighting, Humidity, HVAC, Standby, Trends (write HVAC in capitals everywhere).
-- `alerts` columns: `id, user_id, device_id, group_name, severity, title, message, saving_inr, acknowledged, created_at, when`. `created_at` is when the alert was generated; `when` is the sensor-reading time it is about (from the AI's Date/time, else the engine's event time, else the latest reading). `when` is a reserved SQL word, so quote it in raw SQL.
 
 ## Automation
 

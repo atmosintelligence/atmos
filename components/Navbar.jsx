@@ -17,10 +17,9 @@ const NAV_ITEMS = [
       { label: 'Our Future', href: '/about/future', description: 'What we\u2019re building next' },
       { label: 'AI', href: '/about/ai', description: 'How Atmos thinks' },
       { label: 'Cybersecurity', href: '/about/cybersecurity', description: 'How your data stays safe' },
-      { label: 'Bibliography', href: '/about/bibliography', description: 'The sources behind our figures' },
     ],
   },
-  { label: 'Subsidies', href: '/subsidy' },
+  { label: 'Subsidies', href: '/subsidies' },
   { label: 'Dashboard', href: '/dashboard' },
 ];
 

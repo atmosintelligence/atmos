@@ -2,15 +2,16 @@
 
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import Footer from '@/components/Footer';
-import InputPanel from '@/components/subsidy/InputPanel';
-import { Headline, Kpis, PaybackChart } from '@/components/subsidy/Results';
-import { Schemes, ThirdParty } from '@/components/subsidy/Schemes';
-import { AtmosPanel, ImpactPanel, NextSteps, Method } from '@/components/subsidy/Insights';
+import InputPanel from '@/components/subsidies/InputPanel';
+import { Headline, Kpis, PaybackChart } from '@/components/subsidies/Results';
+import { Schemes, ThirdParty } from '@/components/subsidies/Schemes';
 import { DEFAULT_INPUT, SEGMENT_DEFAULTS, calculate } from '@/lib/subsidy/calc';
 import { PRESETS, tr } from '@/lib/subsidy/i18n';
+import { AtmosPanel, ImpactPanel, NextSteps, Method } from '@/components/subsidies/Insights';
+import Sources from '@/components/subsidies/Sources';
 import './subsidy.css';
 
-export default function SubsidyPage() {
+export default function SubsidiesPage() {
   const [input, setInput] = useState(DEFAULT_INPUT);
   const [lang, setLang] = useState('en');
   const [preset, setPreset] = useState('p_delhi');
@@ -97,6 +98,7 @@ export default function SubsidyPage() {
             <div className="sub-defer"><ImpactPanel r={result} lang={lang} set={set} /></div>
             <div className="sub-defer"><NextSteps r={result} lang={lang} /></div>
             <Method lang={lang} />
+            <Sources lang={lang} />
           </div>
         </div>
       </main>

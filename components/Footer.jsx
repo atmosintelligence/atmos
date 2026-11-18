@@ -6,7 +6,7 @@ const COLUMNS = [
     links: [
       { label: 'Dashboard', href: '/dashboard' },
       { label: 'Pricing', href: '/pricing' },
-      { label: 'Subsidy Calculator', href: '/about/subsidy' },
+      { label: 'Subsidy Calculator', href: '/subsidies' },
     ],
   },
   {
@@ -16,7 +16,6 @@ const COLUMNS = [
       { label: 'Our Future', href: '/about/future' },
       { label: 'AI', href: '/about/ai' },
       { label: 'Cybersecurity', href: '/about/cybersecurity' },
-      { label: 'Bibliography', href: '/about/bibliography' },
     ],
   },
   {

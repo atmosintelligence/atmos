@@ -111,7 +111,7 @@ export default function AboutPage() {
                 About 1.2 kWh, ₹12 at ₹10 a unit and 0.9 kg of CO₂. Across a school year of working days, catching that once a day is worth about ₹2,600 for one room. An illustration from our engine&apos;s assumed loads, not a measured result.
               </p>
             </div>
-            <Link href="/about/subsidy" className="btn bg-brand text-brand-on-bg px-6 py-2.5 rounded-full text-sm font-medium text-center shrink-0">
+            <Link href="/subsidies" className="btn bg-brand text-brand-on-bg px-6 py-2.5 rounded-full text-sm font-medium text-center shrink-0">
               Try the Subsidy Calculator
             </Link>
           </div>

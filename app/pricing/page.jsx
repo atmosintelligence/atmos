@@ -348,7 +348,7 @@ export default function PricingPage() {
               <span>See all plans</span>
               <span className="arrow inline-flex items-center"><Icon name="arrowRight" /></span>
             </a>
-            <Link href="/about/subsidy" className="arrow-link link self-start text-sm">
+            <Link href="/subsidies" className="arrow-link link self-start text-sm">
               <span>Check what subsidies can pay for</span>
               <span className="arrow inline-flex items-center"><Icon name="arrowRight" /></span>
             </Link>
