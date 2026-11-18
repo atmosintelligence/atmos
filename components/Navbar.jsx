@@ -17,14 +17,11 @@ const NAV_ITEMS = [
       { label: 'Our Future', href: '/about/future', description: 'What we\u2019re building next' },
       { label: 'AI', href: '/about/ai', description: 'How Atmos thinks' },
       { label: 'Cybersecurity', href: '/about/cybersecurity', description: 'How your data stays safe' },
-      { label: 'Subsidy Calculator', href: '/about/subsidy', description: 'See what schemes can pay for' },
       { label: 'Bibliography', href: '/about/bibliography', description: 'The sources behind our figures' },
     ],
   },
-  {
-    label: 'Dashboard',
-    href: '/dashboard'
-  },
+  { label: 'Subsidies', href: '/subsidy' },
+  { label: 'Dashboard', href: '/dashboard' },
 ];
 
 const isActiveHref = (href, pathname) => (href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`));
