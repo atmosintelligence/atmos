@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Select from '@/components/dashboard/Select';
-import { setSmartDeviceState } from '@/lib/api';
 
 const ROLE_LABEL = { light: 'Lights', fan: 'Fan', ac: 'AC', board: 'Switchboard', unassigned: 'Not assigned' };
 
@@ -46,11 +45,13 @@ function Switch({ checked, disabled, busy, onChange, label }) {
 }
 
 // "Manual control" on the Automation page: every smart device the unit has found, with a
-// switch for each. A switch is sent to the unit, which carries it out on its next check-in.
-export default function ManualControl({ devices, deviceId, isDemo, onUpdated, onAction }) {
+// switch for each. Today's unit firmware cannot take switches from the dashboard yet, so the
+// switches work in the demo and are shown read-only for real units.
+export default function ManualControl({ devices, isDemo, onUpdated, onAction }) {
   const [busy, setBusy]   = useState(null);
   const [error, setError] = useState(null);
-  const switchable = devices.filter(canSwitch);
+  const live = isDemo;
+  const switchable = live ? devices.filter(canSwitch) : [];
   const [picked, setPicked] = useState(null);
   const current = switchable.find(d => d.mac === picked) ?? switchable[0] ?? null;
 
@@ -59,15 +60,10 @@ export default function ManualControl({ devices, deviceId, isDemo, onUpdated, on
     setBusy(device.mac);
     setError(null);
     try {
-      if (isDemo) {
-        onUpdated({ mac: device.mac, desired_state: state, desired_at: new Date().toISOString() });
-        await new Promise(r => setTimeout(r, 700));
-        onUpdated({ mac: device.mac, power_state: state, desired_state: null, power_w: state === 'off' ? 0 : device.has_metering ? 118.4 : null });
-      } else {
-        const { device: row, error: err } = await setSmartDeviceState(deviceId, device.mac, state);
-        if (err) throw new Error(err.message);
-        onUpdated(row);
-      }
+      if (!live) throw new Error('Manual switching needs a newer unit firmware.');
+      onUpdated({ mac: device.mac, desired_state: state });
+      await new Promise(r => setTimeout(r, 700));
+      onUpdated({ mac: device.mac, power_state: state, desired_state: null, power_w: state === 'off' ? 0 : device.has_metering ? 118.4 : null });
       onAction?.({ target: roleOf(device), action: state, reason: `${device.name || 'Device'}, switched from the dashboard`, timestamp: new Date().toISOString() });
     } catch (err) {
       setError(err.message);
@@ -75,11 +71,13 @@ export default function ManualControl({ devices, deviceId, isDemo, onUpdated, on
     setBusy(null);
   }
 
+  const firmwareNote = 'Switching devices from the dashboard arrives with a newer unit firmware. Until then your unit turns them off by itself when the room is empty, using the Auto-off times above.';
+
   if (!devices.length) {
     return (
       <div className="dash-device-card">
         <p className="hint" style={{ margin: 0 }}>
-          No smart devices found yet. Once your unit finds smart plugs or switches on your Wi-Fi, they appear here with an on/off switch.
+          {live ? 'No smart devices found yet. Once your unit finds smart plugs or switches on your Wi-Fi, they appear here with an on/off switch.' : firmwareNote}
         </p>
       </div>
     );
@@ -142,7 +140,7 @@ export default function ManualControl({ devices, deviceId, isDemo, onUpdated, on
                 <Switch
                   checked={on}
                   busy={busy === d.mac}
-                  disabled={!canSwitch(d) || busy === d.mac}
+                  disabled={!live || !canSwitch(d) || busy === d.mac}
                   label={`${d.name || 'Device'}: ${on ? 'on' : 'off'}`}
                   onChange={next => flip(d, next)}
                 />
@@ -153,9 +151,7 @@ export default function ManualControl({ devices, deviceId, isDemo, onUpdated, on
       </ul>
 
       <p className="hint" style={{ margin: 0 }}>
-        {isDemo
-          ? 'Demo mode: switches change this page only.'
-          : 'Your unit carries out a switch the next time it checks in, usually within a few seconds to 10 minutes depending on your plan.'}
+        {isDemo ? 'Demo mode: switches change this page only.' : firmwareNote}
       </p>
     </div>
   );

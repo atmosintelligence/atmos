@@ -1,7 +1,13 @@
-import { getDeviceByCredentials, insertReading, touchDevice, logAutomationActions, getDeviceSchedules, getPendingCommands } from '@/lib/server/db';
+import { getDeviceByCredentials, insertReading, touchDevice, logAutomationActions } from '@/lib/server/db';
 import { buildConfig, normalizeActions } from '@/lib/automation';
-import { toDevicePayload } from '@/lib/schedules';
 
+// The Atmos unit posts here every 10 minutes (30 s retries).
+//
+// Stored:   temperature, humidity, light, occupancy (readings) and auto_actions (automation_logs).
+// Ignored:  power, current, voltage, energy. The current firmware simulates these, so they
+//           are not saved. appliance_power and appliance_energy are only stored when a sender
+//           names them exactly (smart appliances).
+// Reply:    { ok, config }. config holds the auto-off timers set on the dashboard.
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -20,19 +26,7 @@ export async function POST(request) {
     await logAutomationActions(normalizeActions(auto_actions, device_id));
     await touchDevice(device_id);
 
-    // A lookup failure must never lose the reading that was just saved.
-    const [schedules, commands] = await Promise.all([
-      getDeviceSchedules(device_id).catch(() => []),
-      getPendingCommands(device_id).catch(() => []),
-    ]);
-
-    return Response.json({
-      ok: true,
-      config: buildConfig(device.automation_config),
-      schedules: toDevicePayload(schedules),
-      // Manual switches from the dashboard: [{ mac, action: 'on' | 'off' }]
-      commands,
-    });
+    return Response.json({ ok: true, config: buildConfig(device.automation_config) });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }

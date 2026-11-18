@@ -104,12 +104,17 @@ export function DeviceProvider({ children }) {
     if (inflight.current.has(key)) return inflight.current.get(key);
 
     const promise = (isDemo
-      ? Promise.resolve(getDemoSmartDevices())
+      ? Promise.resolve({ smartDevices: getDemoSmartDevices(), autoRoles: [] })
       : fetch(`/api/devices/smart?deviceId=${encodeURIComponent(deviceId)}`)
-          .then(r => (r.ok ? r.json() : { smartDevices: [] }))
-          .then(json => json.smartDevices ?? [])
-          .catch(() => []))
-      .then(list => { setCached(key, list); return list; })
+          .then(r => (r.ok ? r.json() : {}))
+          .catch(() => ({})))
+      .then(json => {
+        const list = json.smartDevices ?? [];
+        // Appliances the unit switched off by itself this week (it controls its own plugs).
+        setCached(`autoroles-${deviceId}`, json.autoRoles ?? []);
+        setCached(key, list);
+        return list;
+      })
       .finally(() => inflight.current.delete(key));
 
     inflight.current.set(key, promise);

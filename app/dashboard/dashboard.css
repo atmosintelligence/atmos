@@ -1024,3 +1024,7 @@ textarea:disabled {
   .api-ep-path { flex: 1 1 0 !important; min-width: 0; overflow-wrap: anywhere; }
   .api-ep-desc { flex: 1 1 100% !important; order: 3; }
 }
+
+/* Automation → Auto-off settings */
+.auto-off-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 1rem 1.25rem; transition: opacity 0.2s ease; }
+.auto-off-field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }

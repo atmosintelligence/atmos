@@ -120,7 +120,7 @@ export default function AlertsPage() {
   useEffect(() => { if (selectedId) loadSmartDevices(selectedId); }, [selectedId, refreshKey, isDemo]);
 
   const ROLE_NAME = { light: 'lights', fan: 'fan', ac: 'AC' };
-  const automated = [...automatedRoles(cache?.[`smart-${selectedId}`])].map(r => ROLE_NAME[r]).filter(Boolean);
+  const automated = [...automatedRoles(cache?.[`smart-${selectedId}`], cache?.[`autoroles-${selectedId}`])].map(r => ROLE_NAME[r]).filter(Boolean);
 
   const list = useMemo(() => alerts ?? [], [alerts]);
   const todo = list.filter(a => !a.acknowledged);

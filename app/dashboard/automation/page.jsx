@@ -7,6 +7,7 @@ import Icon from '@/components/Icon';
 import Select from '@/components/dashboard/Select';
 import PageHeader from '@/components/dashboard/PageHeader';
 import ManualControl from '@/components/dashboard/ManualControl';
+import AutoOffSettings from '@/components/dashboard/AutoOffSettings';
 
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -224,8 +225,16 @@ export default function AutomationPage() {
 
   const appliances = applianceOptions(smart ?? []);
   const noSmart    = smart !== null && appliances.length === 0;
+  // Today's unit firmware switches devices off by itself (Auto-off) but does not download
+  // schedules yet, so rules can only be made in the demo for now.
+  const schedulesLive = isDemo;
+  const rulesBlocked  = noSmart || !schedulesLive;
   const targetOptions = appliances.length ? appliances : [{ value: form.target, label: 'No smart devices' }];
-  const automatedNames = appliances.map(a => a.label);
+  const autoRoles = cache?.[`autoroles-${selectedId}`] ?? [];
+  const automatedNames = [...new Set([
+    ...appliances.map(a => a.label),
+    ...autoRoles.filter(r => !appliances.some(a => a.value === r)).map(r => ROLE_NOUN[r]),
+  ])];
   const today    = new Date().getDay();
   const aiCount  = schedules.filter(r => r.source === 'ai').length;
   const byDay    = day => schedules
@@ -236,17 +245,19 @@ export default function AutomationPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
       <PageHeader
         title="Automation"
-        sub="Choose when your smart devices turn on or off, or let AI plan it from how the room is used. Atmos sends the schedule to your sensor unit, which switches the devices for you."
+        sub="Your sensor unit switches smart devices off by itself when the room is empty. Set how long it waits, plan schedules, or let AI plan them from how the room is used."
       />
 
       <div className="dash-note" role="note">
         <span className="dash-note-icon"><Icon name="automation" size={18} /></span>
         <div>
-          <strong>Automation is for smart devices.</strong> Smart plugs and switches on your Wi-Fi can be switched by Atmos itself, on a schedule or by hand below.
+          <strong>Automation is for smart devices.</strong> Your unit finds smart plugs and switches on your Wi-Fi by itself and turns them off when the room is empty.
           {' '}Appliances that are not smart, such as an ordinary AC or tube lights, cannot be switched from here, so Atmos raises <Link href="/dashboard/alerts" className="link">Alerts</Link> for them instead.
           {automatedNames.length > 0 && <span className="dash-note-meta">Automated in this room: {automatedNames.join(', ')}.</span>}
         </div>
       </div>
+
+      <AutoOffSettings deviceId={selectedId} isDemo={isDemo} />
 
       {message && (
         <div
@@ -276,10 +287,14 @@ export default function AutomationPage() {
                 label="Appliance"
                 value={targetOptions.some(o => o.value === form.target) ? form.target : targetOptions[0].value}
                 options={targetOptions}
-                disabled={smart === null || noSmart}
+                disabled={smart === null || rulesBlocked}
                 onChange={v => setForm(f => ({ ...f, target: v }))}
               />
-              {noSmart && (
+              {!schedulesLive ? (
+                <span className="hint" style={{ display: 'block', marginTop: '0.35rem', maxWidth: '16rem' }}>
+                  Schedules need a newer unit firmware. Until then your unit switches devices off by itself, using the Auto-off times above.
+                </span>
+              ) : noSmart && (
                 <span className="hint" style={{ display: 'block', marginTop: '0.35rem', maxWidth: '16rem' }}>
                   No smart devices found yet. Your unit lists them here once it finds plugs or switches on your Wi-Fi.
                 </span>
@@ -346,7 +361,7 @@ export default function AutomationPage() {
           )}
 
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <button type="submit" disabled={saving || noSmart} className="btn bg-brand text-brand-on-bg" style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}>
+            <button type="submit" disabled={saving || rulesBlocked} className="btn bg-brand text-brand-on-bg" style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}>
               {saving ? 'Saving...' : editingId ? 'Save changes' : 'Add rule'}
             </button>
             {editingId && (
@@ -374,7 +389,7 @@ export default function AutomationPage() {
             <button
               type="button"
               onClick={planWithAI}
-              disabled={planning}
+              disabled={planning || !schedulesLive}
               className="btn bg-brand text-brand-on-bg"
               style={{ fontSize: '0.82rem', fontWeight: 600, padding: '0.5rem 1.25rem', borderRadius: '0.625rem' }}
             >
@@ -382,9 +397,13 @@ export default function AutomationPage() {
             </button>
             {aiCount > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{aiCount} AI rule{aiCount === 1 ? '' : 's'} on the calendar</span>}
           </div>
-          {isDemo && (
+          {isDemo ? (
             <p style={{ fontSize: '0.72rem', color: 'var(--text-soft)', margin: 0 }}>
               Demo mode: rules live in this page only and the plan is a sample.
+            </p>
+          ) : (
+            <p className="hint" style={{ margin: 0 }}>
+              AI plans arrive with a newer unit firmware. Your unit already uses the Auto-off times above.
             </p>
           )}
         </div>
@@ -451,7 +470,6 @@ export default function AutomationPage() {
           : (
             <ManualControl
               devices={smart}
-              deviceId={selectedId}
               isDemo={isDemo}
               onUpdated={row => updateSmartDevice(selectedId, row)}
               onAction={entry => setLogs(list => [entry, ...list].slice(0, 15))}

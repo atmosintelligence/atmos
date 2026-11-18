@@ -61,7 +61,7 @@ export default function OverviewPage() {
 
   const alerts   = cache[`alerts-${selectedId}`]?.alerts;
   const pending  = alerts?.length ? alerts.filter(a => !a.acknowledged) : null;   // no alerts yet: show the engine's own findings
-  const automated = automatedRoles(cache[`smart-${selectedId}`]);
+  const automated = automatedRoles(cache[`smart-${selectedId}`], cache[`autoroles-${selectedId}`]);
   const findings = nonSmartOnly(engine?.optimizations, automated);
   const toShow   = (pending ?? findings.map(o => ({ ...o, group_name: o.group, saving_inr: o.saving?.inr, when: o.timestamp })))
     .slice()

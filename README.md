@@ -10,11 +10,11 @@ Live: https://atmosintelligence.vercel.app
 
 ## How it works
 
-1. **Sensor** posts `{device_id, private_key, temperature, humidity, light, occupancy, appliance_power?, appliance_energy?, auto_actions}` to `POST /api/device/reading`. The reply carries its automation config, enabled schedules and `commands` (manual switches from the dashboard: `[{ mac, action }]`).
-2. **Storage**: Supabase (Postgres, Mumbai). Every query lives in one server-only file, `lib/server/db.js`; table and column names are listed once at its top (`SCHEMA`). The browser never touches a table: pages call our API routes, which check who is asking and filter every query by that account. `lib/auth.js` is browser sign-in only; `lib/api.js` holds the browser's fetch helpers. Schema changes for this version are in `docs/sql/schema-update.sql`.
+1. **Sensor** (`Hardware.ino`, ESP32 with DHT22, BH1750 and RCWL-0516) posts `{device_id, private_key, temperature, humidity, light, occupancy, auto_actions, power, current, voltage, energy}` to `POST /api/device/reading` every 10 minutes. The four electrical fields are simulated by the firmware and are not saved; `appliance_power` and `appliance_energy` are only stored when a sender names them exactly. The reply is `{ ok, config }`: the Auto-off times from the Automation tab (`devices.automation_config`). The unit finds Shelly and Tasmota plugs on its own Wi-Fi by name (light, fan, ac) and switches them off when the room is empty; it reports each switch in `auto_actions` (e.g. `light_23`, saved as target `light`).
+2. **Storage**: Supabase (Postgres, Mumbai). Every query lives in one server-only file, `lib/server/db.js`; table and column names are listed once at its top (`SCHEMA`). The browser never touches a table: pages call our API routes, which check who is asking and filter every query by that account. `lib/auth.js` is browser sign-in only; `lib/api.js` holds the browser's fetch helpers. Schema changes are in `docs/sql/schema-update.sql` (3.7.0) and `docs/sql/schema-update-3.7.1.sql`.
 3. **Rule engine** (`lib/engine`, pure JS, deterministic): runs on the last 30 days of a device (max 5 pages x 1000 rows), cached 60 s in `lib/server/engine.js`.
 4. **AI layer** (`lib/ai`): Groq (`qwen/qwen3.8-27b`) rewrites engine findings into short, specific recommendations. No model is trained on user data. Machine learning is a roadmap item, not built.
-5. **Dashboard** (`app/dashboard`): overview, alerts, automation, analysis tabs (lighting, temperature, standby, trends, environmental savings), devices (with per-device name, rate, location, monthly use, PDF/JSON export, and History underneath), API, and settings (subscription at the top). Overview savings count only alerts the user marked as done. Demo mode needs no account: its data is generated in `lib/demo.js`. Database changes for this version are in `docs/sql/schema-update.sql`.
+5. **Dashboard** (`app/dashboard`): overview, alerts, automation, analysis tabs (lighting, temperature, standby, trends, environmental savings), devices (with per-device name, rate, location, monthly use, PDF/JSON export, and History underneath), API, and settings (subscription at the top). Overview savings count only alerts the user marked as done. Demo mode needs no account: its data is generated in `lib/demo.js`. Database changes are in `docs/sql/schema-update.sql` and `docs/sql/schema-update-3.7.1.sql`.
 
 ## Rule engine
 
@@ -44,9 +44,9 @@ Order: cooldown (30 s per user) -> quiet hours -> engine -> AI -> fall back to e
 
 ## Automation
 
-Automation is for smart devices (plugs and switches the unit finds on Wi-Fi). Only appliances that are not smart raise alerts: Lighting and HVAC findings are dropped for a room whose lights or AC Atmos can switch itself (`lib/smartDevices.js`). Settings → "Rule-based" skips the AI and saves the engine's own text.
+Automation is for smart devices (plugs and switches the unit finds on Wi-Fi). Only appliances that are not smart raise alerts: Lighting and HVAC findings are dropped for a room whose lights or AC Atmos switches itself, judged from listed smart devices and from what the unit switched off in the last 7 days (`lib/smartDevices.js`). Settings → "Rule-based" skips the AI and saves the engine's own text.
 
-Manual control (bottom of the Automation tab) sets `smart_devices.desired_state`; the unit receives it as `commands` and reports the new `power_state` back, which clears it. Unclaimed commands expire after 15 minutes.
+Auto-off (top of the Automation tab) edits `devices.automation_config`, which the unit downloads with every reading. Schedules, Plan with AI and Manual control work in the demo; real units need a newer firmware to receive them, so the dashboard shows them read-only.
 
 Rules (`automation_schedules`): target (light, fan, ac), on/off, weekdays, HH:MM, time zone, source (`manual` or `ai`). "Plan with AI" (`POST /api/automation/suggest`, `lib/ai/schedule.js`) replaces only the device's AI rules from usage patterns and never touches manual ones; editing an AI rule makes it manual. The sensor receives enabled rules with a UTC offset and reports what it did via `auto_actions` into `automation_logs`.
 
@@ -56,7 +56,7 @@ Spark (free, 2 devices, 10 min refresh), Basic ₹349, Premium ₹699 (30 s refr
 
 ## API
 
-`Authorization: Bearer atmos_...` (key made on the dashboard API tab) or a logged-in session: `/api/devices`, `/api/engine`, `/api/alerts` (+ `/acknowledge`, `/preferences`), `/api/automation/*`, `/api/devices/clear-history`, `/api/devices/unlink`, `/api/devices/smart` (+ `/control`). Session only: `/api/account` (DELETE), `/api/account/profile`, `/api/account/subscription`, `/api/account/api-key`. Sensors use their own device key on `/api/device/reading`.
+`Authorization: Bearer atmos_...` (key made on the dashboard API tab) or a logged-in session: `/api/devices`, `/api/engine`, `/api/alerts` (+ `/acknowledge`, `/preferences`), `/api/automation/*`, `/api/devices/clear-history`, `/api/devices/unlink`, `/api/devices/smart`, `/api/devices/automation`. Session only: `/api/account` (DELETE), `/api/account/profile`, `/api/account/subscription`, `/api/account/api-key`. Sensors use their own device key on `/api/device/reading`.
 
 ## Tech stack
 

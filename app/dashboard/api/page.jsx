@@ -340,6 +340,23 @@ export default function ApiPage() {
             <CodeBlock label="Response" code={`{ "device": { "device_id": "${deviceId}", "display_name": "Meeting room" } }`} />
           </EndpointCard>
 
+          <EndpointCard method="GET" path={`/api/devices/automation?deviceId=${deviceId}`} description="Read a unit's Auto-off times">
+            <CodeBlock label="Response" code={`{
+  "config": {
+    "enabled": true, "light_min": 30, "light_bright_min": 10,
+    "fan_min": 60, "ac_min": 60, "bright_lux": 300
+  }
+}`} />
+          </EndpointCard>
+
+          <EndpointCard method="PATCH" path="/api/devices/automation" description="Change a unit's Auto-off times">
+            <Note>
+              Minutes the room must be empty before the unit switches each kind of smart device off. <code>light_bright_min</code> applies when the room is already at least <code>bright_lux</code> lux (0 = never). The unit picks changes up with its next post.
+            </Note>
+            <CodeBlock label="Request body" code={JSON.stringify({ deviceId, light_min: 15, ac_min: 20 }, null, 2)} />
+            <CodeBlock label="Response" code={`{ "config": { "enabled": true, "light_min": 15, "ac_min": 20, ... } }`} />
+          </EndpointCard>
+
           <EndpointCard method="POST" path="/api/devices/link" description="Link a device to your account with its private key">
             <CodeBlock label="Request body" code={JSON.stringify({ privateKey: 'DEVICE_PRIVATE_KEY' }, null, 2)} />
             <CodeBlock label="Response" code={`{ "device": { "device_id": "${deviceId}" }, "already": false }`} />
@@ -357,14 +374,13 @@ export default function ApiPage() {
         <div className="dash-section-title">Sensor endpoint</div>
         <EndpointCard method="POST" path="/api/device/reading" description="Used by the Atmos sensor unit">
           <Note>
-            The hardware posts here every few minutes. It does <strong>not</strong> use your API key. It signs in with its own <code>device_id</code> and <code>private_key</code> (printed on the unit). The unit reports temperature, humidity, light and occupancy, and all are optional; <code>timestamp</code> defaults to the server time. <code>auto_actions</code> reports what the unit switched on its own.
+            The unit posts here every 10 minutes (and retries every 30 seconds if a post fails). It does <strong>not</strong> use your API key. It signs in with its own <code>device_id</code> and <code>private_key</code> (printed on the unit). Temperature, humidity, light and occupancy are saved, and any of them can be <code>null</code> if a sensor did not answer. The time is the server&apos;s. <code>auto_actions</code> lists what the unit switched off by itself since its last post. <code>power</code>, <code>current</code>, <code>voltage</code> and <code>energy</code> are accepted but not saved. The reply&apos;s <code>config</code> holds the Auto-off times set on the Automation tab.
           </Note>
           <CodeBlock label="Request body" code={`{
   "device_id": "${deviceId}",
   "private_key": "DEVICE_PRIVATE_KEY",
-  "timestamp": "2026-10-05T22:30:00Z",
-  "temperature": 27.1, "humidity": 54, "light": 120, "occupancy": 0,
-  "auto_actions": [{ "device": "light", "action": "off", "reason": "empty", "ago_s": 12 }]
+  "temperature": 27.1, "humidity": 54.0, "light": 120.0, "occupancy": true,
+  "auto_actions": [{ "device": "light_23", "action": "off", "reason": "vacant", "ago_s": 12 }]
 }`} />
           <CodeBlock label="Response" code={`{
   "ok": true,

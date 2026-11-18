@@ -1,6 +1,8 @@
-import { resolveApiUser, getSmartDevices } from '@/lib/server/db';
+import { resolveApiUser, getSmartDevices, getAutoSwitchedRoles } from '@/lib/server/db';
 
-// GET /api/devices/smart?deviceId=ATM-D001 → { smartDevices } the plugs that unit has found
+// GET /api/devices/smart?deviceId=ATM-D001
+// → { smartDevices, autoRoles }: plugs the unit has listed, and the kinds of appliance
+//   ('light', 'fan', 'ac') it has switched off by itself in the last 7 days.
 export async function GET(request) {
   try {
     const resolved = await resolveApiUser(request);
@@ -10,7 +12,8 @@ export async function GET(request) {
     if (!deviceId) return Response.json({ error: 'deviceId required' }, { status: 400 });
 
     const smartDevices = await getSmartDevices(resolved.profile.username, deviceId);
-    return Response.json({ smartDevices });
+    const autoRoles    = await getAutoSwitchedRoles(deviceId);
+    return Response.json({ smartDevices, autoRoles });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
