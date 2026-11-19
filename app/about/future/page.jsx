@@ -65,7 +65,6 @@ export default function FuturePage() {
                   'Expand to Tier-1 markets across South and Southeast Asia',
                   'Channel partnerships with MEP consultants and facilities management firms',
                   'Enterprise multi-building portfolio dashboard for institutional real estate',
-                  'Carbon credit aggregation pipeline: 60% of verified proceeds to customers',
                   'Wright\'s Law cost reduction — hardware BOM targets $22 at 10,000 units',
                   'Target: 3,200 buildings, $2.1M revenue, EBITDA positive by Year 4',
                 ],
@@ -313,10 +312,10 @@ export default function FuturePage() {
                 tag:   'Policy impact',
               },
               {
-                title: 'Green finance access: Carbon pipeline',
+                title: 'Green finance access: Subsidy pathway',
                 color: 'var(--text-blue)',
-                body:  'Verified energy savings are monetisable under international carbon frameworks. Our Premium plan already estimates carbon credit revenue per building. By Year 3, we aggregate verified savings across our global portfolio, certify them under recognised schemes including the Verified Carbon Standard and Gold Standard, and sell them into compliance and voluntary markets. We return 60% of proceeds to customers. They do not just save money. They earn it.',
-                tag:   'Carbon monetisation',
+                body:  'Clean energy is cheaper than most people think, but few know what funding exists. Our Subsidy Calculator already shows what central and state schemes can pay for, in English and Hindi. Next, we connect a room\'s own Atmos data to the schemes, loans and CSR sponsors that fit it, and produce the reports they ask for. Cut the waste first, then size the solar, then claim the support. Households and schools do not just save money. They get funded.',
+                tag:   'Subsidy matching',
               },
             ].map((item, i) => (
               <div key={i} style={{ padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(128,128,128,0.12)', background: 'rgba(255,255,255,0.01)' }}>
@@ -397,7 +396,7 @@ export default function FuturePage() {
                 region:  'Gulf Cooperation Council',
                 flag:    '🌍',
                 mandate: 'UAE Net Zero 2050 — Saudi Vision 2030 Green Initiatives',
-                detail:  'Both UAE and Saudi Arabia have committed to major energy intensity reductions across their built environments. Commercial building efficiency is a priority vertical, with government-backed incentive schemes for verifiable energy savings. This is a direct match for our carbon credit pipeline.',
+                detail:  'Both UAE and Saudi Arabia have committed to major energy intensity reductions across their built environments. Commercial building efficiency is a priority vertical, with government-backed incentive schemes for verifiable energy savings.',
                 color:   '#eab308',
               },
             ].map((item, i) => (

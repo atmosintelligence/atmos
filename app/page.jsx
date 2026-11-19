@@ -9,6 +9,7 @@ import RevealSection from '@/components/RevealSection';
 import AutomationDemo from '@/components/home/AutomationDemo';
 import Globe from '@/components/home/Globe';
 import DashboardPreview from '@/components/home/DashboardPreview';
+import Testimonial from '@/components/home/Testimonial';
 
 /* ---------- content ---------- */
 
@@ -163,6 +164,11 @@ export default function HomePage() {
         </div>
       </RevealSection>
 
+      {/* Testimonial */}
+      <RevealSection className="px-6 py-14 section-border">
+        <Testimonial />
+      </RevealSection>
+
       {/* Privacy and speed */}
       <RevealSection className="section-pad section-border">
         <div className="max-w-5xl mx-auto">
@@ -187,7 +193,7 @@ export default function HomePage() {
       <RevealSection className="section-pad section-border">
         <div className="max-w-5xl mx-auto">
           <Heading center sub="One device per room, then a small monthly plan, or nothing at all on Spark.">
-            ₹3,499 for the device.
+            ₹1,809 for the device.
           </Heading>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {PLANS.map(p => (

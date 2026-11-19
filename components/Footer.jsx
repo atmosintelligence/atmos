@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import InstallButton from './InstallButton';
 
 const COLUMNS = [
   {
@@ -67,6 +68,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#a3a3a3]">
           <span>© 2026 Atmos Intelligence.</span>
+          <InstallButton />
           <span>Made with 💖 in India</span>
         </div>
       </div>

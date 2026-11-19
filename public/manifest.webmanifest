@@ -1,0 +1,59 @@
+{
+  "id": "/",
+  "name": "Atmos Intelligence",
+  "short_name": "Atmos",
+  "description": "Find the waste. Switch it off. Smart energy savings for Indian homes, schools and offices.",
+  "start_url": "/dashboard?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "lifestyle"],
+  "prefer_related_applications": false,
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "icons": [
+    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Overview",
+      "short_name": "Overview",
+      "description": "See what to fix next",
+      "url": "/dashboard/overview?source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Alerts",
+      "short_name": "Alerts",
+      "description": "Recommendations waiting for you",
+      "url": "/dashboard/alerts?source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Automation",
+      "short_name": "Automation",
+      "description": "Schedules and auto-off settings",
+      "url": "/dashboard/automation?source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Devices",
+      "short_name": "Devices",
+      "description": "Your Atmos units and reports",
+      "url": "/dashboard/devices?source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Subsidy Calculator",
+      "short_name": "Subsidies",
+      "description": "See what India will pay for your clean energy",
+      "url": "/about/subsidy?source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

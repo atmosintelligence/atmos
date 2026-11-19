@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useDevice } from '../DeviceContext';
 import { automatedRoles } from '@/lib/smartDevices';
+import { isFixated } from '@/lib/fixate';
 import Icon from '@/components/Icon';
 import PageHeader from '@/components/dashboard/PageHeader';
 import Stat from '@/components/dashboard/Stat';
@@ -132,7 +133,7 @@ export default function AlertsPage() {
     if (severity !== 'all' && a.severity !== severity) return false;
     if (group !== 'all' && a.group_name !== group) return false;
     return true;
-  }).sort((a, b) => new Date(b.when ?? b.created_at) - new Date(a.when ?? a.created_at)), [list, view, severity, group]);
+  }).sort((a, b) => (Number(isFixated(b.title)) - Number(isFixated(a.title))) || (new Date(b.when ?? b.created_at) - new Date(a.when ?? a.created_at))), [list, view, severity, group]);
 
   // Alerts per day over the last 14 days, split by severity.
   const perDay = useMemo(() => {

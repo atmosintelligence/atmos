@@ -8,6 +8,7 @@ import OptCard from '@/components/dashboard/OptCard';
 import PageHeader from '@/components/dashboard/PageHeader';
 import { summariseSavings, formatINR } from '@/lib/savings';
 import { automatedRoles, nonSmartOnly } from '@/lib/smartDevices';
+import { isFixated } from '@/lib/fixate';
 import { useDevice } from '../DeviceContext';
 
 const MAX_SHOWN = 5;
@@ -65,7 +66,7 @@ export default function OverviewPage() {
   const findings = nonSmartOnly(engine?.optimizations, automated);
   const toShow   = (pending ?? findings.map(o => ({ ...o, group_name: o.group, saving_inr: o.saving?.inr, when: o.timestamp })))
     .slice()
-    .sort((a, b) => (SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]) || (new Date(b.when ?? 0) - new Date(a.when ?? 0)));
+    .sort((a, b) => (Number(isFixated(b.title)) - Number(isFixated(a.title))) || (SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]) || (new Date(b.when ?? 0) - new Date(a.when ?? 0)));
 
   const savings = summariseSavings(alerts, selectedSettings.tariff);
   const latest  = engine?.readings?.reduce((m, r) => (new Date(r.timestamp) > new Date(m.timestamp) ? r : m), engine.readings[0]);

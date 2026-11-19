@@ -8,7 +8,7 @@ const sections = [
     items: [
       {
         subtitle: 'Hardware data',
-        body: 'If you have subscribed to a paid plan and are using an Atmos hardware device, we collect the environmental readings it transmits. These include temperature, humidity, CO₂ levels, air quality index, power consumption, voltage, light intensity, and occupancy state.',
+        body: 'If you have subscribed to a paid plan and are using an Atmos hardware device, we collect the environmental readings it transmits. These include temperature, humidity, light intensity, and occupancy state.',
       },
       {
         subtitle: 'Location data',

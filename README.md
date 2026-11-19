@@ -58,7 +58,7 @@ Rules (`automation_schedules`): target (light, fan, ac), on/off, weekdays, HH:MM
 
 ## Plans
 
-Spark (free, 2 devices, 10 min refresh), Basic ₹349, Premium ₹699 (30 s refresh, PDF export, API), Enterprise (custom), priced per unit per month; hardware is ₹3,499 one-time. Plan changes are simulated; there is no payment integration yet.
+Spark (free, 2 devices, 10 min refresh), Basic ₹349, Premium ₹699 (30 s refresh, PDF export, API), Enterprise (custom), priced per unit per month; hardware is ₹1,809 one-time. Plan changes are simulated; there is no payment integration yet.
 
 ## API
 

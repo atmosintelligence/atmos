@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import { NavbarProvider } from '@/components/NavbarContext';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import PwaRegister from '@/components/PwaRegister';
 
 const syne = localFont({
   src: './fonts/Syne.woff2',
@@ -21,7 +22,17 @@ const inter = localFont({
 
 export const metadata = {
   title: { default: 'Atmos Intelligence', template: '%s | Atmos Intelligence' },
-  description: "India's premier energy optimisation tech, built for homes and offices alike"
+  description: "India's premier energy optimisation tech, built for homes and offices alike",
+  applicationName: 'Atmos',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, title: 'Atmos', statusBarStyle: 'black-translucent' },
+  formatDetection: { telephone: false },
+  icons: { apple: '/favicon.png' }
+};
+
+export const viewport = {
+  themeColor: '#0f0f0f',
+  viewportFit: 'cover'
 };
 
 export default function RootLayout({ children }) {
@@ -81,6 +92,7 @@ export default function RootLayout({ children }) {
 
         <Analytics />
         <SpeedInsights />
+        <PwaRegister />
       </body>
     </html>
   );

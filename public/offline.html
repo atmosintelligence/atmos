@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f0f0f">
+  <title>Offline | Atmos Intelligence</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: #0f0f0f;
+      color: #e8e8e8;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      text-align: center;
+    }
+    main { max-width: 26rem; }
+    .brand { font-weight: 900; font-size: 1.25rem; letter-spacing: -0.02em; margin-bottom: 2rem; }
+    .brand span { color: #4ADE80; }
+    h1 { font-size: 1.75rem; letter-spacing: -0.02em; margin: 0 0 0.75rem; }
+    p { color: #9a9a9a; line-height: 1.7; margin: 0 0 2rem; font-size: 0.95rem; }
+    button {
+      font: inherit;
+      font-weight: 600;
+      padding: 0.7rem 1.75rem;
+      border: 0;
+      border-radius: 9999px;
+      background: #4ADE80;
+      color: #000;
+      cursor: pointer;
+    }
+    button:focus-visible { outline: 2px solid #4ADE80; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">ATMOS<span>.</span></div>
+    <h1>You are offline</h1>
+    <p>Atmos needs an internet connection to show your live readings and recommendations. Check your connection and try again.</p>
+    <button type="button" onclick="location.reload()">Try again</button>
+  </main>
+</body>
+</html>

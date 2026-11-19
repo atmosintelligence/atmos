@@ -2,6 +2,7 @@
 
 import Icon from '@/components/Icon';
 import { formatINR } from '@/lib/savings';
+import { cleanTitle } from '@/lib/fixate';
 
 const GROUP_ICON = {
   Lighting: 'lightbulb', HVAC: 'ac', Humidity: 'droplet', Standby: 'plug', Power: 'plug', Trends: 'trendsAnalysis', General: 'info',
@@ -28,7 +29,7 @@ export default function OptCard({ opt, onAcknowledge, acknowledged = false }) {
           <Icon name={GROUP_ICON[opt.group] ?? 'info'} size={12} strokeWidth={2.25} />
           {opt.group}
         </span>
-        <h3 className="dash-opt-title">{opt.title}</h3>
+        <h3 className="dash-opt-title">{cleanTitle(opt.title)}</h3>
         {readingTime && <span className="dash-opt-time" title="Time of the sensor reading">{readingTime}</span>}
       </div>
       <p className="dash-opt-message">{opt.message}</p>

@@ -147,7 +147,7 @@ function Calculator() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                   <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>One-time hardware cost</span>
                   <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>
-                    ₹{(totalUnits * 3499).toLocaleString()}
+                    ₹{(totalUnits * 1809).toLocaleString()}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -435,7 +435,7 @@ export default function PricingPage() {
 
             <div className="text-right">
               <div className="font-heading text-4xl font-semibold tracking-tight">
-                ₹3,499
+                ₹1,809
               </div>
 
               <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
